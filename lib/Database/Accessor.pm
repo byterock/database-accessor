@@ -143,15 +143,19 @@
 
 }
 
-{
 
-    package Database::Accessor::Roles::Base;
+
+{
+
+    package 
+       Database::Accessor::Roles::Base;
 
     BEGIN {
         $Database::Accessor::Roles::DAD::VERSION = "0.01";
     }
 
     use Moose::Role;
+    
     has 'name' => (
 
         required => 1,
@@ -160,12 +164,7 @@
 
     );
 
-    has 'alias' => (
-
-        is  => 'rw',
-        isa => 'Str'
-
-    );
+   
 
     1;
 
@@ -173,16 +172,36 @@
 
 {
     package 
+      Database::Accessor::Roles::Alias;
+
+    BEGIN {
+        $Database::Accessor::Roles::Alias = "0.01";
+    }
+
+    use Moose::Role;
+    with 'Database::Accessor::Roles::Base';
+
+    has 'alias' => (
+
+        is  => 'rw',
+        isa => 'Str',
+  
+    );
+    
+    
+}
+{
+    package 
            Database::Accessor::View;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
+    with qw(Database::Accessor::Roles::Alias);
 
 }
 {
     package 
            Database::Accessor::Element;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
+    with qw(Database::Accessor::Roles::Alias);
 }
 
 {
@@ -190,9 +209,7 @@
            Database::Accessor::Predicate;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
-
-    
-
+    has '+name' => ( required => 0 );
     has operator => (
         is      => 'rw',
         isa     => 'Str',
