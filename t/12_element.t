@@ -4,7 +4,7 @@ use Test::Fatal;
 
 use lib ('D:\GitHub\database-accessor\lib');
 use Test::More tests => 3;
-
+use Moose::Util qw(does_role);
 BEGIN {
     use_ok('Database::Accessor');
     use_ok('Database::Accessor::Element');
@@ -12,6 +12,7 @@ BEGIN {
 
 my $street = Database::Accessor::Element->new({ name => 'street', } );
 ok( ref($street) eq 'Database::Accessor::Element', "Street is an Element" );
+ok( does_role($street,"Database::Accessor::Roles::Base") eq 1,"View does role Database::Accessor::Roles::Base");
 
 
 

@@ -12,8 +12,12 @@ BEGIN {
     use_ok('Data::Test');
 }
 
-my $da = Database::Accessor->new();
-my $dad_role = consuming_class("Database::Accessor::Roles::DAD",{});
+my $da = Database::Accessor->new({view=>{name=>'test'}});
+
+my $view =  $da->view();
+
+warn($view->name());
+my $dad_role = consuming_class("Database::Accessor::Roles::DAD");
 
 foreach my $attribute ($da->meta->get_all_attributes){
     next
