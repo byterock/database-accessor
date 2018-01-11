@@ -100,7 +100,7 @@
     );
 
     has view => (
-        is     => 'rw',
+        is     => 'ro',
         isa    => 'View',
         coerce => 1,
     );
@@ -108,17 +108,49 @@
     has elements => (
         isa    => 'ArrayRefofElements',
         coerce => 1,
-        is     => 'rw',
+        is     => 'ro',
     );
 
     has conditions => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofPredicates',
         coerce  => 1,
         default => sub { [] },
 
     );
 
+ has links => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+        coerce  => 1,
+        default => sub { [] },
+
+    );
+    
+     has gathers => (
+        is      => 'ro',
+        isa     => 'ArrayRefofPredicates',
+        coerce  => 1,
+        default => sub { [] },
+
+    );
+ has filters => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+        coerce  => 1,
+        default => sub { [] },
+
+    );
+ has sorts => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+        coerce  => 1,
+        default => sub { [] },
+
+    );
+ 
+    
+    
     sub retrieve {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
@@ -133,8 +165,13 @@
 
         my $dad = $driver->new(
             {
-                View     => $self->view,
-                Elements => $self->elements
+                View       => $self->view,
+                Elements   => $self->elements,
+                Conditions => $self->conditions,
+                Links      => $self->links,
+                Gathers    => $self->gathers,
+                Filters    => $self->filters,
+                Sorts      => $self->sorts,
             }
         );
 
@@ -195,13 +232,14 @@
            Database::Accessor::View;
     use Moose;
     with qw(Database::Accessor::Roles::Alias);
-
+    has '+name' => ( required => 1 );
 }
 {
     package 
            Database::Accessor::Element;
     use Moose;
     with qw(Database::Accessor::Roles::Alias);
+    has '+name' => ( required => 1 );
 }
 
 {
@@ -249,6 +287,49 @@
     1;
 }
 {
+    package 
+           Database::Accessor::Param;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+1;
+}
+{
+    package 
+           Database::Accessor::Condition;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+
+1;}
+{
+    package 
+           Database::Accessor::Link;
+    use Moose;
+     with qw(Database::Accessor::Roles::Alias);
+    has '+name' => ( required => 1 );
+
+1;}
+{
+    package 
+           Database::Accessor::Gather;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+
+1;}
+{
+    package 
+           Database::Accessor::Filter;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+1;
+}
+{
+    package 
+           Database::Accessor::Sort;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+1;
+}
+{
     package Database::Accessor::Roles::DAD;
 
     BEGIN {
@@ -256,21 +337,82 @@
     }
 
     use Moose::Role;
+    with qw(Database::Accessor::Types);
     requires 'DB_Class';
     requires 'Execute';
 
     has View => (
         is  => 'ro',
-        isa => 'Object',
+        isa => 'View',
     );
 
     has Elements => (
-        isa => 'ArrayRef',
+        isa => 'ArrayRefofElements',
         is  => 'ro',
     );
     has Conditions => (
-        isa => 'ArrayRef',
+        isa => 'ArrayRefofPredicates',
         is  => 'ro',
+    );
+  
+    has Links => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+    );
+    
+    has Gathers => (
+        is      => 'ro',
+        isa     => 'ArrayRefofPredicates',
+
+    );
+    has Filters => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+    );
+
+    has Sorts => (
+        is      => 'ro',
+        isa     => 'ArrayRefofElements',
+
+    );
+     has elements => (
+        isa    => 'ArrayRefofElements',
+        is     => 'rw',
+        default => sub { [] },
+    );
+
+    has conditions => (
+        is      => 'rw',
+        isa     => 'ArrayRefofPredicates',
+        default => sub { [] },
+
+    );
+
+     has links => (
+        is      => 'rw',
+        isa     => 'ArrayRefofElements',
+        default => sub { [] },
+
+    );
+    
+    
+     has gathers => (
+        is      => 'rw',
+        isa     => 'ArrayRefofPredicates',
+        default => sub { [] },
+
+    );
+    has filters => (
+        is      => 'rw',
+        isa     => 'ArrayRefofElements',
+        default => sub { [] },
+
+    );
+    has sorts => (
+        is      => 'rw',
+        isa     => 'ArrayRefofElements',
+        default => sub { [] },
+
     );
     1;
 

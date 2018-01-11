@@ -26,7 +26,7 @@ use lib ('D:\GitHub\database-accessor\lib');
 use Test::More;
 use Moose::Util qw(apply_all_roles does_role with_traits);
 
-
+use Database::Accessor;
 use_ok("Database::Accessor");
 use_ok("Database::Accessor::Roles::DAD");
 

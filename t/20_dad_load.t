@@ -27,7 +27,7 @@ foreach my $attribute ($da->meta->get_all_attributes){
         pass("Role DAD can $dad_attribute");
         my $attr = $dad_role->meta->get_attribute($dad_attribute);
         if ($attribute->type_constraint() eq $attr->type_constraint()){
-           ok("Role DAD attribute: $dad_attribute had correct type of ".$attribute->type_constraint());
+           pass("Role DAD attribute: $dad_attribute had correct type of ".$attribute->type_constraint());
         }
         else {
            fail("Role DAD attribute: $dad_attribute had in correct type of ".$attr->type_constraint().". Should be a ".$attribute->type_constraint());
