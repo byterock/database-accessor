@@ -13,6 +13,20 @@
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
 
+
+    around BUILDARGS => sub {
+      my $orig = shift;
+      my $class = shift;
+      my $ops   = shift(@_);
+      if ($ops->{retrieve_only}){
+          $ops->{no_create}   = 1;
+          $ops->{no_retrieve} = 0;
+          $ops->{no_update}   = 1;
+          $ops->{no_delete}   = 1;
+      }
+      return $class->$orig($ops);
+    };
+    
     sub BUILD {
         my $self = shift;
         map    { $self->_loadDADClassesFromDir($_) }
@@ -99,7 +113,21 @@
         is  => 'rw',
     );
 
-    has view => (
+    has [
+       qw(no_create
+          no_retrieve
+          no_update
+          no_delete
+          retrieve_only
+          )
+    ] => ( is => 'ro', isa => 'Bool', default=>0 );
+
+has view => (
+        is     => 'ro',
+        isa    => 'View',
+        coerce => 1,
+    );
+    has view => (
         is     => 'ro',
         isa    => 'View',
         coerce => 1,
