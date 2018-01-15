@@ -13,20 +13,19 @@
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
 
-
-    around BUILDARGS => sub {
-      my $orig = shift;
-      my $class = shift;
-      my $ops   = shift(@_);
-      if ($ops->{retrieve_only}){
-          $ops->{no_create}   = 1;
-          $ops->{no_retrieve} = 0;
-          $ops->{no_update}   = 1;
-          $ops->{no_delete}   = 1;
-      }
-      return $class->$orig($ops);
+    around BUILDARGS => sub {
+        my $orig  = shift;
+        my $class = shift;
+        my $ops   = shift(@_);
+        if ( $ops->{retrieve_only} ) {
+            $ops->{no_create}   = 1;
+            $ops->{no_retrieve} = 0;
+            $ops->{no_update}   = 1;
+            $ops->{no_delete}   = 1;
+        }
+        return $class->$orig($ops);
     };
-    
+
     sub BUILD {
         my $self = shift;
         map    { $self->_loadDADClassesFromDir($_) }
@@ -114,20 +113,20 @@
     );
 
     has [
-       qw(no_create
+        qw(no_create
           no_retrieve
           no_update
           no_delete
           retrieve_only
           )
-    ] => ( is => 'ro', isa => 'Bool', default=>0 );
-
-has view => (
+    ] => ( is => 'ro', isa => 'Bool', default => 0 );
+
+    has view => (
         is     => 'ro',
         isa    => 'View',
         coerce => 1,
     );
-    has view => (
+    has view => (
         is     => 'ro',
         isa    => 'View',
         coerce => 1,
@@ -147,38 +146,36 @@ has view => (
 
     );
 
- has links => (
+    has links => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         coerce  => 1,
         default => sub { [] },
 
     );
-    
-     has gathers => (
+
+    has gathers => (
         is      => 'ro',
         isa     => 'ArrayRefofPredicates',
         coerce  => 1,
         default => sub { [] },
 
     );
- has filters => (
+    has filters => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         coerce  => 1,
         default => sub { [] },
 
     );
- has sorts => (
+    has sorts => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         coerce  => 1,
         default => sub { [] },
 
     );
- 
-    
-    
+
     sub retrieve {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
@@ -208,19 +205,16 @@ has view => (
 
 }
 
+{
 
-
-{
-
-    package 
-       Database::Accessor::Roles::Base;
+    package Database::Accessor::Roles::Base;
 
     BEGIN {
         $Database::Accessor::Roles::DAD::VERSION = "0.01";
     }
 
     use Moose::Role;
-    
+
     has 'name' => (
 
         required => 1,
@@ -229,15 +223,12 @@ has view => (
 
     );
 
-   
-
     1;
 
 }
 
 {
-    package 
-      Database::Accessor::Roles::Alias;
+    package Database::Accessor::Roles::Alias;
 
     BEGIN {
         $Database::Accessor::Roles::Alias = "0.01";
@@ -250,29 +241,49 @@ has view => (
 
         is  => 'rw',
         isa => 'Str',
-  
+
+    );
+
+}
+{
+    package Database::Accessor::View;
+    use Moose;
+    with qw(Database::Accessor::Roles::Alias);
+    has '+name' => ( required => 1 );
+}
+{
+    package Database::Accessor::Element;
+    use Moose;
+    with qw(Database::Accessor::Roles::Alias Database::Accessor::Types);
+    
+        has '+name' => ( required => 1 );
+   
+       has 'view' => (
+
+        is  => 'rw',
+        isa => 'Str',
+
+    );
+
+    has 'is_identity' => (
+        is  => 'rw',
+        isa => 'bool',
     );
     
+        has 'aggregate' => (
+        is  => 'rw',
+        isa => 'Aggregate',
+     );
     
-}
-{
-    package 
-           Database::Accessor::View;
-    use Moose;
-    with qw(Database::Accessor::Roles::Alias);
-    has '+name' => ( required => 1 );
-}
-{
-    package 
-           Database::Accessor::Element;
-    use Moose;
-    with qw(Database::Accessor::Roles::Alias);
-    has '+name' => ( required => 1 );
+        has 'predicate' => (
+        is  => 'rw',
+        isa => 'Predicate',
+     );
+
 }
 
 {
-    package 
-           Database::Accessor::Predicate;
+    package Database::Accessor::Predicate;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
     has '+name' => ( required => 0 );
@@ -315,49 +326,47 @@ has view => (
     1;
 }
 {
-    package 
-           Database::Accessor::Param;
+    package Database::Accessor::Param;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
-1;
+    1;
 }
 {
-    package 
-           Database::Accessor::Condition;
+    package Database::Accessor::Condition;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
 
-1;}
+    1;
+}
 {
-    package 
-           Database::Accessor::Link;
+    package Database::Accessor::Link;
     use Moose;
-     with qw(Database::Accessor::Roles::Alias);
+    with qw(Database::Accessor::Roles::Alias);
     has '+name' => ( required => 1 );
 
-1;}
+    1;
+}
 {
-    package 
-           Database::Accessor::Gather;
+    package Database::Accessor::Gather;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
 
-1;}
-{
-    package 
-           Database::Accessor::Filter;
-    use Moose;
-    with qw(Database::Accessor::Roles::Base);
-1;
+    1;
 }
 {
-    package 
-           Database::Accessor::Sort;
+    package Database::Accessor::Filter;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
-1;
-}
+    1;
+}
 {
+    package Database::Accessor::Sort;
+    use Moose;
+    with qw(Database::Accessor::Roles::Base);
+    1;
+}
+{
+
     package Database::Accessor::Roles::DAD;
 
     BEGIN {
@@ -382,30 +391,30 @@ has view => (
         isa => 'ArrayRefofPredicates',
         is  => 'ro',
     );
-  
+
     has Links => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
+        is  => 'ro',
+        isa => 'ArrayRefofElements',
     );
-    
+
     has Gathers => (
-        is      => 'ro',
-        isa     => 'ArrayRefofPredicates',
+        is  => 'ro',
+        isa => 'ArrayRefofPredicates',
 
     );
     has Filters => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
+        is  => 'ro',
+        isa => 'ArrayRefofElements',
     );
 
-    has Sorts => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
+    has Sorts => (
+        is  => 'ro',
+        isa => 'ArrayRefofElements',
 
     );
-     has elements => (
-        isa    => 'ArrayRefofElements',
-        is     => 'rw',
+    has elements => (
+        isa     => 'ArrayRefofElements',
+        is      => 'rw',
         default => sub { [] },
     );
 
@@ -416,15 +425,14 @@ has view => (
 
     );
 
-     has links => (
+    has links => (
         is      => 'rw',
         isa     => 'ArrayRefofElements',
         default => sub { [] },
 
     );
-    
-    
-     has gathers => (
+
+    has gathers => (
         is      => 'rw',
         isa     => 'ArrayRefofPredicates',
         default => sub { [] },
@@ -446,7 +454,5 @@ has view => (
 
 }
 
-
 # __PACKAGE__->meta->make_immutable;
 1;
-

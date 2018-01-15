@@ -4,6 +4,7 @@ use Moose::Role;
 
 use lib qw(D:\GitHub\database-accessor\lib);
 use Moose::Util::TypeConstraints;
+use Database::Accessor::Constants;
 use Database::Accessor::View;
 use Database::Accessor::Element;
 use Database::Accessor::Predicate;
@@ -26,5 +27,17 @@ coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
 
+subtype 'Aggregate',
+  as 'Str',
+  where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
+  message { "The Aggrerate '$_', is not a valid Accessor Aggregate!"._try_one_of(Database::Accessor::Constants::AGGREGATES()) };
+
+
+
+sub _try_one_of {
+    my ($hash) = @_;
+    return " Try one of '".join("', '",keys(%{$hash}))."'";     
+}
 1;
+
 }
