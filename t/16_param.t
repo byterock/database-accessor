@@ -10,21 +10,12 @@ BEGIN {
     use_ok('Database::Accessor::Param');
 }
 
-my $param = Database::Accessor::Param->new({name=>'right'});
+my $param = Database::Accessor::Param->new({name=>'right',param=>22});
 
 ok( ref($param) eq 'Database::Accessor::Param', "param is a Param" );
 ok( does_role($param,"Database::Accessor::Roles::Base") eq 1,"Param does role Database::Accessor::Roles::Base");
-eval{
-   warn("rtest=".$param->alias());
-};
-if ($@){
-  pass("Param cannot alias");
-}
-else {
-   fail("Param cannot alias");
-}
-
-
+ok($param->value() == 22,'Value = 22');
+ok($param->param() == 22,'param = 22');
 
 
 

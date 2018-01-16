@@ -12,7 +12,7 @@
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
-
+    
     around BUILDARGS => sub {
         my $orig  = shift;
         my $class = shift;
@@ -208,7 +208,7 @@
 {
 
     package Database::Accessor::Roles::Base;
-
+    
     BEGIN {
         $Database::Accessor::Roles::DAD::VERSION = "0.01";
     }
@@ -329,6 +329,13 @@
     package Database::Accessor::Param;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
+    use MooseX::Aliases;
+        has value => (
+        is    => 'rw',
+        isa   => 'Str|Undef|ArrayRef',
+        alias => 'param'
+    );
+
     1;
 }
 {
