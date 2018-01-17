@@ -32,11 +32,15 @@ subtype 'Aggregate',
   where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
   message { "The Aggrerate '$_', is not a valid Accessor Aggregate!"._try_one_of(Database::Accessor::Constants::AGGREGATES()) };
 
+subtype 'Operator',
+  as 'Str',
+  where { exists( Database::Accessor::Constants::OPERATORS->{ uc($_) } ) },
+  message { "The Operator '$_', is not a valid Accessor Operator!"._try_one_of(Database::Accessor::Constants::OPERATORS()) };
 
 
 sub _try_one_of {
     my ($hash) = @_;
-    return " Try one of '".join("', '",keys(%{$hash}))."'";     
+    return " Try one of '".join("', '",sort(keys(%{$hash})))."'";     
 }
 1;
 

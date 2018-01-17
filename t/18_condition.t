@@ -10,7 +10,11 @@ BEGIN {
     use_ok('Database::Accessor::Condition');
 }
 
-my $condition = Database::Accessor::Condition->new({name=>'right'});
+my $condition = Database::Accessor::Condition->new({predicates=>[{left=> {name=>'field-1',
+                                                             view=>'table-1'},
+                                                     right=>{name=>'field-2',
+                                                             view=>'table-1'},
+                                                     operator=>'new'}]});
 
 ok( ref($condition) eq 'Database::Accessor::Condition', "condition is a Condition" );
 ok( does_role($condition,"Database::Accessor::Roles::Base") eq 1,"condition does role Database::Accessor::Roles::Base");

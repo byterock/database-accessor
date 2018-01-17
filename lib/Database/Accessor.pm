@@ -214,10 +214,10 @@
     }
 
     use Moose::Role;
-
+    with qw(Database::Accessor::Types);
     has 'name' => (
 
-        required => 1,
+        required => 0,
         is       => 'rw',
         isa      => 'Str'
 
@@ -254,7 +254,7 @@
 {
     package Database::Accessor::Element;
     use Moose;
-    with qw(Database::Accessor::Roles::Alias Database::Accessor::Types);
+    with qw(Database::Accessor::Roles::Alias );
     
         has '+name' => ( required => 1 );
    
@@ -286,10 +286,9 @@
     package Database::Accessor::Predicate;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
-    has '+name' => ( required => 0 );
     has operator => (
         is      => 'rw',
-        isa     => 'Str',
+        isa     => 'Operator',
         default => '='
     );
 
@@ -342,6 +341,28 @@
     package Database::Accessor::Condition;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
+    use MooseX::Aliases;
+    
+     # has operator => (
+        # is  => 'rw',
+        # isa => 'Operator',
+      # #  default=>'='
+
+    # );
+
+    has predicates => (
+        traits  => ['Array'],
+        is      => 'rw',
+        isa     => 'ArrayRefofPredicates',
+        coerce  => 1,
+        alias   => 'conditions',
+        handles => {
+
+            _add_predicate   => 'push',
+            count_predicates => 'count',
+        },
+    );
+
 
     1;
 }
