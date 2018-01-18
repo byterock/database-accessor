@@ -40,7 +40,12 @@ subtype 'Operator',
 subtype 'Link',
   as 'Str',
   where { exists( Database::Accessor::Constants::LINKS->{ uc($_) } ) },
-  message { "The Link '$_', is not a valid Accessor Link!"._try_one_of(Database::Accessor::Constants::OPERATORS()) };
+  message { "The Link '$_', is not a valid Accessor Link!"._try_one_of(Database::Accessor::Constants::LINKS()) };
+
+subtype 'Order',
+  as 'Str',
+  where { exists( Database::Accessor::Constants::ORDERS->{ uc($_) } ) },
+  message { "The Order '$_', is not a valid Accessor Order!"._try_one_of(Database::Accessor::Constants::ORDERS()) };
 
 
 sub _try_one_of {

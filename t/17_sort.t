@@ -10,11 +10,11 @@ BEGIN {
     use_ok('Database::Accessor::Sort');
 }
 
-my $sort = Database::Accessor::Sort->new({left=> {name=>'left'},right=>{name=>'right'}});
-
-ok( ref($predicate) eq 'Database::Accessor::Sort', "sort is a Sort" );
+my $sort = Database::Accessor::Sort->new({name=>'left', order=>'asc'});
+warn();
+ok( ref($sort) eq 'Database::Accessor::Sort', "sort is a Sort" );
 ok( does_role($sort,"Database::Accessor::Roles::Base") eq 1,"sort does role Database::Accessor::Roles::Base");
-
+ok($sort->order eq 'asc',"order is = asc");
 
 
 

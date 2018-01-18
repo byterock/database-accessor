@@ -11,6 +11,7 @@
     use File::Spec;
     use Moose;
     with qw(Database::Accessor::Types);
+    use Database::Accessor::Constants;
     use Moose::Util qw(does_role);
     
     around BUILDARGS => sub {
@@ -421,23 +422,30 @@
     );
     1;
 }
-{
-    package Database::Accessor::Gather;
-    use Moose;
-    with qw(Database::Accessor::Roles::Base);
+# {
+    # package Database::Accessor::Gather;
+    # use Moose;
+    # with qw(Database::Accessor::Roles::Base);
 
-    1;
-}
-{
-    package Database::Accessor::Filter;
-    use Moose;
-    with qw(Database::Accessor::Roles::Base);
-    1;
-}
+    # 1;
+# }
+# {
+    # package Database::Accessor::Filter;
+    # use Moose;
+    # with qw(Database::Accessor::Roles::Base);
+    # 1;
+# }
 {
     package Database::Accessor::Sort;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
+    extends 'Database::Accessor::Element';
+    
+     has order => (
+        is      => 'rw',
+        isa     => 'Order',
+        default => Database::Accessor::Constants::ASC
+    );
+
     1;
 }
 {
