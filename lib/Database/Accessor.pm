@@ -245,6 +245,31 @@
     );
 
 }
+
+
+{
+    package Database::Accessor::Roles::PredicateArray;
+
+    BEGIN {
+        $Database::Accessor::Roles::PredicateArray = "0.01";
+    }
+
+    use Moose::Role;    use MooseX::Aliases;
+    
+    has predicates => (
+        traits  => ['Array'],
+        is      => 'rw',
+        isa     => 'ArrayRefofPredicates',
+        coerce  => 1,
+        alias   => 'conditions',
+        handles => {
+
+            _add_predicate   => 'push',
+            count_predicates => 'count',
+        },
+    );
+1;
+}
 {
     package Database::Accessor::View;
     use Moose;
@@ -327,8 +352,9 @@
 {
     package Database::Accessor::Param;
     use Moose;
+     use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base);
-    use MooseX::Aliases;
+   
         has value => (
         is    => 'rw',
         isa   => 'Str|Undef|ArrayRef',
@@ -340,8 +366,10 @@
 {
     package Database::Accessor::Condition;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
-    use MooseX::Aliases;
+    with qw(Database::Accessor::Roles::Base
+             Database::Accessor::Roles::PredicateArray
+    );
+    # use MooseX::Aliases;
     
      # has operator => (
         # is  => 'rw',
@@ -350,18 +378,18 @@
 
     # );
 
-    has predicates => (
-        traits  => ['Array'],
-        is      => 'rw',
-        isa     => 'ArrayRefofPredicates',
-        coerce  => 1,
-        alias   => 'conditions',
-        handles => {
+    # has predicates => (
+        # traits  => ['Array'],
+        # is      => 'rw',
+        # isa     => 'ArrayRefofPredicates',
+        # coerce  => 1,
+        # alias   => 'conditions',
+        # handles => {
 
-            _add_predicate   => 'push',
-            count_predicates => 'count',
-        },
-    );
+            # _add_predicate   => 'push',
+            # count_predicates => 'count',
+        # },
+    # );
 
 
     1;
@@ -369,9 +397,28 @@
 {
     package Database::Accessor::Link;
     use Moose;
-    with qw(Database::Accessor::Roles::Alias);
-    has '+name' => ( required => 1 );
+     use MooseX::Aliases;
+    with qw(Database::Accessor::Roles::Base
+            Database::Accessor::Roles::PredicateArray);
+ 
+    has to => (
+        is       => 'rw',
+        isa      => 'Str',
+        required => 1,
+        alias    => [qw( to_view view)]
+    );
 
+    has to_alias => (
+        is    => 'rw',
+        isa   => 'Str',
+        alias =>[qw( alias view_alias)] 
+    );
+
+    has type => (
+        is       => 'rw',
+        isa      => 'Link',
+        required => 1,
+    );
     1;
 }
 {

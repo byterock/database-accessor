@@ -10,20 +10,25 @@ BEGIN {
     use_ok('Database::Accessor::Link');
 }
 
-my $link = Database::Accessor::Link->new({name=>'new',left=> {name=>'left'},right=>{name=>'right'}});
+my $link = Database::Accessor::Link->new({ type=>'left',
+                                            view=>'test',
+                                            alias=>'new_test',
+                                            predicates=>[{left=> {name=>'field-1',
+                                                             view=>'table-1'},
+                                                     right=>{name=>'field-2',
+                                                             view=>'table-1'},
+                                                     
+                                                     operator=>'='}]});
 
 ok( ref($link) eq 'Database::Accessor::Link', "link is a Link" );
+ok( ref($link) eq 'Database::Accessor::Link', "link is a Link" );
 ok( does_role($link,"Database::Accessor::Roles::Base") eq 1,"link does role Database::Accessor::Roles::Base");
-eval{
-   $link->alias();
-};
-if ($@){
-  fail("Link cannot alias");
-}
-else {
-   pass("Link cannot alias");
-}
-
+ok( does_role($link,"Database::Accessor::Roles::PredicateArray") eq 1,"link does role Database::Accessor::Roles::PredicateArray");
+ok( ref($link->predicates()->[0]) eq 'Database::Accessor::Predicate',"predicated contains a predicate");
+ok( $link->predicates()->[0]->operator() eq '=',"predicat->0 has operator '='");
+ok( $link->view eq 'test',"view is 'test'");
+ok( $link->alias eq 'new_test',"alias is 'new_test'");
+ok( $link->type eq 'left',"type is 'left'");
 
 
 

@@ -37,6 +37,11 @@ subtype 'Operator',
   where { exists( Database::Accessor::Constants::OPERATORS->{ uc($_) } ) },
   message { "The Operator '$_', is not a valid Accessor Operator!"._try_one_of(Database::Accessor::Constants::OPERATORS()) };
 
+subtype 'Link',
+  as 'Str',
+  where { exists( Database::Accessor::Constants::LINKS->{ uc($_) } ) },
+  message { "The Link '$_', is not a valid Accessor Link!"._try_one_of(Database::Accessor::Constants::OPERATORS()) };
+
 
 sub _try_one_of {
     my ($hash) = @_;
