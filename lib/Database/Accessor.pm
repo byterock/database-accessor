@@ -127,12 +127,7 @@
         isa    => 'View',
         coerce => 1,
     );
-    has view => (
-        is     => 'ro',
-        isa    => 'View',
-        coerce => 1,
-    );
-
+    
     has elements => (
         isa    => 'ArrayRefofElements',
         coerce => 1,
@@ -312,7 +307,7 @@
     package Database::Accessor::Predicate;
     use Moose;
     with qw(Database::Accessor::Roles::Base);
-    has operator => (
+    use MooseX::Aliases;       has operator => (
         is      => 'rw',
         isa     => 'Operator',
         default => '='
@@ -332,21 +327,22 @@
         coerce   => 1,
     );
 
-    # has open_parenthes => (
-    # is  => 'rw',
-    # isa => 'Int',
-    # default => 0,
-    # alias    => [qw(open open_paren)]
+    has open_parenthes => (
+    
+        is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+    alias    => [qw(open open_paren)]
 
-    # );
+    );
 
-    # has close_parenthes => (
-    # is  => 'rw',
-    # isa => 'Int',
-    # default => 0,
-    # alias    => [qw(close close_paren)]
+    has close_parenthes => (
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+    alias    => [qw(close close_paren)]
 
-    # );
+    );
 
     1;
 }

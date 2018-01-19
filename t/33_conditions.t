@@ -10,6 +10,6 @@ BEGIN {
 }
 
 
-
+my $da = Database::Accessor->new({view=>{name=>'test'}});
 
 
