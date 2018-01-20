@@ -29,7 +29,8 @@
 
     sub BUILD {
         my $self = shift;
-        map    { $self->_loadDADClassesFromDir($_) }
+        my $dad = {};
+        map    { $self->_loadDADClassesFromDir($_,$dad) }
           grep { -d $_ }
           map  { File::Spec->catdir( $_, 'Database', 'Accessor', 'DAD' ) } @INC;
 
@@ -38,8 +39,8 @@
     sub _loadDADClassesFromDir {
         my $self = shift;
         my ( $path, $dad ) = @_;
-        $dad = {}
-          if ( ref($dad) ne 'HASH' );
+        # $dad = {}
+          # if ( ref($dad) ne 'HASH' );
         opendir( DIR, $path ) or die "Unable to open $path: $!";
 
         my @files = grep { !/^\.{1,2}$/ } readdir(DIR);
@@ -104,7 +105,7 @@
 
         }
         $self->_ldad($dad)
-          if ( keys($dad) )
+          if ( keys($dad) );
 
     }
 
@@ -136,7 +137,7 @@
 
     has conditions => (
         is      => 'ro',
-        isa     => 'ArrayRefofPredicates',
+        isa     => 'ArrayRefofConditions',
         coerce  => 1,
         default => sub { [] },
 
@@ -322,7 +323,7 @@
 
     has right => (
         is       => 'rw',
-        isa      => 'Element',
+        isa      => 'Element|Param',
         required => 1,
         coerce   => 1,
     );
@@ -467,7 +468,7 @@
         is  => 'ro',
     );
     has Conditions => (
-        isa => 'ArrayRefofPredicates',
+        isa => 'ArrayRefofConditions',
         is  => 'ro',
     );
 

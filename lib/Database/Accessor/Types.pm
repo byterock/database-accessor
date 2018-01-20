@@ -9,19 +9,26 @@ use Database::Accessor::View;
 use Database::Accessor::Element;
 use Database::Accessor::Predicate;
 use Database::Accessor::Condition;
+use Database::Accessor::Param;
 
 class_type 'View',  { class => 'Database::Accessor::View' };
 class_type 'Element',  { class => 'Database::Accessor::Element' };
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
 class_type 'Condition',  { class => 'Database::Accessor::Condition' };
+class_type 'Param',  { class => 'Database::Accessor::Param' };
 
 
 subtype 'ArrayRefofConditions' =>as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements' => as 'ArrayRef[Element]';
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 
+
+
+
+
 coerce 'Element', from 'HashRef', via { Database::Accessor::Element->new( %{$_} ) };
 coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
+coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
 
 coerce 'ArrayRefofConditions', from 'ArrayRef', via {
     [ map { Database::Accessor::Condition->new($_) } @$_ ];
