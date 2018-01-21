@@ -369,12 +369,12 @@
     );
     # use MooseX::Aliases;
     
-     # has operator => (
-        # is  => 'rw',
-        # isa => 'Operator',
-      # #  default=>'='
+     has operator => (
+        is  => 'rw',
+        isa => 'Operator',
+        default=>'='
 
-    # );
+    );
 
     # has predicates => (
         # traits  => ['Array'],
