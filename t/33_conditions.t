@@ -13,7 +13,8 @@ BEGIN {
 }
 
 
-  my $in_hash = {
+  
+    my $in_hash = {
         view     => {name  => 'People'},
         elements => [{ name => 'first_name',
                                  view=>'People' },
@@ -21,18 +22,26 @@ BEGIN {
                                 view => 'People' },
                              { name => 'user_id',
                                 view =>'People' } ],
-        conditions=>[{ left     =>{ name     =>'user_id',
-                                    view     =>'People'},
-                       operator => '=',
-                       right    =>{ param=>'test'}},
-                     { condition=>'AND',
-                            left=>{name=>'first_name',
-                                   view=>'People'},
-                        operator=>'=',
-                           right=>{param=>'John'}}, 
-                          ]
+        conditions=>[{predicates=>[{left           =>{name =>'last_name',
+                                                      view =>'People'},
+                                    right          =>{value=>'test'},
+                                    operator       =>'=',
+                                    open_parenthes =>1,
+                                    close_parenthes=>0,
+                                    condition      =>'AND',
+                                   },
+                                   {condition      =>'AND',
+                                    left           =>{name=>'first_name',
+                                                      view=>'People'},
+                                    right          =>{ value=>'test'},
+                                    operator       =>'=',
+                                    open_parenthes =>0,
+                                    close_parenthes=>1
+                                    }
+                                    ]
+                                    }
+                     ],
   };
-  
   my $da = Database::Accessor->new($in_hash);
   my $return_str = undef;
   my $data = Data::Test->new();
@@ -41,11 +50,17 @@ BEGIN {
   
   ok(ref($dad) eq "Database::Accessor::DAD::Test",'Got the Test DAD');
   
+
   my $da_conditions  = $da->conditions();
    my $dad_conditions = $dad->Conditions();
    my $in_conditions  = $in_hash->{conditions};
    foreach my $index (0..scalar(@{$in_conditions}-1)) {
-      my $in   = $in_conditions->[$index];
+     my $in   = $in_conditions->[$index];
+     for $index_d (0..1){
+       bless($in->{predicates}->[$index_d],"Database::Accessor::Predicate"); 
+       bless($in->{predicates}->[$index_d]->{left},"'Database::Accessor::Element"); 
+       bless($in->{predicates}->[$index_d]->{right},"Database::Accessor::Param"); 
+     }
       cmp_deeply( $da_conditions->[$index], methods(%{$in})," DA condition attributes correct ");
       cmp_deeply( $dad_conditions->[$index], methods(%{$in})," DAD Condition attributes correct " );
    }

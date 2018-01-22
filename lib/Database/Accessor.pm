@@ -323,7 +323,7 @@
 
     has right => (
         is       => 'rw',
-        isa      => 'Element|Param',
+        isa      => 'Param|Element',
         required => 1,
         coerce   => 1,
     );
@@ -345,6 +345,12 @@
 
     );
 
+  has condition => (
+        is  => 'rw',
+        isa => 'Operator',
+        default=>'='
+
+    );
     1;
 }
 {
@@ -369,12 +375,12 @@
     );
     # use MooseX::Aliases;
     
-     has operator => (
-        is  => 'rw',
-        isa => 'Operator',
-        default=>'='
+     # has operator => (
+        # is  => 'rw',
+        # isa => 'Operator',
+        # default=>'='
 
-    );
+    # );
 
     # has predicates => (
         # traits  => ['Array'],
