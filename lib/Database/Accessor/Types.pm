@@ -1,7 +1,7 @@
 {
 package Database::Accessor::Types;
 use Moose::Role;
-
+use Data::Dumper;
 use lib qw(D:\GitHub\database-accessor\lib);
 use Moose::Util::TypeConstraints;
 use Database::Accessor::Constants;
@@ -31,7 +31,15 @@ coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
 coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
 
 coerce 'ArrayRefofConditions', from 'ArrayRef', via {
-    [ map { Database::Accessor::Condition->new($_) } @$_ ];
+  
+    # return [ Database::Accessor::Condition->new({predicates=>[@$_]})];
+    my $objects = [];
+    foreach my $object (@$_) {
+        push( @{$objects}, Database::Accessor::Condition->new({predicates=>[$object]}) ); 
+     }
+    return $objects  
+      
+   
 };
 
 coerce 'ArrayRefofElements', from 'ArrayRef', via {
