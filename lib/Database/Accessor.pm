@@ -506,7 +506,7 @@
 
     has conditions => (
         is      => 'rw',
-        isa     => 'ArrayRefofPredicates',
+        isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );

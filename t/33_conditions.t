@@ -70,6 +70,7 @@ BEGIN {
                                     
                      ,
   };
+ 
   my $da = Database::Accessor->new($in_hash2);
    
   my $return_str = undef;
@@ -84,7 +85,6 @@ BEGIN {
    my $da_conditions  = $da->conditions();
    my $dad_conditions = $dad->Conditions();
    my $in_conditions  = $in_hash2->{conditions};
- warn("dad_con=".Dumper($da_conditions->[0]->predicates));  
  
    foreach my $index (0..scalar(@{$in_conditions}-1)) {
      my $in   = $in_conditions->[$index];
@@ -100,3 +100,30 @@ BEGIN {
    
    }
 
+ my $in_hash3 = {
+     view     => {name => 'People'},
+     elements => [{name => 'first_name',
+                   view =>'People' },
+                  {name => 'last_name',
+                   view => 'People' },
+                  {name => 'user_id',
+                   view =>'People' } ],
+    conditions=>{left =>{name =>'last_name',
+                         view =>'People'},
+                 right=>{value=>'test'},
+                 operator       =>'=',
+                 open_parenthes =>1,
+                 close_parenthes=>0,
+                 condition      =>'AND',
+                 }
+                     ,
+  };
+   my $da2 = Database::Accessor->new($in_hash3);
+   ok(ref($da2->conditions()->[0]) eq "Database::Accessor::Condition",'DA has a condtion');
+   ok(scalar(@{$da2->conditions()}) == 1,'DA has only 1 condtion');
+   my $predicates = $da2->conditions()->[0]->predicates;
+   warn("da2=".Dumper($predicates->[0]));
+   ok(scalar(@{$da2->conditions()->[0]->predicates}) == 1,'DA has only 1 predicate');
+   ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
+  
+   

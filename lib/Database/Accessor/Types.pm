@@ -38,9 +38,13 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
         push( @{$objects}, Database::Accessor::Condition->new({predicates=>[$object]}) ); 
      }
     return $objects  
-      
-   
+},
+    from 'HashRef', via {
+    my $objects = [];
+    push( @{$objects}, Database::Accessor::Condition->new({predicates=>[$_]}) );
+    return $objects;
 };
+
 
 coerce 'ArrayRefofElements', from 'ArrayRef', via {
     [ map { Database::Accessor::Element->new($_) } @$_ ];
