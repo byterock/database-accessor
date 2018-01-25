@@ -100,7 +100,7 @@ BEGIN {
    
    }
 
- my $in_hash3 = {
+  my $in_hash3 = {
      view     => {name => 'People'},
      elements => [{name => 'first_name',
                    view =>'People' },
@@ -118,12 +118,10 @@ BEGIN {
                  }
                      ,
   };
-   my $da2 = Database::Accessor->new($in_hash3);
-   ok(ref($da2->conditions()->[0]) eq "Database::Accessor::Condition",'DA has a condtion');
-   ok(scalar(@{$da2->conditions()}) == 1,'DA has only 1 condtion');
-   my $predicates = $da2->conditions()->[0]->predicates;
-   warn("da2=".Dumper($predicates->[0]));
-   ok(scalar(@{$da2->conditions()->[0]->predicates}) == 1,'DA has only 1 predicate');
-   ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
+  my $da2 = Database::Accessor->new($in_hash3);
+  ok(ref($da2->conditions()->[0]) eq "Database::Accessor::Condition",'DA has a condtion');
+  ok(scalar(@{$da2->conditions()}) == 1,'DA has only 1 condtion');
+  ok(scalar(@{$da2->conditions()->[0]->predicates}) == 1,'DA has only 1 predicate');
+  ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
   
    
