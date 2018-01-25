@@ -145,7 +145,7 @@
 
     has links => (
         is      => 'ro',
-        isa     => 'ArrayRefofElements',
+        isa     => 'ArrayRefofLinks',
         coerce  => 1,
         default => sub { [] },
 
@@ -406,16 +406,11 @@
             Database::Accessor::Roles::PredicateArray);
  
     has to => (
-        is       => 'rw',
-        isa      => 'Str',
-        required => 1,
-        alias    => [qw( to_view view)]
-    );
-
-    has to_alias => (
         is    => 'rw',
-        isa   => 'Str',
-        alias =>[qw( alias view_alias)] 
+        isa   => 'View',
+        required => 1,
+        alias =>[qw( to_view view) ],
+        coerce   => 1,
     );
 
     has type => (
@@ -480,7 +475,7 @@
 
     has Links => (
         is  => 'ro',
-        isa => 'ArrayRefofElements',
+        isa => 'ArrayRefofLinks',
     );
 
     has Gathers => (
