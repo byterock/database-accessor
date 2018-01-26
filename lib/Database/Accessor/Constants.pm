@@ -57,7 +57,19 @@ use constant OPERATORS => {
    '<='=> 1,
 };
 
-
+use constant EXPRESSION => {
+   '=' => 1,
+   '!='=> 1,
+   '<>'=> 1,
+   '>' => 1,
+   '>='=> 1,
+   '<' => 1,
+   '<='=> 1,
+   '-' => 1,
+   '*' => 1,
+   '/' => 1,
+   '+'=> 1,
+};
 use constant ASC      =>'ASC';
 use constant DESC     =>'DESC';
 use constant ORDERS => {

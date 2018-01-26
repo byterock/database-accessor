@@ -153,14 +153,14 @@
 
     has gathers => (
         is      => 'ro',
-        isa     => 'ArrayRefofPredicates',
+        isa     => 'ArrayRefofElements',
         coerce  => 1,
         default => sub { [] },
 
     );
     has filters => (
         is      => 'ro',
-        isa     => 'ArrayRefofElements',
+        isa     => 'ArrayRefofConditions',
         coerce  => 1,
         default => sub { [] },
 
@@ -243,6 +243,56 @@
 
 }
 
+{
+    package Database::Accessor::Roles::Comparators;
+   
+       BEGIN {
+        $Database::Accessor::Roles::Comparators = "0.01";
+    }
+
+    use Moose::Role;
+    use MooseX::Aliases;   
+   
+       has operator => (
+        is      => 'rw',
+        isa     => 'Operator',
+        default => '='
+    );
+
+    has left => (
+        is       => 'rw',
+        isa      => 'Element',
+        required => 1,
+        coerce   => 1,
+    );
+
+    has right => (
+        is       => 'rw',
+        isa      => 'Param|Element',
+        required => 1,
+        coerce   => 1,
+    );
+
+    has open_parenthes => (
+    
+    
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+    alias    => [qw(open open_paren)]
+
+    );
+
+    has close_parenthes => (
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+    alias    => [qw(close close_paren)]
+
+    );
+
+    1;
+}
 
 {
     package Database::Accessor::Roles::PredicateArray;
@@ -304,48 +354,15 @@
 
 }
 
+
+
 {
     package Database::Accessor::Predicate;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
-    use MooseX::Aliases;       has operator => (
-        is      => 'rw',
-        isa     => 'Operator',
-        default => '='
-    );
-
-    has left => (
-        is       => 'rw',
-        isa      => 'Element',
-        required => 1,
-        coerce   => 1,
-    );
-
-    has right => (
-        is       => 'rw',
-        isa      => 'Param|Element',
-        required => 1,
-        coerce   => 1,
-    );
-
-    has open_parenthes => (
-    
-        is  => 'rw',
-    isa => 'Bool',
-    default => 0,
-    alias    => [qw(open open_paren)]
-
-    );
-
-    has close_parenthes => (
-    is  => 'rw',
-    isa => 'Bool',
-    default => 0,
-    alias    => [qw(close close_paren)]
-
-    );
-
-  has condition => (
+    with qw(Database::Accessor::Roles::Base
+            Database::Accessor::Roles::Comparators);
+    use MooseX::Aliases;     
+      has condition => (
         is  => 'rw',
         isa => 'Operator',
         default=>'='
@@ -353,6 +370,9 @@
     );
     1;
 }
+
+
+
 {
     package Database::Accessor::Param;
     use Moose;
@@ -362,8 +382,43 @@
         has value => (
         is    => 'rw',
         isa   => 'Str|Undef|ArrayRef',
-        alias => 'param'
+        alias => 'param',
     );
+
+    1;
+}
+
+{
+    package Database::Accessor::Function;
+    use Moose;
+     use MooseX::Aliases;
+    with qw(Database::Accessor::Roles::Base
+            Database::Accessor::Roles::Comparators);
+   
+    
+    has 'function' => (
+        isa => 'Str',
+        is  => 'rw',
+        required=>1,
+    );
+
+    1;
+}
+
+{
+    package Database::Accessor::Expression;
+    use Moose;
+     use MooseX::Aliases;
+    with qw(Database::Accessor::Roles::Base
+            Database::Accessor::Roles::Comparators);
+   
+    
+      has 'expression' => (
+        isa => 'Expression',
+        is  => 'rw',
+        required=>1,
+    );
+
 
     1;
 }
@@ -480,12 +535,12 @@
 
     has Gathers => (
         is  => 'ro',
-        isa => 'ArrayRefofPredicates',
+        isa => 'ArrayRefofElements',
 
     );
     has Filters => (
         is  => 'ro',
-        isa => 'ArrayRefofElements',
+        isa => 'ArrayRefofConditions',
     );
 
     has Sorts => (
@@ -508,20 +563,20 @@
 
     has links => (
         is      => 'rw',
-        isa     => 'ArrayRefofElements',
+        isa     => 'ArrayRefofLinks',
         default => sub { [] },
 
     );
 
     has gathers => (
         is      => 'rw',
-        isa     => 'ArrayRefofPredicates',
+        isa     => 'ArrayRefofElements',
         default => sub { [] },
 
     );
     has filters => (
         is      => 'rw',
-        isa     => 'ArrayRefofElements',
+        isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );

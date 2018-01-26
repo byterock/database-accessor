@@ -63,6 +63,11 @@ coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
 
+subtype 'Expression',
+as 'Str',
+  where { exists( Database::Accessor::Constants::EXPRESSION->{ uc($_) } ) },
+  message { "The Expression '$_', is not a valid Accessor Expression!"._try_one_of(Database::Accessor::Constants::EXPRESSION()) };
+
 
 subtype 'Aggregate',
   as 'Str',

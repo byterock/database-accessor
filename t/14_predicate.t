@@ -13,7 +13,7 @@ BEGIN {
 my $predicate = Database::Accessor::Predicate->new({left=> {name=>'left'},right=>{name=>'right'}});
 
 ok( ref($predicate) eq 'Database::Accessor::Predicate', "predicate is a Predicate" );
-ok( does_role($predicate,"Database::Accessor::Roles::Base") eq 1,"predicate does role Database::Accessor::Roles::Base");
+ok( does_role($predicate,"Database::Accessor::Roles::Comparators") eq 1,"predicate does role Database::Accessor::Roles::Comparators");
 eval{
    warn("rtest=".$predicate->alias());
 };

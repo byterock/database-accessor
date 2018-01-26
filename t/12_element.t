@@ -8,6 +8,7 @@ use Moose::Util qw(does_role);
 BEGIN {
     use_ok('Database::Accessor');
     use_ok('Database::Accessor::Element');
+    
 }
 
 my $street = Database::Accessor::Element->new({ name => 'street',view=>'person', } );
