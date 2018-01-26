@@ -253,12 +253,7 @@
     use Moose::Role;
     use MooseX::Aliases;   
    
-       has operator => (
-        is      => 'rw',
-        isa     => 'Operator',
-        default => '='
-    );
-
+   
     has left => (
         is       => 'rw',
         isa      => 'Element',
@@ -362,7 +357,12 @@
     with qw(Database::Accessor::Roles::Base
             Database::Accessor::Roles::Comparators);
     use MooseX::Aliases;     
-      has condition => (
+    has operator => (
+        is      => 'rw',
+        isa     => 'Operator',
+        default => '='
+    );
+        has condition => (
         is  => 'rw',
         isa => 'Operator',
         default=>'='
