@@ -6,6 +6,7 @@ use Test::Deep;
 use lib ('D:\GitHub\database-accessor\lib');
 use Test::More tests => 6;
 use lib ('..\t\lib');
+use Test::Database::Accessor::Utils;
 
 use Data::Test;
 BEGIN {
@@ -13,36 +14,8 @@ BEGIN {
 }
 
 
-  
-    my $in_hash = {
-        view     => {name  => 'People'},
-        elements => [{ name => 'first_name',
-                                 view=>'People' },
-                             { name => 'last_name',
-                                view => 'People' },
-                             { name => 'user_id',
-                                view =>'People' } ],
-        conditions=>[{predicates=>[{left           =>{name =>'last_name',
-                                                      view =>'People'},
-                                    right          =>{value=>'test'},
-                                    operator       =>'=',
-                                    open_parenthes =>1,
-                                    close_parenthes=>0,
-                                    condition      =>'AND',
-                                   },
-                                   {condition      =>'AND',
-                                    left           =>{name=>'first_name',
-                                                      view=>'People'},
-                                    right          =>{ value=>'test'},
-                                    operator       =>'=',
-                                    open_parenthes =>0,
-                                    close_parenthes=>1
-                                    }
-                                    ]
-                                    }
-                     ],
-  };
-   my $in_hash2 = {
+ 
+  my $in_hash = {
         view     => {name  => 'People'},
         elements => [{ name => 'first_name',
                                  view=>'People' },
@@ -70,36 +43,11 @@ BEGIN {
                                     
                      ,
   };
- 
-  my $da = Database::Accessor->new($in_hash2);
-   
-  my $return_str = undef;
-  my $data = Data::Test->new();
-
-  my $dad = $da->retrieve($data,$return_str);
+  my $da = Database::Accessor->new($in_hash);
+  my $dad = $da->retrieve(Data::Test->new());
+  Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->Conditions(),'conditions');
   
- 
-  ok(ref($dad) eq "Database::Accessor::DAD::Test",'Got the Test DAD');
   
- 
-   my $da_conditions  = $da->conditions();
-   my $dad_conditions = $dad->Conditions();
-   my $in_conditions  = $in_hash2->{conditions};
- 
-   foreach my $index (0..scalar(@{$in_conditions}-1)) {
-     my $in   = $in_conditions->[$index];
-     
-     bless($in,"Database::Accessor::Predicate"); 
-     bless($in->{left},"'Database::Accessor::Element"); 
-     bless($in->{right},"Database::Accessor::Param"); 
-     
-  
-     cmp_deeply($da_conditions->[$index]->predicates->[0], methods(%{$in}),"DA predicates correct" );
-     cmp_deeply($dad_conditions->[$index]->predicates->[0], methods(%{$in}),"DAD predicates no $index correct" );
-      # cmp_deeply( $dad_conditions->predicates->[$index], methods(%{$in}),"DAD predicates correct" );
-   
-   }
-
   my $in_hash3 = {
      view     => {name => 'People'},
      elements => [{name => 'first_name',

@@ -263,7 +263,7 @@
 
     has right => (
         is       => 'rw',
-        isa      => 'Param|Element',
+        isa      => 'Element|Param',
         required => 1,
         coerce   => 1,
     );

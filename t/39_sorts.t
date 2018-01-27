@@ -6,7 +6,7 @@ use Test::Deep;
 use lib ('D:\GitHub\database-accessor\lib');
 use Test::More tests => 6;
 use lib ('..\t\lib');
-
+use Test::Database::Accessor::Utils;
 use Data::Test;
 BEGIN {
     use_ok( 'Database::Accessor' ) || print "Bail out!";
@@ -40,14 +40,4 @@ BEGIN {
 
    my $dad = $da->retrieve($data,$return_str);
   
-  
-   my $da_sorts  = $da->sorts();
-   my $dad_sorts = $dad->Sorts();
-   my $in         = $in_hash->{sorts};
-   my $in_dad      = $in_hash->{sorts};
-   foreach my $index (0..2){
-      bless($in->[$index],"Database::Accessor::Element");
-      cmp_deeply($da_sorts->[$index], methods(%{$in->[$index]}),"DA sort $index correct" );
-      cmp_deeply($dad_sorts->[$index], methods(%{$in->[$index]}),"DAD sort $index correct" );
-   }
-  
+   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad->Sorts,'Sorts');

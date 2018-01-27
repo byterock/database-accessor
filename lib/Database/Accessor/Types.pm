@@ -28,7 +28,16 @@ subtype 'ArrayRefofLinks' => as 'ArrayRef[Link]';
 
 
 
-coerce 'Element', from 'HashRef', via { Database::Accessor::Element->new( %{$_} ) };
+coerce 'Element', from 'HashRef', via { 
+  
+  if (exists($_->{value}) || exists($_->{param})){
+      Database::Accessor::Param->new( %{$_} );
+  }
+  else{
+      Database::Accessor::Element->new( %{$_} ) ;
+  
+  }
+};
 coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
 coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
 
