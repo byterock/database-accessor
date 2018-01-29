@@ -47,7 +47,7 @@ BEGIN {
   my $dad = $da->retrieve(Data::Test->new());
   Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->Conditions(),'conditions');
   
-  
+ 
   my $in_hash3 = {
      view     => {name => 'People'},
      elements => [{name => 'first_name',

@@ -131,16 +131,24 @@
     
     has elements => (
         isa    => 'ArrayRefofElements',
+         traits  => ['Array'],
         coerce => 1,
         is     => 'ro',
+        default => sub { [] },
+        handles => {
+            elements_count => 'count',
+        },
     );
 
     has conditions => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
+         traits  => ['Array'],
         coerce  => 1,
         default => sub { [] },
-
+        handles => {
+           conditions_count  => 'count',
+        },
     );
 
     has links => (
@@ -305,9 +313,7 @@
         coerce  => 1,
         alias   => 'conditions',
         handles => {
-
-            _add_predicate   => 'push',
-            count_predicates => 'count',
+            predicates_count => 'count',
         },
     );
 1;
