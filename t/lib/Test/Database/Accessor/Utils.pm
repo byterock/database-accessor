@@ -43,7 +43,7 @@ sub deep_element {
         }
          
      
-        foreach my $index2  (0..(scalar(@{$preticates[$index]->predicates()})-1)) {
+        foreach my $index2  (0..($preticates[$index]->predicates_count()-1)) {
           cmp_deeply($preticates[$index]->predicates->[$index2], methods(%{$predicate}),"DA $type $index2->predicates $index correct" );
           cmp_deeply($dad_preticates[$index]->predicates->[$index2], methods(%{$predicate}),"DAD $type $index2->predicates $index correct" );
   

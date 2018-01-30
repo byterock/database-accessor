@@ -271,7 +271,7 @@
 
     has right => (
         is       => 'rw',
-        isa      => 'Element|Param',
+        isa      => 'Element|Param|Function|ArrayRefofParams|ArrayRefofElements',
         required => 1,
         coerce   => 1,
     );

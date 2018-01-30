@@ -11,6 +11,7 @@ use Database::Accessor::Predicate;
 use Database::Accessor::Condition;
 use Database::Accessor::Param;
 use Database::Accessor::Link;
+use Database::Accessor::Function;
 
 class_type 'View',  { class => 'Database::Accessor::View' };
 class_type 'Element',  { class => 'Database::Accessor::Element' };
@@ -18,19 +19,23 @@ class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
 class_type 'Condition',  { class => 'Database::Accessor::Condition' };
 class_type 'Param',  { class => 'Database::Accessor::Param' };
 class_type 'Link',  { class => 'Database::Accessor::Link' };
-
+class_type 'Function',  { class => 'Database::Accessor::Function' };
 
 subtype 'ArrayRefofConditions' =>as 'ArrayRef[Condition]';
-subtype 'ArrayRefofElements' => as 'ArrayRef[Element]';
+subtype 'ArrayRefofElements' => as 'ArrayRef[Element|Param|Function]';
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks' => as 'ArrayRef[Link]';
+subtype 'ArrayRefofParams' => as 'ArrayRef[Param]';
 
 
 
 
 coerce 'Element', from 'HashRef', via { 
-  
-  if (exists($_->{value}) || exists($_->{param})){
+ 
+   if (exists($_->{function})){
+      Database::Accessor::Function->new( %{$_} );
+  } 
+  elsif (exists($_->{value}) || exists($_->{param})){
       Database::Accessor::Param->new( %{$_} );
   }
   else{
@@ -53,7 +58,7 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
     # return [ Database::Accessor::Condition->new({predicates=>[@$_]})];
     my $objects = [];
     foreach my $object (@$_) {
-        push( @{$objects}, Database::Accessor::Condition->new({predicates=>[$object]}) ); 
+        push( @{$objects},  Database::Accessor::Condition->new({predicates=>[$object]}) ); 
      }
     return $objects  
   },
@@ -63,12 +68,18 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
     return $objects;
 };
 
+coerce 'ArrayRefofParams', from 'ArrayRef', via {
+    _right_left_coerce($_);
+};
 
 coerce 'ArrayRefofElements', from 'ArrayRef', via {
-    [ map { Database::Accessor::Element->new($_) } @$_ ];
+    
+    _right_left_coerce($_);
+    # [ map { Database::Accessor::Element->new($_) } @$_ ];
 };
 
 coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
+    
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
 
@@ -98,6 +109,31 @@ subtype 'Order',
   where { exists( Database::Accessor::Constants::ORDERS->{ uc($_) } ) },
   message { "The Order '$_', is not a valid Accessor Order!"._try_one_of(Database::Accessor::Constants::ORDERS()) };
 
+
+sub _right_left_coerce {
+    my ($in) = @_;
+     my $objects = [];
+    foreach my $object (@{$in}) {
+        push( @{$objects},  _element_coerce($object)); 
+     }
+    return $objects  
+}
+
+sub _element_coerce {
+    my ($hash) = @_;
+    my $object;
+    if (exists($hash->{function})){
+      $object = Database::Accessor::Function->new( %{$hash} );
+  } 
+  elsif (exists($hash->{value}) || exists($hash->{param})){
+      $object = Database::Accessor::Param->new( %{$hash} );
+  }
+  else{
+      $object = Database::Accessor::Element->new( %{$hash} ) ;
+  
+  }
+  return $object;
+}
 
 sub _try_one_of {
     my ($hash) = @_;
