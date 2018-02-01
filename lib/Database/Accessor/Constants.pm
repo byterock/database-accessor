@@ -57,7 +57,7 @@ use constant OPERATORS => {
    '<='=> 1,
 };
 
-use constant EXPRESSION => {
+use constant NUMERIC_OPERATORS => {
    '=' => 1,
    '!='=> 1,
    '<>'=> 1,

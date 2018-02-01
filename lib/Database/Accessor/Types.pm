@@ -12,7 +12,7 @@ use Database::Accessor::Condition;
 use Database::Accessor::Param;
 use Database::Accessor::Link;
 use Database::Accessor::Function;
-
+use Database::Accessor::Expression;
 class_type 'View',  { class => 'Database::Accessor::View' };
 class_type 'Element',  { class => 'Database::Accessor::Element' };
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
@@ -20,28 +20,22 @@ class_type 'Condition',  { class => 'Database::Accessor::Condition' };
 class_type 'Param',  { class => 'Database::Accessor::Param' };
 class_type 'Link',  { class => 'Database::Accessor::Link' };
 class_type 'Function',  { class => 'Database::Accessor::Function' };
-
+class_type 'Expression',  { class => 'Database::Accessor::Expression' };
 subtype 'ArrayRefofConditions' =>as 'ArrayRef[Condition]';
-subtype 'ArrayRefofElements' => as 'ArrayRef[Element|Param|Function]';
+subtype 'ArrayRefofElements' => as 'ArrayRef[Element|Param|Function|Expression]';
+subtype 'ArrayRefofExpressions' => as 'ArrayRef[Element|Param|Function|Expression]';
+subtype 'ArrayRefofFunctions' => as 'ArrayRef[Element|Param|Function|Expression]';
+
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks' => as 'ArrayRef[Link]';
-subtype 'ArrayRefofParams' => as 'ArrayRef[Param]';
+subtype 'ArrayRefofParams' => as 'ArrayRef[Element|Param|Function|Expression]';
 
 
 
 
 coerce 'Element', from 'HashRef', via { 
  
-   if (exists($_->{function})){
-      Database::Accessor::Function->new( %{$_} );
-  } 
-  elsif (exists($_->{value}) || exists($_->{param})){
-      Database::Accessor::Param->new( %{$_} );
-  }
-  else{
-      Database::Accessor::Element->new( %{$_} ) ;
-  
-  }
+   return _element_coerce($_);
 };
 coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
 coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
@@ -78,15 +72,27 @@ coerce 'ArrayRefofElements', from 'ArrayRef', via {
     # [ map { Database::Accessor::Element->new($_) } @$_ ];
 };
 
+coerce 'ArrayRefofExpressions', from 'ArrayRef', via {
+    
+    _right_left_coerce($_);
+    # [ map { Database::Accessor::Element->new($_) } @$_ ];
+};
+coerce 'ArrayRefofFunctions', from 'ArrayRef', via {
+    
+    _right_left_coerce($_);
+    # [ map { Database::Accessor::Element->new($_) } @$_ ];
+};
+
+
 coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
     
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
 
-subtype 'Expression',
+subtype 'NumericOperator',
 as 'Str',
-  where { exists( Database::Accessor::Constants::EXPRESSION->{ uc($_) } ) },
-  message { "The Expression '$_', is not a valid Accessor Expression!"._try_one_of(Database::Accessor::Constants::EXPRESSION()) };
+  where { exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } ) },
+  message { "The Numeric Operator '$_', is not a valid Accessor Numeric Operato!"._try_one_of(Database::Accessor::Constants::NUMERIC_OPERATORS()) };
 
 
 subtype 'Aggregate',
@@ -120,9 +126,12 @@ sub _right_left_coerce {
 }
 
 sub _element_coerce {
-    my ($hash) = @_;
-    my $object;
-    if (exists($hash->{function})){
+  my ($hash) = @_;
+  my $object;
+  if (exists($hash->{expression})){
+      $object = Database::Accessor::Expression->new( %{$hash} );
+  } 
+  elsif (exists($hash->{function})){
       $object = Database::Accessor::Function->new( %{$hash} );
   } 
   elsif (exists($hash->{value}) || exists($hash->{param})){

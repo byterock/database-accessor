@@ -271,7 +271,7 @@
 
     has right => (
         is       => 'rw',
-        isa      => 'Element|Param|Function|ArrayRefofParams|ArrayRefofElements',
+        isa      => 'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
         required => 1,
         coerce   => 1,
     );
@@ -420,7 +420,7 @@
    
     
       has 'expression' => (
-        isa => 'Expression',
+        isa => 'NumericOperator',
         is  => 'rw',
         required=>1,
     );
