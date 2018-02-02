@@ -4,8 +4,7 @@ use Test::Fatal;
 
 use lib ('D:\GitHub\database-accessor\lib');
 use lib ('..\t\lib');
-# use lib ('..\lib');
-# use lib ('..\t\lib\Test\Data\Accessor');
+use Data::Dumper;
 use Data::Test;
 use Test::Database::Accessor::Utils;
 use Test::Deep;
@@ -35,6 +34,21 @@ BEGIN {
    my $dad = $da->retrieve(Data::Test->new(),{});
    
    Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->elements,$dad->Elements,'Element');
+   
+   $da = Database::Accessor->new({view     => {name  => 'People'}});
+   
+   foreach my $element (@{$in_hash->{elements}}){
+      ok($da->add_element($element),"can add an single Dynamic element");
+   }
 
-
-
+   $dad = $da->retrieve(Data::Test->new(),{});
+   
+   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Single Dynamic Element');
+   
+   ok($da->add_element(@{$in_hash->{elements}}),"can add an array of Dynamic elements");
+  
+   $dad = $da->retrieve(Data::Test->new(),{});
+   
+   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Array Dynamic Element');
+   
+   

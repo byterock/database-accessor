@@ -139,6 +139,19 @@
             elements_count => 'count',
         },
     );
+    
+        has dynamic_elements => (
+        isa    => 'ArrayRefofElements',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_element            => 'push',
+            dynamic_elements_count => 'count',
+        },
+    );
 
     has conditions => (
         is      => 'ro',
@@ -151,6 +164,31 @@
         },
     );
 
+   has dynamic_conditions => (
+       isa    => 'ArrayRefofConditions',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_condition           => 'push',
+            dynamic_condition_count => 'count',
+        },
+    );
+    
+       has dynamic_links => (
+       isa    => 'ArrayRefofLinks',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_link           => 'push',
+            dynamic_link_count => 'count',
+        },
+    );
     has links => (
         is      => 'ro',
         isa     => 'ArrayRefofLinks',
@@ -159,6 +197,18 @@
 
     );
 
+    has dynamic_gathers => (
+       isa    => 'ArrayRefofElements',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_gather           => 'push',
+            dynamic_gather_count => 'count',
+        },
+    );
     has gathers => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
@@ -173,12 +223,38 @@
         default => sub { [] },
 
     );
+    
+        has dynamic_filters => (
+       isa    => 'ArrayRefofConditions',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_filter           => 'push',
+            dynamic_filter_count => 'count',
+        },
+    );
     has sorts => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         coerce  => 1,
         default => sub { [] },
 
+    );
+
+    has dynamic_sorts => (
+       isa    => 'ArrayRefofElements',
+        traits  => ['Array'],
+        coerce => 1,
+        is     => 'rw',
+        default => sub { [] },
+        init_arg => undef,
+        handles => {
+            add_sort           => 'push',
+            dynamic_sort_count => 'count',
+        },
     );
 
     sub retrieve {
@@ -197,11 +273,17 @@
             {
                 View       => $self->view,
                 Elements   => $self->elements,
+                elements   => $self->dynamic_elements,
                 Conditions => $self->conditions,
+                conditions => $self->dynamic_conditions,
                 Links      => $self->links,
+                links      => $self->dynamic_links,
                 Gathers    => $self->gathers,
+                gathers    => $self->dynamic_gathers,
                 Filters    => $self->filters,
+                filters    => $self->dynamic_filters,
                 Sorts      => $self->sorts,
+                sorts      => $self->dynamic_sorts,
             }
         );
 
@@ -556,38 +638,38 @@
     );
     has elements => (
         isa     => 'ArrayRefofElements',
-        is      => 'rw',
+        is      => 'ro',
         default => sub { [] },
     );
 
     has conditions => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );
 
     has links => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofLinks',
         default => sub { [] },
 
     );
 
     has gathers => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofElements',
         default => sub { [] },
 
     );
     has filters => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );
     has sorts => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'ArrayRefofElements',
         default => sub { [] },
 
