@@ -40,7 +40,7 @@ coerce 'Element', from 'HashRef', via {
 coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
 coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
 
-coerce 'ArrayRefofLinks', from 'ArrayRef', via {   
+coerce 'ArrayRefofLinks', from 'ArrayRef', via { 
      [ map { Database::Accessor::Link->new($_) } @$_ ];
 },
     from 'HashRef', via {
@@ -48,19 +48,24 @@ coerce 'ArrayRefofLinks', from 'ArrayRef', via {
 };
 
 coerce 'ArrayRefofConditions', from 'ArrayRef', via {
-  
-    # return [ Database::Accessor::Condition->new({predicates=>[@$_]})];
-    my $objects = [];
-    foreach my $object (@$_) {
-        push( @{$objects},  Database::Accessor::Condition->new({predicates=>[$object]}) ); 
-     }
-    return $objects  
-  },
-   from 'HashRef', via {
-    my $objects = [];
-    push( @{$objects}, Database::Accessor::Condition->new({predicates=>[$_]}) );
-    return $objects;
+   return  _predicate_array_or_object("Database::Accessor::Condition",$_);
 };
+
+
+sub _predicate_array_or_object {
+    my ($class,$in) = @_;
+    my $objects =[];
+    foreach my $object (@{$_}) {
+        if ( ref( $object) eq $class ) {
+            push( @{$objects},  $object );
+        }
+        else {
+            push( @{$objects},$class->new( {predicates=>[$object]} ) );
+        }
+    }
+    return $objects;
+     
+}
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
     _right_left_coerce($_);
