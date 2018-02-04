@@ -13,7 +13,7 @@
     with qw(Database::Accessor::Types);
     use Database::Accessor::Constants;
     use Moose::Util qw(does_role);
-    
+
     around BUILDARGS => sub {
         my $orig  = shift;
         my $class = shift;
@@ -29,18 +29,19 @@
 
     sub BUILD {
         my $self = shift;
-        my $dad = {};
-        map    { $self->_loadDADClassesFromDir($_,$dad) }
+        my $dad  = {};
+        map { $self->_loadDADClassesFromDir( $_, $dad ) }
           grep { -d $_ }
-          map  { File::Spec->catdir( $_, 'Database', 'Accessor', 'DAD' ) } @INC;
+          map { File::Spec->catdir( $_, 'Database', 'Accessor', 'DAD' ) } @INC;
 
     }
 
     sub _loadDADClassesFromDir {
         my $self = shift;
         my ( $path, $dad ) = @_;
+
         # $dad = {}
-          # if ( ref($dad) ne 'HASH' );
+        # if ( ref($dad) ne 'HASH' );
         opendir( DIR, $path ) or die "Unable to open $path: $!";
 
         my @files = grep { !/^\.{1,2}$/ } readdir(DIR);
@@ -128,26 +129,24 @@
         isa    => 'View',
         coerce => 1,
     );
-    
+
     has elements => (
-        isa    => 'ArrayRefofElements',
-         traits  => ['Array'],
-        coerce => 1,
-        is     => 'ro',
-        default => sub { [] },
-        handles => {
-            elements_count => 'count',
-        },
-    );
-    
-        has dynamic_elements => (
-        isa    => 'ArrayRefofElements',
+        isa     => 'ArrayRefofElements',
         traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
+        coerce  => 1,
+        is      => 'ro',
         default => sub { [] },
+        handles => { elements_count => 'count', },
+    );
+
+    has dynamic_elements => (
+        isa      => 'ArrayRefofElements',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_element            => 'push',
             dynamic_elements_count => 'count',
         },
@@ -156,35 +155,33 @@
     has conditions => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
-         traits  => ['Array'],
+        traits  => ['Array'],
         coerce  => 1,
         default => sub { [] },
-        handles => {
-           conditions_count  => 'count',
-        },
+        handles => { conditions_count => 'count', },
     );
 
-   has dynamic_conditions => (
-       isa    => 'ArrayRefofConditions',
-        traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
-        default => sub { [] },
+    has dynamic_conditions => (
+        isa      => 'ArrayRefofConditions',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_condition           => 'push',
             dynamic_condition_count => 'count',
         },
     );
-    
-       has dynamic_links => (
-       isa    => 'ArrayRefofLinks',
-        traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
-        default => sub { [] },
+
+    has dynamic_links => (
+        isa      => 'ArrayRefofLinks',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_link           => 'push',
             dynamic_link_count => 'count',
         },
@@ -197,14 +194,14 @@
 
     );
 
-    has dynamic_gathers => (
-       isa    => 'ArrayRefofElements',
-        traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
-        default => sub { [] },
+    has dynamic_gathers => (
+        isa      => 'ArrayRefofElements',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_gather           => 'push',
             dynamic_gather_count => 'count',
         },
@@ -223,15 +220,15 @@
         default => sub { [] },
 
     );
-    
-        has dynamic_filters => (
-       isa    => 'ArrayRefofConditions',
-        traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
-        default => sub { [] },
+
+    has dynamic_filters => (
+        isa      => 'ArrayRefofConditions',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_filter           => 'push',
             dynamic_filter_count => 'count',
         },
@@ -244,14 +241,14 @@
 
     );
 
-    has dynamic_sorts => (
-       isa    => 'ArrayRefofElements',
-        traits  => ['Array'],
-        coerce => 1,
-        is     => 'rw',
-        default => sub { [] },
+    has dynamic_sorts => (
+        isa      => 'ArrayRefofElements',
+        traits   => ['Array'],
+        coerce   => 1,
+        is       => 'rw',
+        default  => sub { [] },
         init_arg => undef,
-        handles => {
+        handles  => {
             add_sort           => 'push',
             dynamic_sort_count => 'count',
         },
@@ -295,7 +292,7 @@
 {
 
     package Database::Accessor::Roles::Base;
-    
+
     BEGIN {
         $Database::Accessor::Roles::DAD::VERSION = "0.01";
     }
@@ -315,6 +312,7 @@
 }
 
 {
+
     package Database::Accessor::Roles::Alias;
 
     BEGIN {
@@ -333,17 +331,17 @@
 
 }
 
-{
+{
+
     package Database::Accessor::Roles::Comparators;
-   
-       BEGIN {
+
+    BEGIN {
         $Database::Accessor::Roles::Comparators = "0.01";
     }
 
     use Moose::Role;
-    use MooseX::Aliases;   
-   
-   
+    use MooseX::Aliases;
+
     has left => (
         is       => 'rw',
         isa      => 'Element',
@@ -352,68 +350,70 @@
     );
 
     has right => (
-        is       => 'rw',
-        isa      => 'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
+        is => 'rw',
+        isa =>
+'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
         required => 1,
         coerce   => 1,
     );
 
     has open_parenthes => (
-    
-    
-    is  => 'rw',
-    isa => 'Bool',
-    default => 0,
-    alias    => [qw(open open_paren)]
+
+        is      => 'rw',
+        isa     => 'Bool',
+        default => 0,
+        alias   => [qw(open open_paren)]
 
     );
 
     has close_parenthes => (
-    is  => 'rw',
-    isa => 'Bool',
-    default => 0,
-    alias    => [qw(close close_paren)]
+        is      => 'rw',
+        isa     => 'Bool',
+        default => 0,
+        alias   => [qw(close close_paren)]
 
     );
 
     1;
 }
-
+
 {
+
     package Database::Accessor::Roles::PredicateArray;
 
     BEGIN {
         $Database::Accessor::Roles::PredicateArray = "0.01";
     }
 
-    use Moose::Role;    use MooseX::Aliases;
-    
+    use Moose::Role;
+    use MooseX::Aliases;
+
     has predicates => (
         traits  => ['Array'],
         is      => 'rw',
         isa     => 'ArrayRefofPredicates',
         coerce  => 1,
         alias   => 'conditions',
-        handles => {
-            predicates_count => 'count',
-        },
+        handles => { predicates_count => 'count', },
     );
-1;
+    1;
 }
 {
+
     package Database::Accessor::View;
     use Moose;
     with qw(Database::Accessor::Roles::Alias);
     has '+name' => ( required => 1 );
 }
 {
+
     package Database::Accessor::Element;
     use Moose;
     with qw(Database::Accessor::Roles::Alias );
-    
-        has '+name' => ( required => 1 );
-   
-       has 'view' => (
+
+    has '+name' => ( required => 1 );
+
+    has 'view' => (
 
         is  => 'rw',
         isa => 'Str',
@@ -424,50 +424,48 @@
         is  => 'rw',
         isa => 'bool',
     );
-    
-        has 'aggregate' => (
+
+    has 'aggregate' => (
         is  => 'rw',
         isa => 'Aggregate',
-     );
-    
-        has 'predicate' => (
+    );
+
+    has 'predicate' => (
         is  => 'rw',
         isa => 'Predicate',
-     );
+    );
 
 }
 
-
-
 {
+
     package Database::Accessor::Predicate;
     use Moose;
     with qw(Database::Accessor::Roles::Base
-            Database::Accessor::Roles::Comparators);
-    use MooseX::Aliases;     
+      Database::Accessor::Roles::Comparators);
+    use MooseX::Aliases;
     has operator => (
         is      => 'rw',
         isa     => 'Operator',
         default => '='
     );
-        has condition => (
-        is  => 'rw',
-        isa => 'Operator',
-        default=>'='
+    has condition => (
+        is      => 'rw',
+        isa     => 'Operator',
+        default => '='
 
     );
     1;
 }
 
-
-
 {
+
     package Database::Accessor::Param;
     use Moose;
-     use MooseX::Aliases;
+    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base);
-   
-        has value => (
+
+    has value => (
         is    => 'rw',
         isa   => 'Str|Undef|ArrayRef',
         alias => 'param',
@@ -476,83 +474,84 @@
     1;
 }
 
-{
+{
+
     package Database::Accessor::Function;
     use Moose;
-     use MooseX::Aliases;
+    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
-            Database::Accessor::Roles::Comparators);
-   
-    
+      Database::Accessor::Roles::Comparators);
+
     has 'function' => (
-        isa => 'Str',
-        is  => 'rw',
-        required=>1,
+        isa      => 'Str',
+        is       => 'rw',
+        required => 1,
     );
 
     1;
 }
 
-{
+{
+
     package Database::Accessor::Expression;
     use Moose;
-     use MooseX::Aliases;
+    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
-            Database::Accessor::Roles::Comparators);
-   
-    
-      has 'expression' => (
-        isa => 'NumericOperator',
-        is  => 'rw',
-        required=>1,
-    );
+      Database::Accessor::Roles::Comparators);
 
+    has 'expression' => (
+        isa      => 'NumericOperator',
+        is       => 'rw',
+        required => 1,
+    );
 
     1;
 }
 {
+
     package Database::Accessor::Condition;
     use Moose;
     with qw(Database::Accessor::Roles::Base
-             Database::Accessor::Roles::PredicateArray
+      Database::Accessor::Roles::PredicateArray
     );
+
     # use MooseX::Aliases;
-    
-     # has operator => (
-        # is  => 'rw',
-        # isa => 'Operator',
-        # default=>'='
+
+    # has operator => (
+    # is  => 'rw',
+    # isa => 'Operator',
+    # default=>'='
 
     # );
 
     # has predicates => (
-        # traits  => ['Array'],
-        # is      => 'rw',
-        # isa     => 'ArrayRefofPredicates',
-        # coerce  => 1,
-        # alias   => 'conditions',
-        # handles => {
+    # traits  => ['Array'],
+    # is      => 'rw',
+    # isa     => 'ArrayRefofPredicates',
+    # coerce  => 1,
+    # alias   => 'conditions',
+    # handles => {
 
-            # _add_predicate   => 'push',
-            # count_predicates => 'count',
-        # },
+    # _add_predicate   => 'push',
+    # count_predicates => 'count',
+    # },
     # );
-
 
     1;
 }
 {
+
     package Database::Accessor::Link;
     use Moose;
-     use MooseX::Aliases;
+    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
-            Database::Accessor::Roles::PredicateArray);
- 
+      Database::Accessor::Roles::PredicateArray);
+
     has to => (
-        is    => 'rw',
-        isa   => 'View',
+        is       => 'rw',
+        isa      => 'View',
         required => 1,
-        alias =>[qw( to_view view) ],
+        alias    => [qw( to_view view)],
         coerce   => 1,
     );
 
@@ -563,25 +562,27 @@
     );
     1;
 }
-# {
-    # package Database::Accessor::Gather;
-    # use Moose;
-    # with qw(Database::Accessor::Roles::Base);
 
-    # 1;
+# {
+# package Database::Accessor::Gather;
+# use Moose;
+# with qw(Database::Accessor::Roles::Base);
+
+# 1;
 # }
 # {
-    # package Database::Accessor::Filter;
-    # use Moose;
-    # with qw(Database::Accessor::Roles::Base);
-    # 1;
+# package Database::Accessor::Filter;
+# use Moose;
+# with qw(Database::Accessor::Roles::Base);
+# 1;
 # }
 {
+
     package Database::Accessor::Sort;
     use Moose;
     extends 'Database::Accessor::Element';
-    
-     has order => (
+
+    has order => (
         is      => 'rw',
         isa     => 'Order',
         default => Database::Accessor::Constants::ASC

@@ -51,4 +51,10 @@ BEGIN {
    
    Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Array Dynamic Element');
    
+    ok($da->add_element($in_hash->{elements}),"can add an ref array of Dynamic elements");
+  
+   $dad = $da->retrieve(Data::Test->new(),{});
+   
+   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Array Dynamic Element');
+   
    

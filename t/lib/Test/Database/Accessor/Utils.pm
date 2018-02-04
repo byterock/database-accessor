@@ -52,7 +52,7 @@ sub deep_element {
 }
 
 sub deep_links {
-    my ($in_hash,$da,$dad,$types) = @_;
+    my ($in_hash,$da,$dad,$static) = @_;
     
     my @links;
     
@@ -67,16 +67,35 @@ sub deep_links {
     foreach my $index (0..(scalar(@links)-1)) {
      my $in = $links[$index];
      
-     ok(ref($da->links()->[$index]) eq "Database::Accessor::Link","Da Link $index is a Link");
-     ok(ref($dad->Links()->[$index]) eq "Database::Accessor::Link","Dad Link $index is a Link");
+     if ($static){
+       ok(ref($da->links()->[$index]) eq "Database::Accessor::Link","Da Link $index is a Link");
+       ok(ref($dad->Links()->[$index]) eq "Database::Accessor::Link","Dad Link $index is a Link");
+     }
+     else {
+       ok(ref($da->dynamic_links()->[$index]) eq "Database::Accessor::Link","Da synamic_link $index is a Link");
+       ok(ref($dad->links()->[$index]) eq "Database::Accessor::Link","Dad link $index is a Link");
+
+     }
+    
      bless($in->{to},"Database::Accessor::View");  
      
-     cmp_deeply($da->links()->[$index]->to, methods(%{$in->{to}}),"DA Link View $index correct" );
-     cmp_deeply($dad->Links()->[$index]->to, methods(%{$in->{to}}),"DAD Link View $index correct" );
+     if ($static){
+       cmp_deeply($da->links()->[$index]->to, methods(%{$in->{to}}),"DA Link View $index correct" );
+       cmp_deeply($dad->Links()->[$index]->to, methods(%{$in->{to}}),"DAD Link View $index correct" );
 
-     Test::Database::Accessor::Utils::deep_predicate($in->{predicates}
-                                                    ,$da->links()->[$index],
-                                                    ,$dad->Links()->[$index],'Link');
+       Test::Database::Accessor::Utils::deep_predicate($in->{predicates}
+                                                      ,$da->links()->[$index],
+                                                      ,$dad->Links()->[$index],'Link');
+     }
+     else {
+        cmp_deeply($da->dynamic_links()->[$index]->to, methods(%{$in->{to}}),"DA dynamic Link View $index correct" );
+       cmp_deeply($dad->links()->[$index]->to, methods(%{$in->{to}}),"DAD Link View $index correct" );
+
+       Test::Database::Accessor::Utils::deep_predicate($in->{predicates}
+                                                      ,$da->dynamic_links()->[$index],
+                                                      ,$dad->links()->[$index],'Dynamic Link');
+     }
+     
    }
   }
 sub bless_element {

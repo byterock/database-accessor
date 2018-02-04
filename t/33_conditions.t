@@ -23,7 +23,7 @@ BEGIN {
                                 view => 'People' },
                              { name => 'user_id',
                                 view =>'People' } ],
-        conditions=>[{left           =>{name =>'last_name',
+        conditions=>[{left           =>{name =>'First_1',
                                                       view =>'People'},
                                     right          =>{value=>'test'},
                                     operator       =>'=',
@@ -32,7 +32,7 @@ BEGIN {
                                     condition      =>'AND',
                                    },
                                    {condition      =>'AND',
-                                    left           =>{name=>'first_name',
+                                    left           =>{name=>'First_2',
                                                       view=>'People'},
                                     right          =>{ value=>'test'},
                                     operator       =>'=',
@@ -43,35 +43,37 @@ BEGIN {
                                     
                      ,
   };
-  # my $da = Database::Accessor->new($in_hash);
-  # my $dad = $da->retrieve(Data::Test->new());
-  # Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->Conditions(),'conditions');
+  my $da = Database::Accessor->new($in_hash);
+  my $dad = $da->retrieve(Data::Test->new());
+  Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->Conditions(),'conditions');
   
  
-  # my $in_hash3 = {
-     # view     => {name => 'People'},
-     # elements => [{name => 'first_name',
-                   # view =>'People' },
-                  # {name => 'last_name',
-                   # view => 'People' },
-                  # {name => 'user_id',
-                   # view =>'People' } ],
-    # conditions=>{left =>{name =>'last_name',
-                         # view =>'People'},
-                 # right=>{value=>'test'},
-                 # operator       =>'=',
-                 # open_parenthes =>1,
-                 # close_parenthes=>0,
-                 # condition      =>'AND',
-                 # }
-                     # ,
-  # };
-  # my $da2 = Database::Accessor->new($in_hash3);
-  # ok(ref($da2->conditions()->[0]) eq "Database::Accessor::Condition",'DA has a condtion');
-  # ok(scalar(@{$da2->conditions()}) == 1,'DA has only 1 condtion');
-  # ok(scalar(@{$da2->conditions()->[0]->predicates}) == 1,'DA has only 1 predicate');
-  # ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
+  my $in_hash3 = {
+     view     => {name => 'People'},
+     elements => [{name => 'first_name',
+                   view =>'People' },
+                  {name => 'last_name',
+                   view => 'People' },
+                  {name => 'user_id',
+                   view =>'People' } ],
+    conditions=>{left =>{name =>'second_1',
+                         view =>'People'},
+                 right=>{value=>'test'},
+                 operator       =>'=',
+                 open_parenthes =>1,
+                 close_parenthes=>0,
+                 condition      =>'AND',
+                 }
+                     ,
+  };
+  my $da2 = Database::Accessor->new($in_hash3);
   
+  ok(ref($da2->conditions()->[0]) eq "Database::Accessor::Condition",'DA has a condtion');
+  ok(scalar(@{$da2->conditions()}) == 1,'DA has only 1 condtion');
+  ok(scalar(@{$da2->conditions()->[0]->predicates}) == 1,'DA has only 1 predicate');
+  ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
+  
+
     $da = Database::Accessor->new({view     => {name  => 'People'}});
   
     $in_hash = {
@@ -100,14 +102,24 @@ BEGIN {
       ok($da->add_condition($condition),"can add an single Dynamic condition");
      
    }
-$dad = $da->retrieve(Data::Test->new(),{});
+   $dad = $da->retrieve(Data::Test->new(),{});
    
-   Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions(),$dad->conditions(),'conditions');
-  
+   Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions(),$dad->conditions(),'dynamic conditions');
+
+     $dad = $da->retrieve(Data::Test->new(),{});
+
    
    ok($da->add_condition(@{$in_hash->{conditions}}),"can add an array of Dynamic conditions");
   
    
     Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions,$dad->conditions,'Array Dynamic condition');
+   
+      $dad = $da->retrieve(Data::Test->new(),{});
+
+   
+   ok($da->add_condition($in_hash->{conditions}),"can add an array Ref of Dynamic conditions");
+  
+   
+    Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions,$dad->conditions,'Array Ref Dynamic condition');
    
     
