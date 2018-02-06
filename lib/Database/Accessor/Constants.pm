@@ -19,14 +19,18 @@ use constant NULL              =>'NULL';
 use constant IS_NOT_NULL       =>'IS NOT NULL';
 use constant AND               =>'AND';
 use constant OR                =>'OR';
-use constant OUTER       =>'OUTER';
-use constant LEFT        =>'LEFT';
-use constant RIGHT       =>'RIGHT';
+use constant OUTER    =>'OUTER';
+use constant LEFT     =>'LEFT';
+use constant RIGHT    =>'RIGHT';
+use constant CREATE   =>'CREATE';
+use constant RETRIEVE =>'RETRIEVE';
+use constant UPDATE   =>'UPDATE';
+use constant DELETE   =>'DELETE';
 
 use constant LINKS =>{
-    Database::Accessor::Constants::OUTER   =>1,
-    Database::Accessor::Constants::LEFT    =>1,
-    Database::Accessor::Constants::RIGHT    =>1,
+    Database::Accessor::Constants::OUTER =>1,
+    Database::Accessor::Constants::LEFT  =>1,
+    Database::Accessor::Constants::RIGHT =>1,
 };
 
 use constant AGGREGATES =>{

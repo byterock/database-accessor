@@ -10,7 +10,8 @@
     use Data::Dumper;
     use File::Spec;
     use Moose;
-    with qw(Database::Accessor::Types);
+    with qw(Database::Accessor::Types
+            MooseX::AttributeCloner);
     use Database::Accessor::Constants;
     use Moose::Util qw(does_role);
 
@@ -254,40 +255,75 @@
         },
     );
 
+sub _execute {
+    my $self = shift;
+    my ( $type, $conn, $container, $opt ) = @_;
+    my $drivers = $self->_ldad();
+    my $driver  = $drivers->{ ref($conn) };
+
+    die "No Database::Accessor::Driver loaded for "
+      . ref($conn)
+      . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
+      unless ($driver);
+warn("execute self da=".Dumper($self));
+      my $dad =  $self->new_with_cloned_attributes($driver);
+   warn("execute dad=".Dumper($dad));
+    # my $dad = $driver->new(
+        # {
+            # View       => $self->view,
+            # Elements   => $self->elements,
+            # elements   => $self->dynamic_elements,
+            # Conditions => $self->conditions,
+            # conditions => $self->dynamic_conditions,
+            # Links      => $self->links,
+            # links      => $self->dynamic_links,
+            # Gathers    => $self->gathers,
+            # gathers    => $self->dynamic_gathers,
+            # Filters    => $self->filters,
+            # filters    => $self->dynamic_filters,
+            # Sorts      => $self->sorts,
+            # sorts      => $self->dynamic_sorts,
+        # }
+    # );
+    $dad->Execute( $type, $conn, $container, $opt );
+   
+}
+
+    sub create {
+        my $self = shift;
+        my ( $conn, $container, $opt ) = @_;
+        $self->_execute( Database::Accessor::Constants::CREATE,
+            $conn, $container, $opt );
+    }
+
+    sub update {
+        my $self = shift;
+        my ( $conn, $container, $opt ) = @_;
+        $self->_execute( Database::Accessor::Constants::UPDATE,
+            $conn, $container, $opt );
+    }
+
     sub retrieve {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
+        $self->_execute( Database::Accessor::Constants::RETRIEVE,
+            $conn, $container, $opt );
+            
+      
+        return ref($container);
 
-        my $drivers = $self->_ldad();
-        my $driver  = $drivers->{ ref($conn) };
-
-        die "No Database::Accessor::Driver loaded for "
-          . ref($conn)
-          . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
-          unless ($driver);
-
-        my $dad = $driver->new(
-            {
-                View       => $self->view,
-                Elements   => $self->elements,
-                elements   => $self->dynamic_elements,
-                Conditions => $self->conditions,
-                conditions => $self->dynamic_conditions,
-                Links      => $self->links,
-                links      => $self->dynamic_links,
-                Gathers    => $self->gathers,
-                gathers    => $self->dynamic_gathers,
-                Filters    => $self->filters,
-                filters    => $self->dynamic_filters,
-                Sorts      => $self->sorts,
-                sorts      => $self->dynamic_sorts,
-            }
-        );
-
-        return $dad->Execute( "retrieve", $conn, $container, $opt );
     }
 
 }
+
+sub delete {
+    my $self = shift;
+    my ( $conn, $container, $opt ) = @_;
+    $self->_execute( Database::Accessor::Constants::DELETE,
+        $conn, $container, $opt );
+}
+
+
 
 {
 
@@ -603,73 +639,73 @@
     requires 'DB_Class';
     requires 'Execute';
 
-    has View => (
+    has view => (
         is  => 'ro',
         isa => 'View',
     );
 
-    has Elements => (
+    has elements => (
         isa => 'ArrayRefofElements',
         is  => 'ro',
     );
-    has Conditions => (
+    has conditions => (
         isa => 'ArrayRefofConditions',
         is  => 'ro',
     );
 
-    has Links => (
+    has links => (
         is  => 'ro',
         isa => 'ArrayRefofLinks',
     );
 
-    has Gathers => (
+    has gathers => (
         is  => 'ro',
         isa => 'ArrayRefofElements',
 
     );
-    has Filters => (
+    has filters => (
         is  => 'ro',
         isa => 'ArrayRefofConditions',
     );
 
-    has Sorts => (
+    has sorts => (
         is  => 'ro',
         isa => 'ArrayRefofElements',
 
     );
-    has elements => (
+    has dynamic_elements => (
         isa     => 'ArrayRefofElements',
         is      => 'ro',
         default => sub { [] },
     );
 
-    has conditions => (
+    has dynamic_conditions => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );
 
-    has links => (
+    has dynamic_links => (
         is      => 'ro',
         isa     => 'ArrayRefofLinks',
         default => sub { [] },
 
     );
 
-    has gathers => (
+    has dynamic_gathers => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         default => sub { [] },
 
     );
-    has filters => (
+    has dynamic_filters => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
         default => sub { [] },
 
     );
-    has sorts => (
+    has dynamic_sorts => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
         default => sub { [] },
@@ -681,3 +717,96 @@
 
 # __PACKAGE__->meta->make_immutable;
 1;
+
+=pod
+ 
+=head1 NAME 
+Database::Accessor
+
+Need the same data from both Oracle and Mongo, 
+Need a good data tier for you app,
+Need a CRUD layer but don't need or want an ORM,
+Have a SQL DB and don't know SQL
+Have a Non-SQL DB and dont' know SQL
+
+Well Database::Accessor is for you!
+
+=head1 VERSION
+ 
+Version 0.03
+ 
+=head1 SYNOPSIS
+
+my $da = Database::Accssor->new({        view     => {name  => 'People'},
+        elements => [{ name => 'first_name',
+                                 view=>'People' },
+                             { name => 'last_name',
+                                view => 'People' },
+                             { name => 'user_id',
+                                view =>'People' } ],
+        conditions=>[{left           =>{name =>'First',
+                                                      view =>'People'},
+                                    right          =>{value=>'Jane'},
+                                    operator       =>'=',
+                                    open_parenthes =>1,
+                                   },
+                                   {condition      =>'AND',
+                                    left           =>{name=>'Last_name',
+                                                      view=>'People'},
+                                    right          =>{ value=>'Doe'},
+                                    operator       =>'=',
+                                    close_parenthes=>1
+                                    }
+                                    ]
+                                    
+                     ,
+  });
+  
+  $da->add_condition({left           =>{name =>'country_id',
+                                                      view =>'People'},
+                                    right          =>{value=>22},
+                                    operator       =>'=',
+                                    condition      =>'AND',
+                                   });
+ $da->rertrive($dbh,$container);
+ $da->insert($mongo,$container);
+ $da->add_condition({left           =>{name =>'country_id',
+                                                      view =>'People'},
+                                    right          =>{value=>22},
+                                    operator       =>'=',
+                                    condition      =>'AND',
+                                   });
+ $da->delete($dbh,$container);
+ 
+ The synopsis above only lists few ways you can use Database::Accessor.
+ 
+=head1 DESCRIPTION
+
+Database::Accessor, or Accessor for short or DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
+The heart of Accessor is an abstrtion of table and data structions into simple sets of hash-refs that are passed into
+7 static and 7 dynaic attibutes.
+
+It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver DAD.
+
+It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vderiosn 
+
+of you data pass it into Accessor and in theory run the same quiery against any type of DB as long as the structure is compatiable and the Database Accessor Driver has been written.
+
+Architecture of a Accessor Application
+
+                      +-+   +------- -+     +-----+    +-----------+
++-------------+       | |---| DAD SQL |-----| DBI |----| Oracle DB | 
+| Perl        |  +-+  | |   `---------+     +-----+    +-----------+
+| script      |  |A|  |D|   +-----------+   +-------------+
+| using       |--|P|--|A|---| DAD Mongo |---| Mongo Engine|
+| DA          |  |I|  | |   +-----------+   +-------------+
+| Abstraction |  +-+  | |   +---------------+
++-------------+       | |---| Other drivers |-->>
+                      +-+   +---------------+
+
+The API, or Application Programming Interface, defines the call interface and variables for Perl scripts to use. The API is implemented by the Perl DBI extension.
+
+The DBI "dispatches" the method calls to the appropriate driver for actual execution. The DBI is also responsible for the dynamic loading of drivers, error checking and handling, providing default implementations for methods, and many other non-database specific duties.
+
+Each driver contains implementations of the DBI methods using the private interface functions of the corresponding database engine. Only authors of sophisticated/multi-database applications or generic library functions need be concerned with drivers.
+Notation and Conventions

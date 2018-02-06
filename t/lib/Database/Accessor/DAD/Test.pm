@@ -8,8 +8,11 @@ use Moose;
 with(qw( Database::Accessor::Roles::DAD));
 
 sub Execute {
-    my $self = shift;
-   return $self;
+   my $self = shift;
+   my($type, $conn, $container, $opt) = @_;
+   
+   $container->{dad} = $self;
+  
 }
 
 sub DB_Class {

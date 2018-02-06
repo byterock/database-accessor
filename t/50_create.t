@@ -33,14 +33,14 @@ BEGIN {
   };
  
 
-  my $da = Database::Accessor->new($in_hash);
-  my $return_str = {};
+    my $da = Database::Accessor->new($in_hash);
+   
+  my $return_str = undef;
   my $data = Data::Test->new();
 
-  # $da->retrieve(Data::Test->new(),$return_str);
-  # my $dad = $return_str->{dad};
- 
-   # Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad->sorts,'Sorts');
+   my $dad = $da->retrieve($data,$return_str);
+  
+   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad->Sorts,'Sorts');
 
 $in_hash = {
         sorts => [{ name => 'first_name',
@@ -56,24 +56,17 @@ $in_hash = {
    foreach my $sort (@{$in_hash->{sorts}}){
       ok($da->add_sort($sort),"can add an single Dynamic sort");
    }
-    # warn("DA 1=".Dumper($da));
-   $return_str={};
-   $da->retrieve($data,$return_str);
    
-     warn("DAD=".Dumper($return_str));
-   $dad = $return_str->{dad};
+   $dad = $da->retrieve($data,$return_str);
+   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->sorts,'dynamic sorts');
    
-  
-   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->dynamic_sorts,'dynamic sorts');
    
-   exit;
    ok($da->add_sort(@{$in_hash->{sort}}),"can add an Array of Dynamic sorts");
    
-   $da->retrieve($data,$return_str);
-   $dad = $return_str->{dad};
-   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->dynamic_sorts,'Array of dynamic sorts');
+      $dad = $da->retrieve($data,$return_str);
+   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->sorts,'Array of dynamic sorts');
    
      ok($da->add_sort($in_hash->{sort}),"can add an Array Ref of Dynamic sorts");
    
       $dad = $da->retrieve($data,$return_str);
-   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->dynamic_sorts,'Array Ref of dynamic sorts');
+   Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->dynamic_sorts,$dad->sorts,'Array Ref of dynamic sorts');
