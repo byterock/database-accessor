@@ -29,32 +29,10 @@ BEGIN {
     };
 
    my $da = Database::Accessor->new($in_hash);
-   my $return_str = undef;
-   my $data = Data::Test->new();
-   my $dad = $da->retrieve(Data::Test->new(),{});
+   my $return = {};
+   $da->retrieve(Data::Test->new(),$return); 
+   my $dad = $return->{dad};
    
-   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->elements,$dad->Elements,'Element');
+   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->elements,$dad->elements,'Element');
    
-   $da = Database::Accessor->new({view     => {name  => 'People'}});
-   
-   foreach my $element (@{$in_hash->{elements}}){
-      ok($da->add_element($element),"can add an single Dynamic element");
-   }
-
-   $dad = $da->retrieve(Data::Test->new(),{});
-   
-   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Single Dynamic Element');
-   
-   ok($da->add_element(@{$in_hash->{elements}}),"can add an array of Dynamic elements");
   
-   $dad = $da->retrieve(Data::Test->new(),{});
-   
-   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Array Dynamic Element');
-   
-    ok($da->add_element($in_hash->{elements}),"can add an ref array of Dynamic elements");
-  
-   $dad = $da->retrieve(Data::Test->new(),{});
-   
-   Test::Database::Accessor::Utils::deep_element($in_hash->{elements},$da->dynamic_elements,$dad->elements,'Array Dynamic Element');
-   
-   

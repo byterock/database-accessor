@@ -10,8 +10,7 @@
     use Data::Dumper;
     use File::Spec;
     use Moose;
-    with qw(Database::Accessor::Types
-            MooseX::AttributeCloner);
+    with qw(Database::Accessor::Types);
     use Database::Accessor::Constants;
     use Moose::Util qw(does_role);
 
@@ -265,26 +264,23 @@ sub _execute {
       . ref($conn)
       . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
       unless ($driver);
-warn("execute self da=".Dumper($self));
-      my $dad =  $self->new_with_cloned_attributes($driver);
-   warn("execute dad=".Dumper($dad));
-    # my $dad = $driver->new(
-        # {
-            # View       => $self->view,
-            # Elements   => $self->elements,
-            # elements   => $self->dynamic_elements,
-            # Conditions => $self->conditions,
-            # conditions => $self->dynamic_conditions,
-            # Links      => $self->links,
-            # links      => $self->dynamic_links,
-            # Gathers    => $self->gathers,
-            # gathers    => $self->dynamic_gathers,
-            # Filters    => $self->filters,
-            # filters    => $self->dynamic_filters,
-            # Sorts      => $self->sorts,
-            # sorts      => $self->dynamic_sorts,
-        # }
-    # );
+    my $dad = $driver->new(
+        {
+            view       => $self->view,
+            elements   => $self->elements,
+            dynamic_elements   => $self->dynamic_elements,
+            conditions => $self->conditions,
+            dynamic_conditions => $self->dynamic_conditions,
+            links      => $self->links,
+            dynamic_links      => $self->dynamic_links,
+            gathers    => $self->gathers,
+            dynamic_gathers    => $self->dynamic_gathers,
+            filters    => $self->filters,
+            dynamic_filters    => $self->dynamic_filters,
+            sorts      => $self->sorts,
+            dynamic_sorts      => $self->dynamic_sorts,
+        }
+    );
     $dad->Execute( $type, $conn, $container, $opt );
    
 }

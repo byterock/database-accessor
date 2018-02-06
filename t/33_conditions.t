@@ -44,8 +44,10 @@ BEGIN {
                      ,
   };
   my $da = Database::Accessor->new($in_hash);
-  my $dad = $da->retrieve(Data::Test->new());
-  Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->Conditions(),'conditions');
+  my $return = {};
+  $da->retrieve(Data::Test->new(),$return); 
+  my $dad = $return->{dad};
+  Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->conditions(),$dad->conditions(),'conditions');
   
  
   my $in_hash3 = {
@@ -74,52 +76,4 @@ BEGIN {
   ok(ref($da2->conditions()->[0]->predicates->[0]) eq "Database::Accessor::Predicate",'DA has a condtion predicate is a predicate');
   
 
-    $da = Database::Accessor->new({view     => {name  => 'People'}});
   
-    $in_hash = {
-        conditions=>[{left           =>{name =>'last_name2',
-                                                      view =>'People'},
-                                    right          =>{value=>'test'},
-                                    operator       =>'=',
-                                    open_parenthes =>1,
-                                    close_parenthes=>0,
-                                    condition      =>'AND',
-                                   },
-                                   {condition      =>'AND',
-                                    left           =>{name=>'first_name3',
-                                                      view=>'People'},
-                                    right          =>{ value=>'test'},
-                                    operator       =>'=',
-                                    open_parenthes =>0,
-                                    close_parenthes=>1
-                                    }
-                                    ]
-                                    
-                     ,
-  };
-  
-  foreach my $condition (@{$in_hash->{conditions}}){
-      ok($da->add_condition($condition),"can add an single Dynamic condition");
-     
-   }
-   $dad = $da->retrieve(Data::Test->new(),{});
-   
-   Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions(),$dad->conditions(),'dynamic conditions');
-
-     $dad = $da->retrieve(Data::Test->new(),{});
-
-   
-   ok($da->add_condition(@{$in_hash->{conditions}}),"can add an array of Dynamic conditions");
-  
-   
-    Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions,$dad->conditions,'Array Dynamic condition');
-   
-      $dad = $da->retrieve(Data::Test->new(),{});
-
-   
-   ok($da->add_condition($in_hash->{conditions}),"can add an array Ref of Dynamic conditions");
-  
-   
-    Test::Database::Accessor::Utils::deep_predicate($in_hash->{conditions},$da->dynamic_conditions,$dad->conditions,'Array Ref Dynamic condition');
-   
-    
