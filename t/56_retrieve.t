@@ -4,7 +4,7 @@ use Test::Fatal;
 use Data::Dumper;
 use Test::Deep;
 use lib ('D:\GitHub\database-accessor\lib');
-use Test::More tests => 6;
+use Test::More tests => 2;
 use lib ('..\t\lib');
 use Test::Database::Accessor::Utils;
 use Data::Test;
@@ -32,7 +32,6 @@ BEGIN {
    
   my $return_str = {};
   my $data = Data::Test->new();
-
-   my $dad = $da->create($data,$return_str);
+ $da->retrieve($data,$return_str);
  
-   ok($return_str->{type} eq Database::Accessor::Constants::CREATE)
+   ok($return_str->{type} eq Database::Accessor::Constants::RETRIEVE,'Retrieve constant passed in and out');

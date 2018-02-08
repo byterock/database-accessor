@@ -7,11 +7,13 @@ use lib qw(D:\GitHub\DA-blog\lib);
 use Moose;
 with(qw( Database::Accessor::Roles::DAD));
 
-sub Execute {
+sub execute {
    my $self = shift;
    my($type, $conn, $container, $opt) = @_;
  
    $container->{dad} = $self;
+   $container->{type} = $type;
+   
   
 }
 

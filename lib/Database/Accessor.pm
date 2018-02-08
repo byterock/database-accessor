@@ -6,7 +6,7 @@
     BEGIN {
         $Database::Accessor::VERSION = "0.01";
     }
-
+    use Carp;
     use Data::Dumper;
     use File::Spec;
     use Moose;
@@ -124,6 +124,12 @@
           )
     ] => ( is => 'ro', isa => 'Bool', default => 0 );
 
+    has [
+        qw(update_requires_condtion
+          delete_requires_condtion
+          )
+    ] => ( is => 'ro', isa => 'Bool', default => 1 );
+
     has view => (
         is     => 'ro',
         isa    => 'View',
@@ -136,7 +142,7 @@
         coerce  => 1,
         is      => 'ro',
         default => sub { [] },
-        handles => { elements_count => 'count', },
+        handles => { element_count => 'count', },
     );
 
     has dynamic_elements => (
@@ -147,8 +153,8 @@
         default  => sub { [] },
         init_arg => undef,
         handles  => {
-            add_element            => 'push',
-            dynamic_elements_count => 'count',
+            add_element           => 'push',
+            dynamic_element_count => 'count',
         },
     );
 
@@ -158,7 +164,7 @@
         traits  => ['Array'],
         coerce  => 1,
         default => sub { [] },
-        handles => { conditions_count => 'count', },
+        handles => { condition_count => 'count', },
     );
 
     has dynamic_conditions => (
@@ -254,36 +260,36 @@
         },
     );
 
-sub _execute {
-    my $self = shift;
-    my ( $type, $conn, $container, $opt ) = @_;
-    my $drivers = $self->_ldad();
-    my $driver  = $drivers->{ ref($conn) };
+    sub _execute {
+        my $self = shift;
+        my ( $type, $conn, $container, $opt ) = @_;
+        my $drivers = $self->_ldad();
+        my $driver  = $drivers->{ ref($conn) };
 
-    die "No Database::Accessor::Driver loaded for "
-      . ref($conn)
-      . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
-      unless ($driver);
-    my $dad = $driver->new(
-        {
-            view       => $self->view,
-            elements   => $self->elements,
-            dynamic_elements   => $self->dynamic_elements,
-            conditions => $self->conditions,
-            dynamic_conditions => $self->dynamic_conditions,
-            links      => $self->links,
-            dynamic_links      => $self->dynamic_links,
-            gathers    => $self->gathers,
-            dynamic_gathers    => $self->dynamic_gathers,
-            filters    => $self->filters,
-            dynamic_filters    => $self->dynamic_filters,
-            sorts      => $self->sorts,
-            dynamic_sorts      => $self->dynamic_sorts,
-        }
-    );
-    $dad->Execute( $type, $conn, $container, $opt );
-   
-}
+        die "No Database::Accessor::Driver loaded for "
+          . ref($conn)
+          . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
+          unless ($driver);
+        my $dad = $driver->new(
+            {
+                view               => $self->view,
+                elements           => $self->elements,
+                dynamic_elements   => $self->dynamic_elements,
+                conditions         => $self->conditions,
+                dynamic_conditions => $self->dynamic_conditions,
+                links              => $self->links,
+                dynamic_links      => $self->dynamic_links,
+                gathers            => $self->gathers,
+                dynamic_gathers    => $self->dynamic_gathers,
+                filters            => $self->filters,
+                dynamic_filters    => $self->dynamic_filters,
+                sorts              => $self->sorts,
+                dynamic_sorts      => $self->dynamic_sorts,
+            }
+        );
+        $dad->execute( $type, $conn, $container, $opt );
+
+    }
 
     sub create {
         my $self = shift;
@@ -295,6 +301,13 @@ sub _execute {
     sub update {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
+        
+           die "Attempt to update without condition"
+          if (
+            $self->update_requires_condtion()
+            and
+            ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
+          );
         $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
     }
@@ -304,22 +317,25 @@ sub _execute {
         my ( $conn, $container, $opt ) = @_;
         $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
-            
-      
+
         return ref($container);
 
     }
 
+    sub delete {
+        my $self = shift;
+        my ( $conn, $container, $opt ) = @_;
+        die "Attempt to delete without condition"
+          if (
+            $self->delete_requires_condtion()
+            and
+            ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
+          );
+        $self->_execute( Database::Accessor::Constants::DELETE,
+            $conn, $container, $opt );
+    }
+
 }
-
-sub delete {
-    my $self = shift;
-    my ( $conn, $container, $opt ) = @_;
-    $self->_execute( Database::Accessor::Constants::DELETE,
-        $conn, $container, $opt );
-}
-
-
 
 {
 
@@ -633,7 +649,7 @@ sub delete {
     use Moose::Role;
     with qw(Database::Accessor::Types);
     requires 'DB_Class';
-    requires 'Execute';
+    requires 'execute';
 
     has view => (
         is  => 'ro',
