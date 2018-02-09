@@ -13,6 +13,7 @@
     with qw(Database::Accessor::Types);
     use Database::Accessor::Constants;
     use Moose::Util qw(does_role);
+    use MooseX::Constructor::AllErrors;
 
     around BUILDARGS => sub {
         my $orig  = shift;
@@ -82,14 +83,13 @@
                       $file;
                 }
                 eval "require $classname";
-
                 if ($@) {
-                    my $err = $@;
+                    my $err = substr($@,0,index($@,' at '));
                     my $advice =
 "Database/Accessor/DAD/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
-                    warn(
-"\n\n Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
-                    );
+                     warn(
+ "\n\n Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
+                     );
                     next;
                 }
                 else {
@@ -125,8 +125,8 @@
     ] => ( is => 'ro', isa => 'Bool', default => 0 );
 
     has [
-        qw(update_requires_condtion
-          delete_requires_condtion
+        qw(update_requires_condition
+          delete_requires_condition
           )
     ] => ( is => 'ro', isa => 'Bool', default => 1 );
 
@@ -304,7 +304,7 @@
         
            die "Attempt to update without condition"
           if (
-            $self->update_requires_condtion()
+            $self->update_requires_condition()
             and
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
@@ -327,7 +327,7 @@
         my ( $conn, $container, $opt ) = @_;
         die "Attempt to delete without condition"
           if (
-            $self->delete_requires_condtion()
+            $self->delete_requires_condition()
             and
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );

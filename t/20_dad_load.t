@@ -21,7 +21,7 @@ my $dad_role = consuming_class("Database::Accessor::Roles::DAD");
 foreach my $attribute ($da->meta->get_all_attributes){
     next
       if (index($attribute->name(),'_') eq 0);
-    my $dad_attribute = ucfirst($attribute->name());
+    my $dad_attribute = $attribute->name();
     if ($dad_role->can($dad_attribute)){
         pass("Role DAD can $dad_attribute");
         my $attr = $dad_role->meta->get_attribute($dad_attribute);

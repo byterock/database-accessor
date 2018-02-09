@@ -51,13 +51,13 @@ my $return_str = {};
 my $data       = Data::Test->new();
 eval { $da->update( $data, $return_str ); };
 ok( $@, 'Cannot update without condition' );
-$in_hash->{update_requires_condtion} = 0;
+$in_hash->{update_requires_condition} = 0;
 $da = Database::Accessor->new($in_hash);
 eval { $da->update( $data, $return_str ); };
 
-ok( !$@, 'Can update when update_requires_condtion is off' );
+ok( !$@, 'Can update when update_requires_condition is off' );
 
-delete( $in_hash->{update_requires_condtion} );
+delete( $in_hash->{update_requires_condition} );
 
 $da = Database::Accessor->new($in_hash);
 
@@ -66,7 +66,7 @@ $da = Database::Accessor->new($in_hash);
 
 eval { $da->update( $data, $return_str ); };
 
-ok( !$@, 'Can update with only static condtion' );
+ok( !$@, 'Can update with only static condition' );
 
 delete( $in_hash->{conditions} );
 
@@ -74,11 +74,11 @@ $da = Database::Accessor->new($in_hash);
 $da->add_condition( $conditions->[0] );
 
 eval { $da->update( $data, $return_str ); };
-ok( !$@, 'Can update with only dynamic condtion' );
+ok( !$@, 'Can update with only dynamic condition' );
 
 $da = Database::Accessor->new($in_hash);
 $da->add_condition( $conditions->[0] );
 $in_hash->{conditions} = $conditions;
 
 eval { $da->update( $data, $return_str ); };
-ok( !$@, 'Can update with static and dynamic condtions' );
+ok( !$@, 'Can update with static and dynamic conditions' );

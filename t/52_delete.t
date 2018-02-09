@@ -39,14 +39,16 @@ my $da = Database::Accessor->new($in_hash);
 my $return_str = {};
 my $data       = Data::Test->new();
 eval { $da->delete( $data, $return_str ); };
-ok( $@, 'Cannot delete without condition' );
-$in_hash->{delete_requires_condtion} = 0;
+ok( $@,'Cannot delete without condition' );
+ok(index($@,'Attempt to delete without condition')!=1,'Error message OK');
+
+$in_hash->{delete_requires_condition} = 0;
 $da = Database::Accessor->new($in_hash);
 eval { $da->delete( $data, $return_str ); };
 
-ok( !$@, 'Can delete when delete_requires_condtion is off' );
+ok( !$@, 'Can delete when delete_requires_condition is off' );
 
-delete( $in_hash->{delete_requires_condtion} );
+delete( $in_hash->{delete_requires_condition} );
 
 my $conditions = [
     {
@@ -66,19 +68,23 @@ my $conditions = [
 $da = Database::Accessor->new($in_hash);
 eval { $da->delete( $data, $return_str ); };
 
-ok( !$@, 'Can delete with only static condtion' );
+ok( !$@, 'Can delete with only static condition' );
 
 delete( $in_hash->{conditions} );
 
 
 $da = Database::Accessor->new($in_hash); $da->add_condition( $conditions->[0] );
 
-eval { $da->delete( $data, $return_str );};
-  ok( !$@, 'Can delete with only dynamic condtion' );  
+eval { 
+    $da->delete( $data, $return_str );};
+  ok( !$@, 'Can delete with only dynamic condition' );
   
+
   $da = Database::Accessor->new($in_hash);
  $da->add_condition( $conditions->[0] );$in_hash->{conditions} = $conditions;  
 
 eval { $da->delete( $data, $return_str );
 };
-  ok( !$@, 'Can delete with static and dynamic condtions' );  
+  ok( !$@, 'Can delete with static and dynamic conditions' );  
+  
+ok($return_str->{type} eq Database::Accessor::Constants::DELETE,'Delete constant passed in and out');
