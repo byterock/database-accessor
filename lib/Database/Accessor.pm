@@ -3,17 +3,19 @@
     package Database::Accessor;
     use lib qw(D:\GitHub\database-accessor\lib);
 
+  
+    use Moose;
+    with qw(Database::Accessor::Types);
+     use MooseX::Constructor::AllErrors;
+     use Moose::Util qw(does_role);
+    use Database::Accessor::Constants;
+    
+     use Carp;
+    use Data::Dumper;
+    use File::Spec;
     BEGIN {
         $Database::Accessor::VERSION = "0.01";
     }
-    use Carp;
-    use Data::Dumper;
-    use File::Spec;
-    use Moose;
-    with qw(Database::Accessor::Types);
-    use Database::Accessor::Constants;
-    use Moose::Util qw(does_role);
-    use MooseX::Constructor::AllErrors;
 
     around BUILDARGS => sub {
         my $orig  = shift;
@@ -88,7 +90,7 @@
                     my $advice =
 "Database/Accessor/DAD/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
                      warn(
- "\n\n Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
+ "\n\n Warning Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
                      );
                     next;
                 }
@@ -133,7 +135,8 @@
     has view => (
         is     => 'ro',
         isa    => 'View',
-        coerce => 1,
+        coerce => 1,   
+        required=>1,     
     );
 
     has elements => (
@@ -451,6 +454,7 @@
     package Database::Accessor::View;
     use Moose;
     with qw(Database::Accessor::Roles::Alias);
+    use MooseX::Constructor::AllErrors;
     has '+name' => ( required => 1 );
 }
 {
