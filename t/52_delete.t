@@ -36,8 +36,8 @@ my $in_hash = {
 
 my $da = Database::Accessor->new($in_hash);
 
-my $return_str = {};
-my $data       = Data::Test->new();
+ my $return_str = {};
+ my $data       = Data::Test->new();
 eval { $da->delete( $data, $return_str ); };
 ok( $@,'Cannot delete without condition' );
 ok(index($@,'Attempt to delete without condition')!=1,'Error message OK');
@@ -88,3 +88,26 @@ eval {
   ok( !$@, 'Can delete with static and dynamic conditions' );  
   
 ok($return_str->{type} eq Database::Accessor::Constants::DELETE,'Delete constant passed in and out');
+
+  $in_hash->{no_delete} = 1;
+
+$da = Database::Accessor->new($in_hash);
+eval {    $da->delete( $data, $return_str );
+};
+
+ok ($@,'No Delete with no_delete flag'); 
+ # warn($@);
+
+  
+   delete($in_hash->{no_delete});
+   $in_hash->{retrieve_only} = 1;
+  
+   $da = Database::Accessor->new($in_hash);
+  
+# eval {  
+  $da->delete( $data, $return_str );
+# };
+  # ok ($@,'No Delete with retrieve_only flag');
+  
+# warn($@);
+

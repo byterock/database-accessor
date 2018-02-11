@@ -55,3 +55,18 @@ my $dad = $return_str->{dad};
 
 Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad->sorts,'Sorts');
 
+
+ $in_hash = {
+    view     => { name => 'People' },
+    sorts => undef
+   };
+    eval {
+      $da = Database::Accessor->new({});
+    };
+    if ($@){
+       pass("sorts cannot be undef");
+       ok(ref($@) eq 'MooseX::Constructor::AllErrors::Error::Constructor','Got error Constructor object');
+    }
+    else {
+      fail("View is Required");     
+    }

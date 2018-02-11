@@ -3,16 +3,16 @@
     package Database::Accessor;
     use lib qw(D:\GitHub\database-accessor\lib);
 
-  
     use Moose;
     with qw(Database::Accessor::Types);
-     use MooseX::Constructor::AllErrors;
-     use Moose::Util qw(does_role);
+    use MooseX::Constructor::AllErrors;
+    use Moose::Util qw(does_role);
     use Database::Accessor::Constants;
-    
-     use Carp;
+    use MooseX::MetaDescription;
+    use Carp;
     use Data::Dumper;
     use File::Spec;
+
     BEGIN {
         $Database::Accessor::VERSION = "0.01";
     }
@@ -21,6 +21,7 @@
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
+
         if ( $ops->{retrieve_only} ) {
             $ops->{no_create}   = 1;
             $ops->{no_retrieve} = 0;
@@ -36,6 +37,14 @@
         map { $self->_loadDADClassesFromDir( $_, $dad ) }
           grep { -d $_ }
           map { File::Spec->catdir( $_, 'Database', 'Accessor', 'DAD' ) } @INC;
+
+        if ( $self->retrieve_only ) {
+            foreach my $flag (qw(no_create no_update no_delete)) {
+                my $field = $self->meta->get_attribute($flag);
+                $field->description->{message} =
+                  "No Create, Update or Delete with retrieve_only flag on";
+            }
+        }
 
     }
 
@@ -86,12 +95,12 @@
                 }
                 eval "require $classname";
                 if ($@) {
-                    my $err = substr($@,0,index($@,' at '));
+                    my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
 "Database/Accessor/DAD/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
-                     warn(
- "\n\n Warning Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
-                     );
+                    warn(
+"\n\n Warning Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
+                    );
                     next;
                 }
                 else {
@@ -117,14 +126,45 @@
         is  => 'rw',
     );
 
-    has [
-        qw(no_create
-          no_retrieve
-          no_update
-          no_delete
-          retrieve_only
-          )
-    ] => ( is => 'ro', isa => 'Bool', default => 0 );
+    has no_create => (
+        is      => 'ro',
+        isa     => 'Bool',
+        default => 0,
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
+        description =>
+          { message => "Attempt to use create with no_create flag on!" }
+    );
+
+    has no_retrieve => (
+        is      => 'ro',
+        isa     => 'Bool',
+        default => 0,
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
+        description =>
+          { message => "Attempt to use retrieve with no_retrieve flag on!" }
+    );
+    has no_update => (
+        is      => 'ro',
+        isa     => 'Bool',
+        default => 0,
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
+        description =>
+          { message => "Attempt to use update with no_update flag on!" }
+    );
+    has no_delete => (
+        is      => 'ro',
+        isa     => 'Bool',
+        default => 0,
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
+        description =>
+          { message => "Attempt to use delete with no_delete flag on!" }
+    );
+    has retrieve_only => (
+        is      => 'ro',
+        isa     => 'Bool',
+        default => 0,
+
+    );
 
     has [
         qw(update_requires_condition
@@ -133,10 +173,10 @@
     ] => ( is => 'ro', isa => 'Bool', default => 1 );
 
     has view => (
-        is     => 'ro',
-        isa    => 'View',
-        coerce => 1,   
-        required=>1,     
+        is       => 'ro',
+        isa      => 'View',
+        coerce   => 1,
+        required => 1,
     );
 
     has elements => (
@@ -297,27 +337,19 @@
     sub create {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
-        $self->_execute( Database::Accessor::Constants::CREATE,
-            $conn, $container, $opt );
-    }
 
-    sub update {
-        my $self = shift;
-        my ( $conn, $container, $opt ) = @_;
-        
-           die "Attempt to update without condition"
-          if (
-            $self->update_requires_condition()
-            and
-            ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
-          );
-        $self->_execute( Database::Accessor::Constants::UPDATE,
+        die( $self->meta->get_attribute('no_create')->description->{message} )
+          if ( $self->no_create() );
+
+        $self->_execute( Database::Accessor::Constants::CREATE,
             $conn, $container, $opt );
     }
 
     sub retrieve {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
+        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
+          if ( $self->no_retrieve() );
         $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
 
@@ -325,19 +357,46 @@
 
     }
 
+    sub update {
+        my $self = shift;
+        my ( $conn, $container, $opt ) = @_;
+
+        die( $self->meta->get_attribute('no_update')->description->{message} )
+          if ( $self->no_update() );
+
+        $self->_need_condition( Database::Accessor::Constants::UPDATE,
+            $self->update_requires_condition()
+        );
+
+        $self->_execute( Database::Accessor::Constants::UPDATE,
+            $conn, $container, $opt );
+    }
+
     sub delete {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
-        die "Attempt to delete without condition"
-          if (
+        die( $self->meta->get_attribute('no_delete')->description->{message} )
+          if ( $self->no_delete() );
+        $self->_need_condition( Database::Accessor::Constants::DELETE,
             $self->delete_requires_condition()
-            and
-            ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
-          );
+        );
+
         $self->_execute( Database::Accessor::Constants::DELETE,
             $conn, $container, $opt );
     }
 
+    sub _need_condition {
+        my $self = shift;
+        my ( $action, $required ) = @_;
+        my $is_required = $required || 0;
+
+        die "Attempt to $action without condition"
+          if (
+            $is_required
+            and
+            ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
+          );
+    }
 }
 
 {
@@ -462,6 +521,7 @@
     package Database::Accessor::Element;
     use Moose;
     with qw(Database::Accessor::Roles::Alias );
+    use MooseX::Constructor::AllErrors;
 
     has '+name' => ( required => 1 );
 
@@ -496,6 +556,8 @@
     with qw(Database::Accessor::Roles::Base
       Database::Accessor::Roles::Comparators);
     use MooseX::Aliases;
+    use MooseX::Constructor::AllErrors;
+
     has operator => (
         is      => 'rw',
         isa     => 'Operator',
@@ -514,8 +576,9 @@
 
     package Database::Accessor::Param;
     use Moose;
-    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base);
+    use MooseX::Aliases;
+    use MooseX::Constructor::AllErrors;
 
     has value => (
         is    => 'rw',
@@ -530,9 +593,10 @@
 
     package Database::Accessor::Function;
     use Moose;
-    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
       Database::Accessor::Roles::Comparators);
+    use MooseX::Aliases;
+    use MooseX::Constructor::AllErrors;
 
     has 'function' => (
         isa      => 'Str',
@@ -547,9 +611,10 @@
 
     package Database::Accessor::Expression;
     use Moose;
-    use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
       Database::Accessor::Roles::Comparators);
+    use MooseX::Aliases;
+    use MooseX::Constructor::AllErrors;
 
     has 'expression' => (
         isa      => 'NumericOperator',
@@ -566,6 +631,7 @@
     with qw(Database::Accessor::Roles::Base
       Database::Accessor::Roles::PredicateArray
     );
+    use MooseX::Constructor::AllErrors;
 
     # use MooseX::Aliases;
 
@@ -598,6 +664,7 @@
     use MooseX::Aliases;
     with qw(Database::Accessor::Roles::Base
       Database::Accessor::Roles::PredicateArray);
+    use MooseX::Constructor::AllErrors;
 
     has to => (
         is       => 'rw',
