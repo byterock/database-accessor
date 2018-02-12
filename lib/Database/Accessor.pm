@@ -10,6 +10,7 @@
     use Database::Accessor::Constants;
     use MooseX::MetaDescription;
     use MooseX::AccessorsOnly;
+    use MooseX::AlwaysCoerce;
     use Carp;
     use Data::Dumper;
     use File::Spec;
@@ -187,14 +188,14 @@
     has view => (
         is       => 'ro',
         isa      => 'View',
-        coerce   => 1,
+        #coerce   => 1,
         required => 1,
     );
 
     has elements => (
         isa     => 'ArrayRefofElements',
         traits  => ['Array'],
-        coerce  => 1,
+        #coerce  => 1,
         is      => 'ro',
         default => sub { [] },
         handles => { element_count => 'count', },
@@ -203,7 +204,7 @@
     has dynamic_elements => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -217,7 +218,7 @@
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
         traits  => ['Array'],
-        coerce  => 1,
+        #coerce  => 1,
         default => sub { [] },
         handles => { condition_count => 'count', },
     );
@@ -225,7 +226,7 @@
     has dynamic_conditions => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -238,7 +239,7 @@
     has dynamic_links => (
         isa      => 'ArrayRefofLinks',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -250,7 +251,7 @@
     has links => (
         is      => 'ro',
         isa     => 'ArrayRefofLinks',
-        coerce  => 1,
+        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -258,7 +259,7 @@
     has dynamic_gathers => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -270,14 +271,14 @@
     has gathers => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
-        coerce  => 1,
+        #coerce  => 1,
         default => sub { [] },
 
     );
     has filters => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
-        coerce  => 1,
+        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -285,7 +286,7 @@
     has dynamic_filters => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -297,7 +298,7 @@
     has sorts => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
-        coerce  => 1,
+        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -305,7 +306,7 @@
     has dynamic_sorts => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        coerce   => 1,
+        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -658,7 +659,7 @@
     # traits  => ['Array'],
     # is      => 'rw',
     # isa     => 'ArrayRefofPredicates',
-    # coerce  => 1,
+    # #coerce  => 1,
     # alias   => 'conditions',
     # handles => {
 

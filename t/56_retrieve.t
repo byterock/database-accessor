@@ -33,5 +33,9 @@ BEGIN {
   my $return_str = {};
   my $data = Data::Test->new();
  $da->retrieve($data,$return_str);
+
+    ok($return_str->{type} eq Database::Accessor::Constants::RETRIEVE,'Retrieve constant passed in and out');
  
-   ok($return_str->{type} eq Database::Accessor::Constants::RETRIEVE,'Retrieve constant passed in and out');
+ warn(Dumper($da));
+ my $thig = $da->{elements}->[0]->{name};
+  warn(Dumper($da));

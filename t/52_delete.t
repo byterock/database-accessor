@@ -104,10 +104,10 @@ ok ($@,'No Delete with no_delete flag');
   
    $da = Database::Accessor->new($in_hash);
   
-# eval {  
+ eval {  
   $da->delete( $data, $return_str );
-# };
-  # ok ($@,'No Delete with retrieve_only flag');
+ };
+   ok ($@,'No Delete with retrieve_only flag');
   
 # warn($@);
 
