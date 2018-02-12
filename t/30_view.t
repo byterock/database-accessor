@@ -29,6 +29,26 @@ my $in_hash = {
     cmp_deeply($da->view, methods(%{$in_hash->{view}}),"DA View is correct" );
     cmp_deeply($dad->view, methods(%{$in_hash->{view}}),"DAS View is correct" );
    
+   eval {
+     my $test = $da->{view}
+   };
+   if ($@){
+       pass("Cannot access attribute directly");
+    }
+    else {
+      fail("Cannot access attribute directly");     
+    }
+   
+   eval {
+      $da->{view} ='somethig';
+   };
+   if ($@){
+       pass("Cannot change attribute directly");
+    }
+    else {
+      fail("Cannot change attribute directly");     
+    }
+   
     eval {
       $da = Database::Accessor->new({});
     };
@@ -54,3 +74,4 @@ my $in_hash = {
     ok($errors[1]->attribute->name() == 'alias',"View: param alias fails");
     
   
+

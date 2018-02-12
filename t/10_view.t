@@ -18,4 +18,3 @@ ok( $view->name() eq 'person',"Has name Accessor");
 
 
 
-

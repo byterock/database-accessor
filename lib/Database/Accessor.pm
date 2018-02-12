@@ -9,6 +9,7 @@
     use Moose::Util qw(does_role);
     use Database::Accessor::Constants;
     use MooseX::MetaDescription;
+    use MooseX::AccessorsOnly;
     use Carp;
     use Data::Dumper;
     use File::Spec;
@@ -46,6 +47,17 @@
             }
         }
 
+        my %saved = %$self;
+        tie(
+            %$self,
+            "MooseX::AccessorsOnly",
+            sub {
+                my ( $who, $how, $what ) = @_;
+                die
+"Attempt to access Database::Accessor::$what directly at $who!";
+            }
+        );
+        %$self = %saved;
     }
 
     sub _loadDADClassesFromDir {
