@@ -412,27 +412,30 @@
     }
 }
 
+
+
 {
 
-    package Database::Accessor::Roles::Base;
-
-    BEGIN {
-        $Database::Accessor::Roles::DAD::VERSION = "0.01";
-    }
-
-    use Moose::Role;
-    with qw(Database::Accessor::Types);
-    has 'name' => (
+    package Database::Accessor::Base;
+    use Moose;
+    use MooseX::Constructor::AllErrors;
+    use MooseX::Aliases;
+    with qw(Database::Accessor::Types
+             );
+    
+     has 'name' => (
 
         required => 0,
         is       => 'rw',
         isa      => 'Str'
 
     );
-
+    
     1;
 
 }
+
+
 
 {
 
@@ -443,7 +446,6 @@
     }
 
     use Moose::Role;
-    with 'Database::Accessor::Roles::Base';
 
     has 'alias' => (
 
@@ -458,13 +460,12 @@
 
     package Database::Accessor::Roles::Comparators;
 
-    BEGIN {
-        $Database::Accessor::Roles::Comparators = "0.01";
-    }
-
     use Moose::Role;
     use MooseX::Aliases;
-
+    
+ BEGIN {
+        $Database::Accessor::Roles::Comparators = "0.01";
+    }
     has left => (
         is       => 'rw',
         isa      => 'Element',
@@ -525,23 +526,24 @@
 
     package Database::Accessor::View;
     use Moose;
+    extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Alias);
-    use MooseX::Constructor::AllErrors;
     has '+name' => ( required => 1 );
 }
 {
 
     package Database::Accessor::Element;
     use Moose;
+    extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Alias );
-    use MooseX::Constructor::AllErrors;
-
+  
     has '+name' => ( required => 1 );
 
     has 'view' => (
 
         is  => 'rw',
         isa => 'Str',
+        alias=>'table'
 
     );
 
@@ -566,10 +568,8 @@
 
     package Database::Accessor::Predicate;
     use Moose;
-    with qw(Database::Accessor::Roles::Base
-      Database::Accessor::Roles::Comparators);
-    use MooseX::Aliases;
-    use MooseX::Constructor::AllErrors;
+    extends 'Database::Accessor::Base';
+    with qw(Database::Accessor::Roles::Comparators);
 
     has operator => (
         is      => 'rw',
@@ -589,9 +589,7 @@
 
     package Database::Accessor::Param;
     use Moose;
-    with qw(Database::Accessor::Roles::Base);
-    use MooseX::Aliases;
-    use MooseX::Constructor::AllErrors;
+    extends 'Database::Accessor::Base';
 
     has value => (
         is    => 'rw',
@@ -606,10 +604,8 @@
 
     package Database::Accessor::Function;
     use Moose;
-    with qw(Database::Accessor::Roles::Base
-      Database::Accessor::Roles::Comparators);
-    use MooseX::Aliases;
-    use MooseX::Constructor::AllErrors;
+    extends 'Database::Accessor::Base';
+    with qw(Database::Accessor::Roles::Comparators);
 
     has 'function' => (
         isa      => 'Str',
@@ -624,10 +620,8 @@
 
     package Database::Accessor::Expression;
     use Moose;
-    with qw(Database::Accessor::Roles::Base
-      Database::Accessor::Roles::Comparators);
-    use MooseX::Aliases;
-    use MooseX::Constructor::AllErrors;
+    extends 'Database::Accessor::Base';
+    with qw(Database::Accessor::Roles::Comparators);
 
     has 'expression' => (
         isa      => 'NumericOperator',
@@ -641,32 +635,8 @@
 
     package Database::Accessor::Condition;
     use Moose;
-    with qw(Database::Accessor::Roles::Base
-      Database::Accessor::Roles::PredicateArray
-    );
-    use MooseX::Constructor::AllErrors;
-
-    # use MooseX::Aliases;
-
-    # has operator => (
-    # is  => 'rw',
-    # isa => 'Operator',
-    # default=>'='
-
-    # );
-
-    # has predicates => (
-    # traits  => ['Array'],
-    # is      => 'rw',
-    # isa     => 'ArrayRefofPredicates',
-    # #coerce  => 1,
-    # alias   => 'conditions',
-    # handles => {
-
-    # _add_predicate   => 'push',
-    # count_predicates => 'count',
-    # },
-    # );
+    extends 'Database::Accessor::Base';
+    with qw(Database::Accessor::Roles::PredicateArray);
 
     1;
 }
@@ -674,10 +644,8 @@
 
     package Database::Accessor::Link;
     use Moose;
-    use MooseX::Aliases;
-    with qw(Database::Accessor::Roles::Base
-      Database::Accessor::Roles::PredicateArray);
-    use MooseX::Constructor::AllErrors;
+    extends 'Database::Accessor::Base';
+    with qw(Database::Accessor::Roles::PredicateArray);
 
     has to => (
         is       => 'rw',
@@ -695,24 +663,11 @@
     1;
 }
 
-# {
-# package Database::Accessor::Gather;
-# use Moose;
-# with qw(Database::Accessor::Roles::Base);
-
-# 1;
-# }
-# {
-# package Database::Accessor::Filter;
-# use Moose;
-# with qw(Database::Accessor::Roles::Base);
-# 1;
-# }
 {
 
     package Database::Accessor::Sort;
     use Moose;
-    extends 'Database::Accessor::Element';
+    extends Database::Accessor::Element;
 
     has order => (
         is      => 'rw',
