@@ -667,7 +667,7 @@
 
     package Database::Accessor::Sort;
     use Moose;
-    extends Database::Accessor::Element;
+    extends 'Database::Accessor::Element';
 
     has order => (
         is      => 'rw',
