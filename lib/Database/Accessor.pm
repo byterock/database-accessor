@@ -1,18 +1,19 @@
 {
 
     package Database::Accessor;
-    use lib qw(D:\GitHub\database-accessor\lib);
+# Dist::Zilla: +PkgVersion
+# ABSTRACT: CRUD Interface for any DB
 
     use Moose;
     with qw(Database::Accessor::Types);
-    use MooseX::Constructor::AllErrors;
     use Moose::Util qw(does_role);
     use Database::Accessor::Constants;
     use MooseX::MetaDescription;
     use MooseX::AccessorsOnly;
     use MooseX::AlwaysCoerce;
-    use Carp;
-    use Data::Dumper;
+    use MooseX::Constructor::AllErrors;
+    # use Carp;
+    # use Data::Dumper;
     use File::Spec;
 
     BEGIN {
@@ -188,14 +189,12 @@
     has view => (
         is       => 'ro',
         isa      => 'View',
-        #coerce   => 1,
         required => 1,
     );
 
     has elements => (
         isa     => 'ArrayRefofElements',
         traits  => ['Array'],
-        #coerce  => 1,
         is      => 'ro',
         default => sub { [] },
         handles => { element_count => 'count', },
@@ -204,7 +203,6 @@
     has dynamic_elements => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -218,7 +216,6 @@
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
         traits  => ['Array'],
-        #coerce  => 1,
         default => sub { [] },
         handles => { condition_count => 'count', },
     );
@@ -226,7 +223,6 @@
     has dynamic_conditions => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -239,7 +235,6 @@
     has dynamic_links => (
         isa      => 'ArrayRefofLinks',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -251,7 +246,6 @@
     has links => (
         is      => 'ro',
         isa     => 'ArrayRefofLinks',
-        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -259,7 +253,6 @@
     has dynamic_gathers => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -271,14 +264,12 @@
     has gathers => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
-        #coerce  => 1,
         default => sub { [] },
 
     );
     has filters => (
         is      => 'ro',
         isa     => 'ArrayRefofConditions',
-        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -286,7 +277,6 @@
     has dynamic_filters => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -298,7 +288,6 @@
     has sorts => (
         is      => 'ro',
         isa     => 'ArrayRefofElements',
-        #coerce  => 1,
         default => sub { [] },
 
     );
@@ -306,7 +295,6 @@
     has dynamic_sorts => (
         isa      => 'ArrayRefofElements',
         traits   => ['Array'],
-        #coerce   => 1,
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -416,19 +404,35 @@
 
 {
 
-    package Database::Accessor::Base;
+    package 
+      Database::Accessor::Base;
     use Moose;
-    use MooseX::Constructor::AllErrors;
     use MooseX::Aliases;
-    with qw(Database::Accessor::Types
-             );
-    
-     has 'name' => (
+    use MooseX::Constructor::AllErrors;
+    use MooseX::AlwaysCoerce;
+    with qw(Database::Accessor::Types);
 
+    # around BUILDARGS => sub {
+        
+       # my $orig  = shift;
+        # my $class = shift;
+# use Data::Dumper;
+       # warn(" args=".Dumper(\@_));  
+        # my $ops   = @_;
+
+
+       # $ops->{to}= delete($ops->{view})
+       # if(ref($class) eq 'Database::Accessor::Link');
+        # warn("$orig $class args=".Dumper( $ops));
+
+     # return $class->$orig($ops);
+
+
+    # };
+     has 'name' => (
         required => 0,
         is       => 'rw',
         isa      => 'Str'
-
     );
     
     1;
@@ -436,17 +440,14 @@
 }
 
 
-
 {
 
-    package Database::Accessor::Roles::Alias;
-
-    BEGIN {
-        $Database::Accessor::Roles::Alias = "0.01";
-    }
+    package 
+      Database::Accessor::Roles::Alias;
 
     use Moose::Role;
-
+    
+    
     has 'alias' => (
 
         is  => 'rw',
@@ -458,14 +459,12 @@
 
 {
 
-    package Database::Accessor::Roles::Comparators;
+    package 
+      Database::Accessor::Roles::Comparators;
 
     use Moose::Role;
     use MooseX::Aliases;
     
- BEGIN {
-        $Database::Accessor::Roles::Comparators = "0.01";
-    }
     has left => (
         is       => 'rw',
         isa      => 'Element',
@@ -503,14 +502,11 @@
 
 {
 
-    package Database::Accessor::Roles::PredicateArray;
-
-    BEGIN {
-        $Database::Accessor::Roles::PredicateArray = "0.01";
-    }
-
+    package 
+      Database::Accessor::Roles::PredicateArray;
     use Moose::Role;
     use MooseX::Aliases;
+
 
     has predicates => (
         traits  => ['Array'],
@@ -524,18 +520,23 @@
 }
 {
 
-    package Database::Accessor::View;
+    package 
+      Database::Accessor::View;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Alias);
+   
+
     has '+name' => ( required => 1 );
 }
 {
 
-    package Database::Accessor::Element;
+    package 
+      Database::Accessor::Element;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Alias );
+  
   
     has '+name' => ( required => 1 );
 
@@ -566,7 +567,8 @@
 
 {
 
-    package Database::Accessor::Predicate;
+    package 
+      Database::Accessor::Predicate;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Comparators);
@@ -587,10 +589,11 @@
 
 {
 
-    package Database::Accessor::Param;
+    package 
+      Database::Accessor::Param;
     use Moose;
     extends 'Database::Accessor::Base';
-
+    
     has value => (
         is    => 'rw',
         isa   => 'Str|Undef|ArrayRef',
@@ -602,7 +605,8 @@
 
 {
 
-    package Database::Accessor::Function;
+    package 
+      Database::Accessor::Function;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Comparators);
@@ -618,7 +622,8 @@
 
 {
 
-    package Database::Accessor::Expression;
+    package 
+      Database::Accessor::Expression;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::Comparators);
@@ -633,16 +638,19 @@
 }
 {
 
-    package Database::Accessor::Condition;
+    package 
+      Database::Accessor::Condition;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::PredicateArray);
+
 
     1;
 }
 {
 
-    package Database::Accessor::Link;
+    package 
+      Database::Accessor::Link;
     use Moose;
     extends 'Database::Accessor::Base';
     with qw(Database::Accessor::Roles::PredicateArray);
@@ -651,8 +659,7 @@
         is       => 'rw',
         isa      => 'View',
         required => 1,
-        alias    => [qw( to_view view)],
-        coerce   => 1,
+        alias    => [qw( view to_view )],
     );
 
     has type => (
@@ -665,7 +672,8 @@
 
 {
 
-    package Database::Accessor::Sort;
+    package 
+      Database::Accessor::Sort;
     use Moose;
     extends 'Database::Accessor::Element';
 
@@ -679,11 +687,8 @@
 }
 {
 
-    package Database::Accessor::Roles::DAD;
-
-    BEGIN {
-        $Database::Accessor::Roles::DAD::VERSION = "0.01";
-    }
+    package 
+      Database::Accessor::Roles::DAD;
 
     use Moose::Role;
     with qw(Database::Accessor::Types);
@@ -766,82 +771,76 @@
 
 }
 
-# __PACKAGE__->meta->make_immutable;
+ __PACKAGE__->meta->make_immutable;
 1;
 
 =pod
  
-=head1 NAME 
-Database::Accessor
 
-Need the same data from both Oracle and Mongo, 
-Need a good data tier for you app,
-Need a CRUD layer but don't need or want an ORM,
-Have a SQL DB and don't know SQL
-Have a Non-SQL DB and dont' know SQL
+=Abstract: CRUD Interface for any DB
+  Need the same data from both Oracle and Mongo, 
+  Need a good data tier for you app,
+  Need a CRUD layer but don't need or want an ORM,
+  Have a SQL DB and don't know SQL
+  Have a Non-SQL DB and don't know SQL
+  
+  Well Database::Accessor is for you!
 
-Well Database::Accessor is for you!
-
-=head1 VERSION
- 
-Version 0.03
- 
 =head1 SYNOPSIS
 
-my $da = Database::Accssor->new({        view     => {name  => 'People'},
+my $da = Database::Accssor->new({
+        view     => { name  => 'People'},
         elements => [{ name => 'first_name',
                                  view=>'People' },
-                             { name => 'last_name',
-                                view => 'People' },
-                             { name => 'user_id',
-                                view =>'People' } ],
-        conditions=>[{left           =>{name =>'First',
-                                                      view =>'People'},
-                                    right          =>{value=>'Jane'},
-                                    operator       =>'=',
-                                    open_parenthes =>1,
-                                   },
-                                   {condition      =>'AND',
-                                    left           =>{name=>'Last_name',
-                                                      view=>'People'},
-                                    right          =>{ value=>'Doe'},
-                                    operator       =>'=',
-                                    close_parenthes=>1
-                                    }
-                                    ]
-                                    
-                     ,
-  });
+                     { name => 'last_name',
+                       view => 'People' },
+                     { name => 'user_id',
+                       view => 'People' } ],
+        conditions=>[{ left  => { name => 'First',
+                                 view => 'People'},
+                       right => { value    => 'Jane'},
+                                 operator => '=',
+                                 open_parenthes =>1,},
+                     { condition      =>'AND',
+                       left           =>{ name  =>'Last_name',
+                                          view  =>'People'},
+                       right          =>{ value =>'Doe'},
+                       operator       => '=',
+                       close_parenthes=> 1
+                      }]
+    });
   
-  $da->add_condition({left           =>{name =>'country_id',
-                                                      view =>'People'},
-                                    right          =>{value=>22},
-                                    operator       =>'=',
-                                    condition      =>'AND',
-                                   });
+  $da->add_condition({left      =>{name =>'country_id',
+                                   view =>'People'},
+                      right     =>{value=>22},
+                      operator  =>'=',
+                      condition =>'AND'});
+                      
  $da->rertrive($dbh,$container);
+ 
  $da->insert($mongo,$container);
+ 
  $da->add_condition({left           =>{name =>'country_id',
-                                                      view =>'People'},
-                                    right          =>{value=>22},
-                                    operator       =>'=',
-                                    condition      =>'AND',
-                                   });
+                                       view =>'People'},
+                     right          =>{value=>22},
+                     operator       =>'=',
+                     condition      =>'AND'});
+ 
  $da->delete($dbh,$container);
  
- The synopsis above only lists few ways you can use Database::Accessor.
+The synopsis above only lists few ways you can use Database::Accessor.
  
 =head1 DESCRIPTION
 
-Database::Accessor, or Accessor for short or DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
-The heart of Accessor is an abstrtion of table and data structions into simple sets of hash-refs that are passed into
-7 static and 7 dynaic attibutes.
+Database::Accessor,  or Accessor for short DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
+The heart of Accessor is an simple abstraction language that breaks down table and data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver 
+that will process the action.
 
-It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver DAD.
+It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver or DAD for short.
 
-It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vderiosn 
+It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vdersion 
 
-of you data pass it into Accessor and in theory run the same quiery against any type of DB as long as the structure is compatiable and the Database Accessor Driver has been written.
+of you data.  In in theory you should be able to run the same  DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
 
 Architecture of a Accessor Application
 
@@ -855,9 +854,16 @@ Architecture of a Accessor Application
 +-------------+       | |---| Other drivers |-->>
                       +-+   +---------------+
 
-The API, or Application Programming Interface, defines the call interface and variables for Perl scripts to use. The API is implemented by the Perl DBI extension.
+The API, or Application Programming Interface, are the four CRUD functions provided by DA, and a Hash-ref, supplied by the programmer, that defines the data structure with DA's abstration language.
 
-The DBI "dispatches" the method calls to the appropriate driver for actual execution. The DBI is also responsible for the dynamic loading of drivers, error checking and handling, providing default implementations for methods, and many other non-database specific duties.
+METHODS
 
-Each driver contains implementations of the DBI methods using the private interface functions of the corresponding database engine. Only authors of sophisticated/multi-database applications or generic library functions need be concerned with drivers.
-Notation and Conventions
+Create
+
+Reteive 
+
+Update
+
+Delete
+
+
