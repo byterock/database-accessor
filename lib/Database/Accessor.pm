@@ -2,6 +2,7 @@
 
     package Database::Accessor;
 # Dist::Zilla: +PkgVersion
+
 # ABSTRACT: CRUD Interface for any DB
 
     use Moose;
@@ -16,9 +17,6 @@
     # use Data::Dumper;
     use File::Spec;
 
-    BEGIN {
-        $Database::Accessor::VERSION = "0.01";
-    }
 
     around BUILDARGS => sub {
         my $orig  = shift;

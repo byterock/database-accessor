@@ -1,4 +1,7 @@
     package Database::Accessor::Types;
+    # Dist::Zilla: +PkgVersion
+
+    # ABSTRACT: A Types Role for Database::Accessor:
     use Moose::Role;
     use Data::Dumper;
     use lib qw(D:\GitHub\database-accessor\lib);
