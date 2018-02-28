@@ -396,6 +396,7 @@
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
     }
+1;
 }
 
 
@@ -769,7 +770,6 @@
 
 }
 
- __PACKAGE__->meta->make_immutable;
 1;
 
 =pod
