@@ -69,4 +69,5 @@ Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad-
     }
     else {
       fail("View is Required");     
-    }
+    };
+1;

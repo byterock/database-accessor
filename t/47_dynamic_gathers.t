@@ -91,8 +91,4 @@ BEGIN {
     $dad = $return->{dad};
  
    Test::Database::Accessor::Utils::deep_predicate($in_hash->{filters},$da->dynamic_filters(),$dad->dynamic_filters(),'Array of dynamic filters');
-    
- 
-   # warn("da=".Dumper($da)); 
-   
- 
+   1;

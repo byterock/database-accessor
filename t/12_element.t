@@ -28,4 +28,4 @@ if ($@) {
 else {
     fail("Element aggregate can not be Avgx");
 }
-
+1;

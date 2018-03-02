@@ -104,4 +104,4 @@ $da->retrieve( Data::Test->new(), $return );
 my $dad = $return->{dad};
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
-
+1;

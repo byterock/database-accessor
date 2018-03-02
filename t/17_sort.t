@@ -18,4 +18,4 @@ ok(
     "sort does role Database::Accessor::Roles::Base"
 );
 ok( $sort->order eq 'asc', "order is = asc" );
-
+1;

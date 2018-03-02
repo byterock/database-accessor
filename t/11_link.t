@@ -30,7 +30,4 @@ warn(Dumper($link));
 ok( $link->view eq 'test',"view is 'test'");
 ok( $link->alias eq 'new_test',"alias is 'new_test'");
 ok( $link->type eq 'left',"type is 'left'");
-
-
-
-
+1;

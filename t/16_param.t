@@ -19,4 +19,4 @@ ok(
 );
 ok( $param->value() == 22, 'Value = 22' );
 ok( $param->param() == 22, 'param = 22' );
-
+1;

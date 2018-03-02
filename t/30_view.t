@@ -71,4 +71,4 @@ ok( scalar( $@->errors ) == 2, "Two errors on new" );
 my @errors = $@->errors;
 ok( $errors[0]->attribute->name() == 'name',  "View: param name fails" );
 ok( $errors[1]->attribute->name() == 'alias', "View: param alias fails" );
-
+1;

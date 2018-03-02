@@ -109,7 +109,10 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
-                eval { "require $classname" };
+                eval {
+                    no warnings; #blog about this one
+                    "require $classname";
+                };
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -403,9 +406,8 @@
     1;
 
     {
-
         package 
-          Database::Accessor::Base;
+           Database::Accessor::Base;
         use Moose;
         use MooseX::Aliases;
         use MooseX::Constructor::AllErrors;

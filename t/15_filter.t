@@ -17,4 +17,4 @@ ok(
     does_role( $filter, "Database::Accessor::Roles::Base" ) eq 1,
     "filter does role Database::Accessor::Roles::Base"
 );
-
+1;

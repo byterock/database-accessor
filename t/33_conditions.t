@@ -106,4 +106,4 @@ ok(
       "Database::Accessor::Predicate",
     'DA has a condtion predicate is a predicate'
 );
-
+1;

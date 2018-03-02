@@ -41,4 +41,4 @@ my $dad = $return->{dad};
 
 Test::Database::Accessor::Utils::deep_element( $in_hash->{elements},
     $da->elements, $dad->elements, 'Element' );
-
+1;
