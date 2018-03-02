@@ -2,8 +2,6 @@
 package Test::Database::Accessor::Utils;
 use lib ('..\..\..\..\lib');
 
-#D:\GitHub\database-accessor\t\lib\Test\Data\Accessor
-# use Data::Test;
 use Test::Deep;
 use Test::More;
 use Data::Dumper;
@@ -30,10 +28,6 @@ sub deep_element {
 
 sub deep_predicate {
     my ( $in, $da, $dad, $type ) = @_;
-
-    # warn(Dumper($in));
-    # warn(Dumper($da));
-    # warn(Dumper($dad));
 
     foreach my $index ( 0 .. ( scalar( @{$in} - 1 ) ) ) {
         my $predicate = $in->[$index];

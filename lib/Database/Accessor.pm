@@ -1,8 +1,10 @@
     use strict;
+
     package Database::Accessor;
-# ABSTRACT: CRUD Interface for any DB
-# Dist::Zilla: +PkgVersion
-  
+
+    # ABSTRACT: CRUD Interface for any DB
+    # Dist::Zilla: +PkgVersion
+
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -11,14 +13,16 @@
     use MooseX::AccessorsOnly;
     use MooseX::AlwaysCoerce;
     use MooseX::Constructor::AllErrors;
+
     # use Carp;
     # use Data::Dumper;
     use File::Spec;
-# ABSTRACT: CRUD Interface for any DB
-# Dist::Zilla: +PkgVersion
+    use namespace::autoclean;
 
+      # ABSTRACT: CRUD Interface for any DB
+      # Dist::Zilla: +PkgVersion
 
-    around BUILDARGS => sub {
+      around BUILDARGS => sub {
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
@@ -30,7 +34,7 @@
             $ops->{no_delete}   = 1;
         }
         return $class->$orig($ops);
-    };
+      };
 
     sub BUILD {
         my $self = shift;
@@ -105,9 +109,7 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
-                eval {
-                     "require $classname"
-                };
+                eval { "require $classname" };
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -398,379 +400,375 @@
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
     }
-1;
+    1;
 
+    {
 
-{
+        package 
+          Database::Accessor::Base;
+        use Moose;
+        use MooseX::Aliases;
+        use MooseX::Constructor::AllErrors;
+        use MooseX::AlwaysCoerce;
+        with qw(Database::Accessor::Types);
+        use namespace::autoclean;
+        # around BUILDARGS => sub {
 
-    package 
-      Database::Accessor::Base;
-    use Moose;
-    use MooseX::Aliases;
-    use MooseX::Constructor::AllErrors;
-    use MooseX::AlwaysCoerce;
-    with qw(Database::Accessor::Types);
-
-    # around BUILDARGS => sub {
-        
-       # my $orig  = shift;
+        # my $orig  = shift;
         # my $class = shift;
-# use Data::Dumper;
-       # warn(" args=".Dumper(\@_));  
+        # use Data::Dumper;
+        # warn(" args=".Dumper(\@_));
         # my $ops   = @_;
 
-
-       # $ops->{to}= delete($ops->{view})
-       # if(ref($class) eq 'Database::Accessor::Link');
+        # $ops->{to}= delete($ops->{view})
+        # if(ref($class) eq 'Database::Accessor::Link');
         # warn("$orig $class args=".Dumper( $ops));
 
-     # return $class->$orig($ops);
+        # return $class->$orig($ops);
 
+        # };
+        has 'name' => (
+            required => 0,
+            is       => 'rw',
+            isa      => 'Str'
+        );
 
-    # };
-     has 'name' => (
-        required => 0,
-        is       => 'rw',
-        isa      => 'Str'
-    );
-    
-    1;
+        1;
 
-}
+    }
 
+    {
 
-{
+        package 
+           Database::Accessor::Roles::Alias;
+        use Moose::Role;
+        use namespace::autoclean;
 
-    package 
-      Database::Accessor::Roles::Alias;
+        has 'alias' => (
 
-    use Moose::Role;
-    
-    
-    has 'alias' => (
+            is  => 'rw',
+            isa => 'Str',
 
-        is  => 'rw',
-        isa => 'Str',
+        );
 
-    );
+    }
 
-}
+    {
 
-{
+        package 
+           Database::Accessor::Roles::Comparators;
 
-    package 
-      Database::Accessor::Roles::Comparators;
+        use Moose::Role;
+        use MooseX::Aliases;
+        use namespace::autoclean;
+        has left => (
+            is       => 'rw',
+            isa      => 'Element',
+            required => 1,
+            coerce   => 1,
+        );
 
-    use Moose::Role;
-    use MooseX::Aliases;
-    
-    has left => (
-        is       => 'rw',
-        isa      => 'Element',
-        required => 1,
-        coerce   => 1,
-    );
-
-    has right => (
-        is => 'rw',
-        isa =>
+        has right => (
+            is => 'rw',
+            isa =>
 'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
-        required => 1,
-        coerce   => 1,
-    );
+            required => 1,
+            coerce   => 1,
+        );
 
-    has open_parenthes => (
+        has open_parenthes => (
 
-        is      => 'rw',
-        isa     => 'Bool',
-        default => 0,
-        alias   => [qw(open open_paren)]
+            is      => 'rw',
+            isa     => 'Bool',
+            default => 0,
+            alias   => [qw(open open_paren)]
 
-    );
+        );
 
-    has close_parenthes => (
-        is      => 'rw',
-        isa     => 'Bool',
-        default => 0,
-        alias   => [qw(close close_paren)]
+        has close_parenthes => (
+            is      => 'rw',
+            isa     => 'Bool',
+            default => 0,
+            alias   => [qw(close close_paren)]
 
-    );
+        );
+
+        1;
+    }
+
+    {
+
+        package 
+           Database::Accessor::Roles::PredicateArray;
+        use Moose::Role;
+        use MooseX::Aliases;
+        use namespace::autoclean;
+
+
+        has predicates => (
+            traits  => ['Array'],
+            is      => 'rw',
+            isa     => 'ArrayRefofPredicates',
+            coerce  => 1,
+            alias   => 'conditions',
+            handles => { predicates_count => 'count', },
+        );
+        1;
+    }
+    {
+
+        package 
+           Database::Accessor::View;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::Alias);
+
+        has '+name' => ( required => 1 );
+    }
+    {
+
+        package 
+           Database::Accessor::Element;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::Alias );
+
+        has '+name' => ( required => 1 );
+
+        has 'view' => (
+
+            is    => 'rw',
+            isa   => 'Str',
+            alias => 'table'
+
+        );
+
+        has 'is_identity' => (
+            is  => 'rw',
+            isa => 'bool',
+        );
+
+        has 'aggregate' => (
+            is  => 'rw',
+            isa => 'Aggregate',
+        );
+
+        has 'predicate' => (
+            is  => 'rw',
+            isa => 'Predicate',
+        );
+
+    }
+
+    {
+
+        package 
+           Database::Accessor::Predicate;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::Comparators);
+
+        has operator => (
+            is      => 'rw',
+            isa     => 'Operator',
+            default => '='
+        );
+        has condition => (
+            is      => 'rw',
+            isa     => 'Operator',
+            default => '='
+
+        );
+        1;
+    }
+
+    {
+
+        package 
+          Database::Accessor::Param;
+        use Moose;
+        extends 'Database::Accessor::Base';
+
+        has value => (
+            is    => 'rw',
+            isa   => 'Str|Undef|ArrayRef',
+            alias => 'param',
+        );
+
+        1;
+    }
+
+    {
+
+        package 
+          Database::Accessor::Function;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::Comparators);
+
+        has 'function' => (
+            isa      => 'Str',
+            is       => 'rw',
+            required => 1,
+        );
+
+        1;
+    }
+
+    {
+
+        package 
+          Database::Accessor::Expression;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::Comparators);
+
+        has 'expression' => (
+            isa      => 'NumericOperator',
+            is       => 'rw',
+            required => 1,
+        );
+
+        1;
+    }
+    {
+
+        package 
+          Database::Accessor::Condition;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::PredicateArray);
+
+        1;
+    }
+    {
+
+        package 
+          Database::Accessor::Link;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw(Database::Accessor::Roles::PredicateArray);
+
+        has to => (
+            is       => 'rw',
+            isa      => 'View',
+            required => 1,
+            alias    => [qw( view to_view )],
+        );
+
+        has type => (
+            is       => 'rw',
+            isa      => 'Link',
+            required => 1,
+        );
+        1;
+    }
+
+    {
+
+        package 
+          Database::Accessor::Sort;
+        use Moose;
+        extends 'Database::Accessor::Element';
+        use namespace::autoclean;
+
+        has order => (
+            is      => 'rw',
+            isa     => 'Order',
+            default => Database::Accessor::Constants::ASC
+        );
+
+        1;
+    }
+    {
+
+        package 
+          Database::Accessor::Roles::DAD;
+
+        use Moose::Role;
+        with qw(Database::Accessor::Types);
+        use namespace::autoclean;
+        
+        requires 'DB_Class';
+        requires 'execute';
+
+        has view => (
+            is  => 'ro',
+            isa => 'View',
+        );
+
+        has elements => (
+            isa => 'ArrayRefofElements',
+            is  => 'ro',
+        );
+        has conditions => (
+            isa => 'ArrayRefofConditions',
+            is  => 'ro',
+        );
+
+        has links => (
+            is  => 'ro',
+            isa => 'ArrayRefofLinks',
+        );
+
+        has gathers => (
+            is  => 'ro',
+            isa => 'ArrayRefofElements',
+
+        );
+        has filters => (
+            is  => 'ro',
+            isa => 'ArrayRefofConditions',
+        );
+
+        has sorts => (
+            is  => 'ro',
+            isa => 'ArrayRefofElements',
+
+        );
+        has dynamic_elements => (
+            isa     => 'ArrayRefofElements',
+            is      => 'ro',
+            default => sub { [] },
+        );
+
+        has dynamic_conditions => (
+            is      => 'ro',
+            isa     => 'ArrayRefofConditions',
+            default => sub { [] },
+
+        );
+
+        has dynamic_links => (
+            is      => 'ro',
+            isa     => 'ArrayRefofLinks',
+            default => sub { [] },
+
+        );
+
+        has dynamic_gathers => (
+            is      => 'ro',
+            isa     => 'ArrayRefofElements',
+            default => sub { [] },
+
+        );
+        has dynamic_filters => (
+            is      => 'ro',
+            isa     => 'ArrayRefofConditions',
+            default => sub { [] },
+
+        );
+        has dynamic_sorts => (
+            is      => 'ro',
+            isa     => 'ArrayRefofElements',
+            default => sub { [] },
+
+        );
+        1;
+
+    }
 
     1;
-}
-
-{
-
-    package 
-      Database::Accessor::Roles::PredicateArray;
-    use Moose::Role;
-    use MooseX::Aliases;
-
-
-    has predicates => (
-        traits  => ['Array'],
-        is      => 'rw',
-        isa     => 'ArrayRefofPredicates',
-        coerce  => 1,
-        alias   => 'conditions',
-        handles => { predicates_count => 'count', },
-    );
-    1;
-}
-{
-
-    package 
-      Database::Accessor::View;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::Alias);
-   
-
-    has '+name' => ( required => 1 );
-}
-{
-
-    package 
-      Database::Accessor::Element;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::Alias );
-  
-  
-    has '+name' => ( required => 1 );
-
-    has 'view' => (
-
-        is  => 'rw',
-        isa => 'Str',
-        alias=>'table'
-
-    );
-
-    has 'is_identity' => (
-        is  => 'rw',
-        isa => 'bool',
-    );
-
-    has 'aggregate' => (
-        is  => 'rw',
-        isa => 'Aggregate',
-    );
-
-    has 'predicate' => (
-        is  => 'rw',
-        isa => 'Predicate',
-    );
-
-}
-
-{
-
-    package 
-      Database::Accessor::Predicate;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::Comparators);
-
-    has operator => (
-        is      => 'rw',
-        isa     => 'Operator',
-        default => '='
-    );
-    has condition => (
-        is      => 'rw',
-        isa     => 'Operator',
-        default => '='
-
-    );
-    1;
-}
-
-{
-
-    package 
-      Database::Accessor::Param;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    
-    has value => (
-        is    => 'rw',
-        isa   => 'Str|Undef|ArrayRef',
-        alias => 'param',
-    );
-
-    1;
-}
-
-{
-
-    package 
-      Database::Accessor::Function;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::Comparators);
-
-    has 'function' => (
-        isa      => 'Str',
-        is       => 'rw',
-        required => 1,
-    );
-
-    1;
-}
-
-{
-
-    package 
-      Database::Accessor::Expression;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::Comparators);
-
-    has 'expression' => (
-        isa      => 'NumericOperator',
-        is       => 'rw',
-        required => 1,
-    );
-
-    1;
-}
-{
-
-    package 
-      Database::Accessor::Condition;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::PredicateArray);
-
-
-    1;
-}
-{
-
-    package 
-      Database::Accessor::Link;
-    use Moose;
-    extends 'Database::Accessor::Base';
-    with qw(Database::Accessor::Roles::PredicateArray);
-
-    has to => (
-        is       => 'rw',
-        isa      => 'View',
-        required => 1,
-        alias    => [qw( view to_view )],
-    );
-
-    has type => (
-        is       => 'rw',
-        isa      => 'Link',
-        required => 1,
-    );
-    1;
-}
-
-{
-
-    package 
-      Database::Accessor::Sort;
-    use Moose;
-    extends 'Database::Accessor::Element';
-
-    has order => (
-        is      => 'rw',
-        isa     => 'Order',
-        default => Database::Accessor::Constants::ASC
-    );
-
-    1;
-}
-{
-
-    package 
-      Database::Accessor::Roles::DAD;
-
-    use Moose::Role;
-    with qw(Database::Accessor::Types);
-    requires 'DB_Class';
-    requires 'execute';
-
-    has view => (
-        is  => 'ro',
-        isa => 'View',
-    );
-
-    has elements => (
-        isa => 'ArrayRefofElements',
-        is  => 'ro',
-    );
-    has conditions => (
-        isa => 'ArrayRefofConditions',
-        is  => 'ro',
-    );
-
-    has links => (
-        is  => 'ro',
-        isa => 'ArrayRefofLinks',
-    );
-
-    has gathers => (
-        is  => 'ro',
-        isa => 'ArrayRefofElements',
-
-    );
-    has filters => (
-        is  => 'ro',
-        isa => 'ArrayRefofConditions',
-    );
-
-    has sorts => (
-        is  => 'ro',
-        isa => 'ArrayRefofElements',
-
-    );
-    has dynamic_elements => (
-        isa     => 'ArrayRefofElements',
-        is      => 'ro',
-        default => sub { [] },
-    );
-
-    has dynamic_conditions => (
-        is      => 'ro',
-        isa     => 'ArrayRefofConditions',
-        default => sub { [] },
-
-    );
-
-    has dynamic_links => (
-        is      => 'ro',
-        isa     => 'ArrayRefofLinks',
-        default => sub { [] },
-
-    );
-
-    has dynamic_gathers => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
-        default => sub { [] },
-
-    );
-    has dynamic_filters => (
-        is      => 'ro',
-        isa     => 'ArrayRefofConditions',
-        default => sub { [] },
-
-    );
-    has dynamic_sorts => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
-        default => sub { [] },
-
-    );
-    1;
-
-}
-
-1;
 
 =pod
  
