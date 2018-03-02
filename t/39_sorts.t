@@ -3,7 +3,7 @@ use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
 use Test::Deep;
-use lib ('D:\GitHub\database-accessor\lib');
+
 use Test::More tests => 6;
 use lib ('..\t\lib');
 use Test::Database::Accessor::Utils;

@@ -28,4 +28,3 @@ like(
 
 is( exception { Database::Accessor::View->new( { name => 'person' } ) },
     undef, "attribute alias is not a requied field" );
-

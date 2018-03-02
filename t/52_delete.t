@@ -4,7 +4,6 @@ use Test::Fatal;
 use Data::Dumper;
 use Test::Deep;
 use strict;
-use lib ('D:\GitHub\database-accessor\lib');
 use Test::More tests => 2;
 use lib ('..\t\lib');
 use Test::Database::Accessor::Utils;
@@ -36,11 +35,12 @@ my $in_hash = {
 
 my $da = Database::Accessor->new($in_hash);
 
- my $return_str = {};
- my $data       = Data::Test->new();
+my $return_str = {};
+my $data       = Data::Test->new();
 eval { $da->delete( $data, $return_str ); };
-ok( $@,'Cannot delete without condition' );
-ok(index($@,'Attempt to delete without condition')!=1,'Error message OK');
+ok( $@, 'Cannot delete without condition' );
+ok( index( $@, 'Attempt to delete without condition' ) != 1,
+    'Error message OK' );
 
 $in_hash->{delete_requires_condition} = 0;
 $da = Database::Accessor->new($in_hash);
@@ -61,53 +61,49 @@ my $conditions = [
         open_parenthes  => 1,
         close_parenthes => 0,
         condition       => 'AND',
-    }];
-    $da = Database::Accessor->new($in_hash);
-    
- $in_hash->{conditions} = $conditions;   
+    }
+];
 $da = Database::Accessor->new($in_hash);
-eval { $da->delete( $data, $return_str ); };
+
+$in_hash->{conditions} = $conditions;
+$da = Database::Accessor->new($in_hash);
+eval { $da->delete( $data, $return_str ); };
 
 ok( !$@, 'Can delete with only static condition' );
 
-delete( $in_hash->{conditions} );
-
-
-$da = Database::Accessor->new($in_hash); $da->add_condition( $conditions->[0] );
-
-eval { 
-    $da->delete( $data, $return_str );};
-  ok( !$@, 'Can delete with only dynamic condition' );
-  
-
-  $da = Database::Accessor->new($in_hash);
- $da->add_condition( $conditions->[0] );$in_hash->{conditions} = $conditions;  
-
-eval { $da->delete( $data, $return_str );
-};
-  ok( !$@, 'Can delete with static and dynamic conditions' );  
-  
-ok($return_str->{type} eq Database::Accessor::Constants::DELETE,'Delete constant passed in and out');
-
-  $in_hash->{no_delete} = 1;
+delete( $in_hash->{conditions} );
 
 $da = Database::Accessor->new($in_hash);
-eval {    $da->delete( $data, $return_str );
-};
+$da->add_condition( $conditions->[0] );
 
-ok ($@,'No Delete with no_delete flag'); 
- # warn($@);
+eval { $da->delete( $data, $return_str ); };
+ok( !$@, 'Can delete with only dynamic condition' );
 
-  
-   delete($in_hash->{no_delete});
-   $in_hash->{retrieve_only} = 1;
-  
-   $da = Database::Accessor->new($in_hash);
-  
- eval {  
-  $da->delete( $data, $return_str );
- };
-   ok ($@,'No Delete with retrieve_only flag');
-  
+$da = Database::Accessor->new($in_hash);
+$da->add_condition( $conditions->[0] );
+$in_hash->{conditions} = $conditions;
+
+eval { $da->delete( $data, $return_str ); };
+ok( !$@, 'Can delete with static and dynamic conditions' );
+
+ok( $return_str->{type} eq Database::Accessor::Constants::DELETE,
+    'Delete constant passed in and out' );
+
+$in_hash->{no_delete} = 1;
+
+$da = Database::Accessor->new($in_hash);
+eval { $da->delete( $data, $return_str ); };
+
+ok( $@, 'No Delete with no_delete flag' );
+
 # warn($@);
-
+
+delete( $in_hash->{no_delete} );
+$in_hash->{retrieve_only} = 1;
+
+$da = Database::Accessor->new($in_hash);
+
+eval { $da->delete( $data, $return_str ); };
+ok( $@, 'No Delete with retrieve_only flag' );
+
+# warn($@);
