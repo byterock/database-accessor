@@ -1,9 +1,9 @@
+use strict;
 package Database::Accessor::Constants;
 # Dist::Zilla: +PkgVersion
 
 # ABSTRACT: Constants for  DaCRUD Interface for any DB
 use warnings;
-use strict;
 use constant AVG    =>'AVG';
 use constant COUNT  =>'COUNT';
 use constant MEDIAN =>'MEDIAN';

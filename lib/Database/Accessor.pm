@@ -1,10 +1,8 @@
-{
-
+    use strict;
     package Database::Accessor;
-# Dist::Zilla: +PkgVersion
-
 # ABSTRACT: CRUD Interface for any DB
-
+# Dist::Zilla: +PkgVersion
+  
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -16,6 +14,8 @@
     # use Carp;
     # use Data::Dumper;
     use File::Spec;
+# ABSTRACT: CRUD Interface for any DB
+# Dist::Zilla: +PkgVersion
 
 
     around BUILDARGS => sub {
@@ -105,7 +105,9 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
-                eval "require $classname";
+                eval {
+                     "require $classname"
+                };
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -397,8 +399,6 @@
           );
     }
 1;
-}
-
 
 
 {

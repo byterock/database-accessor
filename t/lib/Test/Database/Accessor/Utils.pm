@@ -25,11 +25,11 @@ sub deep_element {
         # warn(Dumper($in));
         # warn(Dumper($da));
      # warn(Dumper($dad));
-     
+
      foreach my $index (0..(scalar(@{$in}-1))) {
         my $predicate   = $in->[$index];
-        bless($predicate,"Database::Accessor::Predicate"); 
-        bless_element($predicate->{left}); 
+        bless($predicate,"Database::Accessor::Predicate");
+        bless_element($predicate->{left});
         bless_element($predicate->{right});
         my @preticates;
         my @dad_preticates;
