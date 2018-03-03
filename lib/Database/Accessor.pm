@@ -690,7 +690,6 @@
         use Moose::Role;
         with qw(Database::Accessor::Types);
         use namespace::autoclean;
-        
         requires 'DB_Class';
         requires 'execute';
 

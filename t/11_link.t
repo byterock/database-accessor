@@ -16,7 +16,6 @@ my $link = Database::Accessor::Link->new({ type=>'left',
                                                              view=>'table-1'},
                                                      right=>{name=>'field-2',
                                                              view=>'table-1'},
-                                                     
                                                      operator=>'='}]});
 
 exit;
