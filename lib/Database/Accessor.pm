@@ -406,7 +406,7 @@
     1;
 
     {
-        package 
+        package
            Database::Accessor::Base;
         use Moose;
         use MooseX::Aliases;
