@@ -829,7 +829,7 @@ The synopsis above only lists few ways you can use Database::Accessor.
  
 =head1 DESCRIPTION
 
-Database::Accessor,  or Accessor for short DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
+Database::Accessor, or Accessor for short DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
 The heart of Accessor is an simple abstraction language that breaks down table and data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver 
 that will process the action.
 
@@ -837,7 +837,7 @@ It is important to remember that Accessor is just an interface layer, a way to p
 
 It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vdersion 
 
-of you data.  In in theory you should be able to run the same  DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
+of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
 
 Architecture of a Accessor Application
 
