@@ -771,6 +771,7 @@
 
     1;
 
+__END__
 =pod
  
 
@@ -785,7 +786,7 @@
 
 =head1 SYNOPSIS
 
-my $da = Database::Accssor->new({
+ my $da = Database::Accssor->new({
         view     => { name  => 'People'},
         elements => [{ name => 'first_name',
                                  view=>'People' },
@@ -806,23 +807,18 @@ my $da = Database::Accssor->new({
                        close_parenthes=> 1
                       }]
     });
-  
   $da->add_condition({left      =>{name =>'country_id',
                                    view =>'People'},
                       right     =>{value=>22},
                       operator  =>'=',
                       condition =>'AND'});
-                      
  $da->rertrive($dbh,$container);
- 
  $da->insert($mongo,$container);
- 
  $da->add_condition({left           =>{name =>'country_id',
                                        view =>'People'},
                      right          =>{value=>22},
                      operator       =>'=',
                      condition      =>'AND'});
- 
  $da->delete($dbh,$container);
  
 The synopsis above only lists few ways you can use Database::Accessor.
@@ -830,14 +826,12 @@ The synopsis above only lists few ways you can use Database::Accessor.
 =head1 DESCRIPTION
 
 Database::Accessor, or Accessor for short DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
-The heart of Accessor is an simple abstraction language that breaks down table and data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver 
-that will process the action.
+
+The heart of Accessor is an simple abstraction language that breaks down table and data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver that will process the action.
 
 It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver or DAD for short.
 
-It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vdersion 
-
-of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
+It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vdersion of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
 
 Architecture of a Accessor Application
 
