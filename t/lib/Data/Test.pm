@@ -3,14 +3,14 @@
 package Data::Test;
 use strict;
 
- sub new {
+sub new {
     my $class = shift;
 
     my $self = {};
     bless( $self, ( ref($class) || $class ) );
 
-    return( $self );
+    return ($self);
 
 }
- 
+
 1;

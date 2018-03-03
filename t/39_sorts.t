@@ -50,24 +50,23 @@ my $da         = Database::Accessor->new($in_hash);
 my $return_str = {};
 my $data       = Data::Test->new();
 
-$da->retrieve(Data::Test->new(),$return_str);
+$da->retrieve( Data::Test->new(), $return_str );
 my $dad = $return_str->{dad};
 
-Test::Database::Accessor::Utils::deep_element($in_hash->{sorts},$da->sorts,$dad->sorts,'Sorts');
+Test::Database::Accessor::Utils::deep_element( $in_hash->{sorts}, $da->sorts,
+    $dad->sorts, 'Sorts' );
 
-
- $in_hash = {
-    view     => { name => 'People' },
+$in_hash = {
+    view  => { name => 'People' },
     sorts => undef
-   };
-    eval {
-      $da = Database::Accessor->new({});
-    };
-    if ($@){
-       pass("sorts cannot be undef");
-       ok(ref($@) eq 'MooseX::Constructor::AllErrors::Error::Constructor','Got error Constructor object');
-    }
-    else {
-      fail("View is Required");     
-    };
+};
+eval { $da = Database::Accessor->new( {} ); };
+if ($@) {
+    pass("sorts cannot be undef");
+    ok( ref($@) eq 'MooseX::Constructor::AllErrors::Error::Constructor',
+        'Got error Constructor object' );
+}
+else {
+    fail("View is Required");
+}
 1;
