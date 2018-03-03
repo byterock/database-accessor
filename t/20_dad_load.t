@@ -1,4 +1,4 @@
-#!perl 
+#!perl
 use Test::More 0.82;
 
 use lib ('..\t\lib');

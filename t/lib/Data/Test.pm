@@ -1,4 +1,4 @@
-#!perl 
+#!perl
 
 package Data::Test;
 use strict;

@@ -92,12 +92,12 @@
                 $file =~ s{\.pm$}{};                      # remove .pm extension
                 $dir  =~ s/\\/\//gi;
                 $dir  =~ s/^.+Database\/Accessor\/DAD\///;
-                my $_package =
+                my $_package=
                   join '::' => grep $_ => File::Spec->splitdir($dir);
 
                 # # untaint that puppy!
                 my ($package) =
-                  $_package =~ /^([[:word:]]+(?:::[[:word:]]+)*)$/;
+                  $_package=~ /^([[:word:]]+(?:::[[:word:]]+)*)$/;
 
                 my $classname = "";
 
@@ -441,7 +441,7 @@
 
     {
 
-        package 
+        package
            Database::Accessor::Roles::Alias;
         use Moose::Role;
         use namespace::autoclean;
@@ -457,7 +457,7 @@
 
     {
 
-        package 
+        package
            Database::Accessor::Roles::Comparators;
 
         use Moose::Role;
@@ -500,7 +500,7 @@
 
     {
 
-        package 
+        package
            Database::Accessor::Roles::PredicateArray;
         use Moose::Role;
         use MooseX::Aliases;
@@ -519,7 +519,7 @@
     }
     {
 
-        package 
+        package
            Database::Accessor::View;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -529,7 +529,7 @@
     }
     {
 
-        package 
+        package
            Database::Accessor::Element;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -564,7 +564,7 @@
 
     {
 
-        package 
+        package
            Database::Accessor::Predicate;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -586,7 +586,7 @@
 
     {
 
-        package 
+        package
           Database::Accessor::Param;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -602,7 +602,7 @@
 
     {
 
-        package 
+        package
           Database::Accessor::Function;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -619,7 +619,7 @@
 
     {
 
-        package 
+        package
           Database::Accessor::Expression;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -635,7 +635,7 @@
     }
     {
 
-        package 
+        package
           Database::Accessor::Condition;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -645,7 +645,7 @@
     }
     {
 
-        package 
+        package
           Database::Accessor::Link;
         use Moose;
         extends 'Database::Accessor::Base';
@@ -668,7 +668,7 @@
 
     {
 
-        package 
+        package
           Database::Accessor::Sort;
         use Moose;
         extends 'Database::Accessor::Element';
@@ -684,7 +684,7 @@
     }
     {
 
-        package 
+        package
           Database::Accessor::Roles::DAD;
 
         use Moose::Role;
