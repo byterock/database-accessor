@@ -836,7 +836,7 @@ It is the DAD driver modules that do all of the work. Accessor just provides an 
 Architecture of a Accessor Application
 
                       +-+   +------- -+     +-----+    +-----------+
-+-------------+       | |---| DAD SQL |-----| DBI |----| Oracle DB | 
++-------------+       | |---| DAD SQL |-----| DBI |----| Oracle DB |
 | Perl        |  +-+  | |   `---------+     +-----+    +-----------+
 | script      |  |A|  |D|   +-----------+   +-------------+
 | using       |--|P|--|A|---| DAD Mongo |---| Mongo Engine|
