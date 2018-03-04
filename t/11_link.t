@@ -2,8 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
-use lib ('D:\GitHub\database-accessor\lib');
-use Test::More tests => 5;
+use Test::More tests => 8;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -31,7 +30,6 @@ my $link = Database::Accessor::Link->new(
     }
 );
 
-exit;
 ok( ref($link) eq 'Database::Accessor::Link', "link is a Link" );
 
 ok(
@@ -43,8 +41,6 @@ ok( ref( $link->predicates()->[0] ) eq 'Database::Accessor::Predicate',
 ok( $link->predicates()->[0]->operator() eq '=',
     "predicat->0 has operator '='" );
 
-warn( Dumper($link) );
-ok( $link->view  eq 'test',     "view is 'test'" );
-ok( $link->alias eq 'new_test', "alias is 'new_test'" );
+ok( ref($link->to)  eq 'Database::Accessor::View',   "to is a View" );
 ok( $link->type  eq 'left',     "type is 'left'" );
 1;

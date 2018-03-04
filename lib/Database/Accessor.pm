@@ -776,7 +776,7 @@ __END__
  
 
 =Abstract: CRUD Interface for any DB
-  Need the same data from both Oracle and Mongo, 
+  Need the same data from both Oracle and Mongo,
   Need a good data tier for you app,
   Need a CRUD layer but don't need or want an ORM,
   Have a SQL DB and don't know SQL
@@ -850,11 +850,6 @@ The API, or Application Programming Interface, are the four CRUD functions provi
 METHODS
 
 Create
-
-Reteive 
-
+Reteive
 Update
-
-Delete
-
-
+DDelete
