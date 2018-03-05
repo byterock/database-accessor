@@ -4,7 +4,6 @@
 
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
-
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -78,10 +77,8 @@
         closedir(DIR);
 
         @files = map { $path . '/' . $_ } @files;
-use Data::Dumper;
 
         for (@files) {
-warn("JSP $_");
             # If the file is a directory
             if ( -d $_ ) {
                 $self->_loadDADClassesFromDir( $_, $dad );
@@ -94,8 +91,6 @@ warn("JSP $_");
                 $dir  =~ s/\\/\//gi;
                 $dir  =~ s/^.+Database\/Accessor\/DAD\///;
                 
-                warn("JSP file=$file");
-
                 my $_package=
                   join '::' => grep $_ => File::Spec->splitdir($dir);
 
@@ -114,10 +109,10 @@ warn("JSP $_");
                       $file;
                 }
                 warn("JSP classname=$classname");
-                eval {
-                    no warnings; #blog about this one
-                    "require $classname";
-                };
+                #eval {
+                #    no warnings; #blog about this one
+                    require $classname;
+                #};
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -128,7 +123,6 @@ warn("JSP $_");
                     next;
                 }
                 else {
-                    warn("JSP $classname");
                     next
                       unless (
                         does_role(

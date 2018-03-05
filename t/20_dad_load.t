@@ -1,13 +1,13 @@
 #!perl
 use Test::More 0.82;
-
-use lib ('..\t\lib');
+use lib ('t/lib');
+use lib ('lib');
 use strict;
 use MooseX::Test::Role;
 use Test::More tests => 47;
 use Data::Dumper;
-use lib 'D:\GitHub\database-accessor\lib';
 use Database::Accessor;
+
 BEGIN {
     use_ok('Database::Accessor');
     use_ok('Database::Accessor::Roles::DAD');
