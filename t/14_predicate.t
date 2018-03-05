@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
-use Test::More tests => 3;
+use Test::More tests => 17;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -19,13 +19,14 @@ ok(
     does_role( $predicate, "Database::Accessor::Roles::Comparators" ) eq 1,
     "predicate does role Database::Accessor::Roles::Comparators"
 );
-eval { warn( "rtest=" . $predicate->alias() ); };
-if ($@) {
-    pass("Predicate cannot alias");
-}
-else {
-    fail("Predicate cannot alias");
-}
+
+
+like(
+  exception { $predicate->alias() },
+  qr/locate object method "alias"/,
+  "Can not do an alias method",
+);
+
 
 my $function_1_param = {
     left  => { name => 'left' },

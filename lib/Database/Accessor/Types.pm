@@ -6,7 +6,7 @@ package Database::Accessor::Types;
 use Moose::Role;
 
 # Dist::Zilla: +PkgVersion
-
+use lib 'D:\GitHub\database-accessor\lib';
 use Data::Dumper;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;

@@ -1,8 +1,6 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
 
-use Test::More tests => 3;
+use Test::More tests => 6;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -13,10 +11,7 @@ BEGIN {
 my $param = Database::Accessor::Param->new( { name => 'right', param => 22 } );
 
 ok( ref($param) eq 'Database::Accessor::Param', "param is a Param" );
-ok(
-    does_role( $param, "Database::Accessor::Roles::Base" ) eq 1,
-    "Param does role Database::Accessor::Roles::Base"
-);
+isa_ok($param,"Database::Accessor::Base", "Param is a Database::Accessor::Base");
 ok( $param->value() == 22, 'Value = 22' );
 ok( $param->param() == 22, 'param = 22' );
 1;

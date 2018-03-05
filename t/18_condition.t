@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 
-use Test::More tests => 3;
+use Test::More tests => 7;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -30,10 +30,7 @@ my $condition = Database::Accessor::Condition->new(
 
 ok( ref($condition) eq 'Database::Accessor::Condition',
     "condition is a Condition" );
-ok(
-    does_role( $condition, "Database::Accessor::Roles::Base" ) eq 1,
-    "condition does role Database::Accessor::Roles::Base"
-);
+isa_ok($condition,"Database::Accessor::Base", "Condition is a Database::Accessor::Base");
 ok(
     does_role( $condition, "Database::Accessor::Roles::PredicateArray" ) eq 1,
     "condition does role Database::Accessor::Roles::PredicateArray"

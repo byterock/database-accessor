@@ -78,9 +78,10 @@
         closedir(DIR);
 
         @files = map { $path . '/' . $_ } @files;
+use Data::Dumper;
 
         for (@files) {
-
+warn("JSP $_");
             # If the file is a directory
             if ( -d $_ ) {
                 $self->_loadDADClassesFromDir( $_, $dad );
@@ -92,6 +93,9 @@
                 $file =~ s{\.pm$}{};                      # remove .pm extension
                 $dir  =~ s/\\/\//gi;
                 $dir  =~ s/^.+Database\/Accessor\/DAD\///;
+                
+                warn("JSP file=$file");
+
                 my $_package=
                   join '::' => grep $_ => File::Spec->splitdir($dir);
 
@@ -109,6 +113,7 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
+                warn("JSP classname=$classname");
                 eval {
                     no warnings; #blog about this one
                     "require $classname";
@@ -123,6 +128,7 @@
                     next;
                 }
                 else {
+                    warn("JSP $classname");
                     next
                       unless (
                         does_role(
@@ -151,7 +157,8 @@
         default => 0,
         traits  => ['MooseX::MetaDescription::Meta::Trait'],
         description =>
-          { message => "Attempt to use create with no_create flag on!" }
+          { message => "Attempt to use create with no_create flag on!",
+            not_in_DAD=>1 }
     );
 
     has no_retrieve => (
@@ -160,7 +167,8 @@
         default => 0,
         traits  => ['MooseX::MetaDescription::Meta::Trait'],
         description =>
-          { message => "Attempt to use retrieve with no_retrieve flag on!" }
+          { message => "Attempt to use retrieve with no_retrieve flag on!",
+            not_in_DAD=>1 }
     );
     has no_update => (
         is      => 'ro',
@@ -168,7 +176,8 @@
         default => 0,
         traits  => ['MooseX::MetaDescription::Meta::Trait'],
         description =>
-          { message => "Attempt to use update with no_update flag on!" }
+          { message => "Attempt to use update with no_update flag on!",
+            not_in_DAD=>1 }
     );
     has no_delete => (
         is      => 'ro',
@@ -176,20 +185,30 @@
         default => 0,
         traits  => ['MooseX::MetaDescription::Meta::Trait'],
         description =>
-          { message => "Attempt to use delete with no_delete flag on!" }
+          { message => "Attempt to use delete with no_delete flag on!",
+            not_in_DAD=>1 }
     );
     has retrieve_only => (
         is      => 'ro',
         isa     => 'Bool',
         default => 0,
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
+        description =>
+          { not_in_DAD=>1 }
 
     );
 
-    has [
-        qw(update_requires_condition
-          delete_requires_condition
-          )
-    ] => ( is => 'ro', isa => 'Bool', default => 1 );
+  has [
+    qw(update_requires_condition
+      delete_requires_condition
+      )
+  ] => (
+    is          => 'ro',
+    isa         => 'Bool',
+    default     => 1,
+    traits  => ['MooseX::MetaDescription::Meta::Trait'],
+    description => { not_in_DAD => 1 }
+  );
 
     has view => (
         is       => 'ro',
@@ -776,7 +795,7 @@ __END__
  
 
 =Abstract: CRUD Interface for any DB
-  Need the same data from both Oracle and Mongo,
+  Need the same data from both Oracle and Mongo, 
   Need a good data tier for you app,
   Need a CRUD layer but don't need or want an ORM,
   Have a SQL DB and don't know SQL
@@ -850,6 +869,11 @@ The API, or Application Programming Interface, are the four CRUD functions provi
 METHODS
 
 Create
-Reteive
+
+Reteive 
+
 Update
-DDelete
+
+Delete
+
+
