@@ -1,7 +1,7 @@
     use strict;
 
     package Database::Accessor;
-
+    
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
     use Moose;
@@ -14,7 +14,7 @@
     use MooseX::Constructor::AllErrors;
 
     # use Carp;
-    # use Data::Dumper;
+    use Data::Dumper;
     use File::Spec;
     use namespace::autoclean;
 
@@ -109,10 +109,10 @@
                       $file;
                 }
                 warn("JSP classname=$classname");
-                #eval {
-                #    no warnings; #blog about this one
-                    require $classname;
-                #};
+                eval {
+                    no warnings; #blog about this one
+                    "require $classname";
+                };
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -326,9 +326,10 @@
         my $self = shift;
         my ( $type, $conn, $container, $opt ) = @_;
         my $drivers = $self->_ldad();
+        warn("JSP ".Dumper($drivers));
         my $driver  = $drivers->{ ref($conn) };
 
-        die "No Database::Accessor::Driver loaded for "
+        die "$type No Database::Accessor::Driver loaded for "
           . ref($conn)
           . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
           unless ($driver);
