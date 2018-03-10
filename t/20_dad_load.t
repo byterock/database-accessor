@@ -1,19 +1,24 @@
-#!perl
-use Test::More 0.82;
-use lib ('..\lib');
-use lib ('t\lib');
-use lib ('lib');
-use strict;
-use MooseX::Test::Role;
-use Test::More tests => 47;
-use Data::Dumper;
 
-use Database::Accessor::DAD::Test;
-BEGIN {
-    use_ok('Database::Accessor');
-    use_ok('Database::Accessor::Roles::DAD');
-    use_ok('Data::Test');
-}
+#!perl
+use strict;
+use warnings;
+use lib ('t/lib');
+use Data::Dumper;
+use Data::Test;
+use Database::Accessor;
+#use Test::Database::Accessor::Utils;
+
+#use Test::More 0.82;
+#use lib ('t/lib');
+#use strict;
+#use warnings;
+use MooseX::Test::Role;
+use Test::More tests => 45;
+#use Data::Dumper;
+
+#BEGIN {
+#    use_ok('Database::Accessor');
+#}
 
 
 my $da =
@@ -45,7 +50,7 @@ foreach my $attribute ( $da->meta->get_all_attributes ) {
                   . ". Should be a "
                   . $attribute->type_constraint() );
         }
-        ok( $attr->get_write_method eq undef,
+        ok( !$attr->get_write_method ,
             "Role DAD attribute: $dad_attribute is Read Only" );
     }
     else {

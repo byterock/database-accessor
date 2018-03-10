@@ -1,19 +1,14 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
+use strict;
+use warnings;
+use lib ('t/lib');
 use Data::Dumper;
-use Test::Deep;
-
-use lib ('..\t\lib');
-use Test::Database::Accessor::Utils;
-use Test::More tests => 6;
-
 use Data::Test;
+use Database::Accessor;
+use Test::Database::Accessor::Utils;
 
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
-    use_ok('Database::Accessor::Link');
-}
+use Test::More tests => 12;
+
 
 my $in_hash = {
     view     => { name => 'People' },
@@ -119,9 +114,9 @@ my $in_hash2 = {
 };
 
 $da = Database::Accessor->new($in_hash2);
-my $return = {};
+$return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
+$dad = $return->{dad};
 Test::Database::Accessor::Utils::deep_links( $in_hash2, $da, $dad, 1 );
 1;

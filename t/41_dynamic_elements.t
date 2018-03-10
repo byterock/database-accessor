@@ -1,17 +1,13 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
-
-use lib ('..\t\lib');
+use strict;
+use warnings;
+use lib ('t/lib');
 use Data::Dumper;
 use Data::Test;
+use Database::Accessor;
 use Test::Database::Accessor::Utils;
-use Test::Deep;
-use Test::More tests => 3;
 
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
-}
+use Test::More tests => 23;
 
 my $in_hash = {
     view     => { name => 'People' },
@@ -69,7 +65,7 @@ ok(
 );
 
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $return->{dad};
+$dad = $return->{dad};
 
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{elements}, $da->dynamic_elements,

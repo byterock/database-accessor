@@ -1,16 +1,42 @@
 #!perl
 use Test::More 0.82;
 use Test::Fatal;
+use lib ('t/lib');
 
-use lib ('..\t\lib');
+# {
+# package Database::Accessor::DAD::Test;
+# BEGIN {
+    # $Database::Accessor::DAD::Test::VERSION = "0.01";
+# }
+
+# use Moose;
+# with(qw( Database::Accessor::Roles::DAD));
+
+# sub execute {
+    # my $self = shift;
+    # my ( $type, $conn, $container, $opt ) = @_;
+
+    # $container->{dad}  = $self;
+    # $container->{type} = $type;
+
+# }
+
+# sub DB_Class {
+    # my $self = shift;
+    # return 'Data::Test';
+# }
+# }
+
 use Data::Dumper;
-use Test::More tests => 3;
+use Test::More tests => 10;
 use Data::Test;
-
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
-}
 use Test::Deep;
+use Database::Accessor;
+use Test::Database::Accessor::Utils;
+#use Database::Accessor::DAD::Test;
+# BEGIN {
+    # use_ok('Database::Accessor') || print "Bail out!";
+# }
 
 my $in_hash = {
     view => {
@@ -19,6 +45,7 @@ my $in_hash = {
     },
 
 };
+
 
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};

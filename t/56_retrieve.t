@@ -1,18 +1,15 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
+use strict;
+# use warnings;
+use lib ('t/lib');
 use Data::Dumper;
-use Test::Deep;
-use Test::More tests => 2;
-use lib ('..\t\lib');
-use Test::Database::Accessor::Utils;
 use Data::Test;
+use Database::Accessor;
+use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
+use Test::More tests => 2;
 
-}
 
 my $in_hash = {
     view     => { name => 'People' },
@@ -33,14 +30,14 @@ my $in_hash = {
 };
 
 my $da = Database::Accessor->new($in_hash);
-
 my $return_str = {};
 my $data       = Data::Test->new();
 $da->retrieve( $data, $return_str );
-
 ok( $return_str->{type} eq Database::Accessor::Constants::RETRIEVE,
     'Retrieve constant passed in and out' );
 
-warn( Dumper($da) );
-my $thig = $da->{elements}->[0]->{name};
-warn( Dumper($da) );
+eval { my $thig = $da->{elements}->[0]->{name};  };
+
+ok( $@, 'Can not directly access attributes directly' );
+
+

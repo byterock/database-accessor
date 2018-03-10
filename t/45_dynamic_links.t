@@ -1,22 +1,19 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
+use strict;
+use warnings;
+use lib ('t/lib');
 use Data::Dumper;
-use Test::Deep;
-use lib ('..\t\lib');
-use Test::Database::Accessor::Utils;
-use Test::More tests => 6;
-
 use Data::Test;
+use Database::Accessor;
+use Test::Database::Accessor::Utils;
 
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
-    use_ok('Database::Accessor::Link');
-}
+use Test::More tests => 40;
+
+
 
 my $da = Database::Accessor->new( { view => { name => 'People' } } );
 
-$in_hash = {
+my $in_hash = {
     links => [
         {
             to => {
@@ -84,10 +81,10 @@ ok(
     "can add an array of Dynamic links"
 );
 
-my $return = {};
+$return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
+$dad = $return->{dad};
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 
@@ -98,10 +95,10 @@ ok(
     "can add an Array REF of Dynamic links"
 );
 
-my $return = {};
+$return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
+$dad = $return->{dad};
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 1;

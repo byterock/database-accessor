@@ -1,17 +1,14 @@
 #!perl
-use Test::More 0.82;
-use Test::Fatal;
-
-use lib ('..\t\lib');
+use strict;
+use warnings;
+use lib ('t/lib');
 use Data::Dumper;
 use Data::Test;
+use Database::Accessor;
 use Test::Database::Accessor::Utils;
-use Test::Deep;
-use Test::More tests => 3;
 
-BEGIN {
-    use_ok('Database::Accessor') || print "Bail out!";
-}
+use Test::More tests => 6;
+
 
 my $in_hash = {
     view     => { name => 'People' },
