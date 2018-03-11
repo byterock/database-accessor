@@ -13,7 +13,7 @@ use Database::Accessor;
 #use strict;
 #use warnings;
 use MooseX::Test::Role;
-use Test::More tests => 45;
+use Test::More tests => 44;
 #use Data::Dumper;
 
 #BEGIN {

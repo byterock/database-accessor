@@ -1,5 +1,3 @@
-    use strict;
-
     package Database::Accessor;
     
     # ABSTRACT: CRUD Interface for any DB
@@ -18,8 +16,6 @@
     use File::Spec;
     use namespace::autoclean;
 
-      # ABSTRACT: CRUD Interface for any DB
-      # Dist::Zilla: +PkgVersion
 
       around BUILDARGS => sub {
         my $orig  = shift;
@@ -108,11 +104,14 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
-                warn("JSP classname=$classname");
-                eval {
-                    no warnings; #blog about this one
-                    "require $classname";
-                };
+                
+                # eval qq{package                   # hide from PAUSE
+                          # Database::Accessor::DAD::_firesafe;    # ensures that the TRD is present in the path
+                          # require $classname;    # load the driver
+                # };
+
+                eval "require $classname";
+                
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
