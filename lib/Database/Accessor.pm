@@ -129,6 +129,7 @@
                         )
                       );    #now only loads this class
                     $dad->{ $classname->DB_Class } = $classname;
+                    
                 }
 
             }
@@ -143,6 +144,15 @@
         isa => 'HashRef',
         is  => 'rw',
     );
+
+    has available_DADs =>(
+        isa => 'HashRef'
+        is  => 'ro'
+    
+    
+    );
+        
+     
 
     has no_create => (
         is      => 'ro',
@@ -350,6 +360,7 @@
             }
         );
         $dad->execute( $type, $conn, $container, $opt );
+        return $container;
 
     }
 
@@ -372,7 +383,7 @@
         $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
 
-        return ref($container);
+        $container;
 
     }
 
@@ -825,7 +836,7 @@ __END__
                       right     =>{value=>22},
                       operator  =>'=',
                       condition =>'AND'});
- $da->rertrive($dbh,$container);
+ $da->rertieve($dbh,$container);
  $da->insert($mongo,$container);
  $da->add_condition({left           =>{name =>'country_id',
                                        view =>'People'},
@@ -838,13 +849,13 @@ The synopsis above only lists few ways you can use Database::Accessor.
  
 =head1 DESCRIPTION
 
-Database::Accessor, or Accessor for short DA, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
+Database::Accessor, or DA for short, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
 
-The heart of Accessor is an simple abstraction language that breaks down table and data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver that will process the action.
+The heart of Accessor is an simple abstraction language that breaks down data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver that will process the action.
 
 It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver or DAD for short.
 
-It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provieds is the abstracted vdersion of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
+It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provides is the abstracted version of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
 
 Architecture of a Accessor Application
 
@@ -858,16 +869,135 @@ Architecture of a Accessor Application
 +-------------+       | |---| Other drivers |-->>
                       +-+   +---------------+
 
-The API, or Application Programming Interface, are the four CRUD functions provided by DA, and a Hash-ref, supplied by the programmer, that defines the data structure with DA's abstration language.
+The API, or Application Programming Interface, are the four CRUD functions provided by DA, and a Hash-ref, supplied by the programmer, that defines the data structure with DA's abstration language. 
+
+The DA simply passes down a set of attributes that are then re-assembles and then dispatched by the DAD layer down to the DB layer whatever that may be. 
+
+Usage Outline 
+First DA is not an ORM, it knows nothing about the Data Base you are atempting to interact with. By itself it does nothing.  All it does it provides a set of attribures that are 
+passed down to a DAD which will do the work.
+
+Though it can be used directly it is best used within another abstracted class, say startoing with this class;
+
+package SomeDB::Address;
+
+use Database::Accessor;
+
+sub new {
+    my $class = shift;
+    my $self = {};
+    bless( $self, ( ref($class) || $class ) );
+    return  Database::Accessor->new({
+                view=>'address',
+             elements=>[{name=> 'id'},
+                        {name=> 'street'},
+                        {name=> 'city'},
+                        {name=> 'postal_code'},
+                        {name=> 'region_id'},
+                        {name=> 'country_id'},
+                        {name=> 'time_zone_id'}]});
+}
+
+
+and then called by another script whith a sub like this one for a simple add;
+
+sub add_address {
+    my $self   = shift;
+    my ($db,$street,$city,$pc,$province) = _@;
+   
+    my $address = SomeDB::Address->new();
+    $address->create($db,{street     => $street,
+                           city       => $city,
+                           postal_code=> $pc,
+                           region_id  => $province} );
+    
+}
+
+or this one for an update;
+
+sub update_address {
+    my $self   = shift;
+    my ($db,$address_id,$update_hash) = _@;
+   
+    my $address = SomeDB::Address->new();
+    $address->add_condition({left=>{name=>id},
+                             right=>{value=>$address_id}});
+                             
+    $address->update($db,$update_hash );
+        
+    
+}
+
+  
 
 METHODS
+All four of the CRUD methods use the same API pattern
 
-Create
+  $da->create($db, $container, $opt);
+  $da->update($db, $container, $opt);
+  $da->delete($db, $container, $opt);
+  $da->retrieve($db, $container, $opt);
 
-Reteive 
+  $db 
+  An instanated database object of some form, say a DBI handle ($dbh) or a MongoDB client ($client). 
+  Whatever is pass in must be compatiable with an installed DAD.
+  $container
+  A HASH referance that is used to pass data into and out of the DAD. 
+  $ops
+  A HASH referance of options that can be passed down to the DAD.
+  
 
-Update
+create
+  
+  
+  my $new_address = 
+     $da->create($dbh, {street     => $street,
+                        city       => $city,
+                        postal_code=> $pc,
+                        region_id  => $province}, $opt);
+                     
+This method will create a new record on the underlying database matching the passed in hash-keys with the 'elements' found on the DA.
+The underlying DAD will a HASH ref of the orignal data and any creation info the DAD may add in.
 
-Delete
+retrieve
+
+   my $address = $da->retrieve($dbh, {}, $opt);
+
+update
+
+delete
+
+add_condition
+add_element
+add_filter
+add_gather
+add_link
+add_sort
+
+no_create
+no_retrieve
+no_update
+no_delete
+retrieve_only
+update_requires_condition
+delete_requires_condition
 
 
+view
+elements
+dynamic_elements
+
+condtions
+dynamic_condtions
+
+links
+dynamic_links
+
+sorts
+dynamic_sorts
+
+gathers
+dynamic_gathers
+
+filters
+dynamic_filters
