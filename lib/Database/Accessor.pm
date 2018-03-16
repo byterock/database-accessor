@@ -145,11 +145,9 @@
         is  => 'rw',
     );
 
-    has available_DADs =>(
-        isa => 'HashRef'
-        is  => 'ro'
-    
-    
+    has available_drivers =>(
+        isa => 'HashRef',
+        is  => 'rw'
     );
         
      
@@ -373,6 +371,7 @@
 
         $self->_execute( Database::Accessor::Constants::CREATE,
             $conn, $container, $opt );
+        return $container;
     }
 
     sub retrieve {
@@ -383,8 +382,7 @@
         $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
 
-        $container;
-
+        return $container;
     }
 
     sub update {
@@ -400,6 +398,8 @@
 
         $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
+            
+        return $container;
     }
 
     sub delete {
@@ -413,6 +413,8 @@
 
         $self->_execute( Database::Accessor::Constants::DELETE,
             $conn, $container, $opt );
+            
+        return $container;
     }
 
     sub _need_condition {
@@ -804,7 +806,7 @@ __END__
   Need a good data tier for you app,
   Need a CRUD layer but don't need or want an ORM,
   Have a SQL DB and don't know SQL
-  Have a Non-SQL DB and don't know SQL
+  Have a Key-Pair Non SQL DB and don't know how to get the data out.
   
   Well Database::Accessor is for you!
 
@@ -877,17 +879,12 @@ Usage Outline
 First DA is not an ORM, it knows nothing about the Data Base you are atempting to interact with. By itself it does nothing.  All it does it provides a set of attribures that are 
 passed down to a DAD which will do the work.
 
-Though it can be used directly it is best used within another abstracted class, say startoing with this class;
+Though it can be used directly it is best used within another abstracted class, as in below;
 
 package SomeDB::Address;
+use parent qw(Database::Accessor);
 
-use Database::Accessor;
-
-sub new {
-    my $class = shift;
-    my $self = {};
-    bless( $self, ( ref($class) || $class ) );
-    return  Database::Accessor->new({
+SomeDB::Address->new({
                 view=>'address',
              elements=>[{name=> 'id'},
                         {name=> 'street'},
@@ -896,7 +893,8 @@ sub new {
                         {name=> 'region_id'},
                         {name=> 'country_id'},
                         {name=> 'time_zone_id'}]});
-}
+                        
+1;
 
 
 and then called by another script whith a sub like this one for a simple add;
@@ -928,9 +926,12 @@ sub update_address {
     
 }
 
-  
 
 METHODS
+
+new
+
+
 All four of the CRUD methods use the same API pattern
 
   $da->create($db, $container, $opt);
@@ -942,13 +943,12 @@ All four of the CRUD methods use the same API pattern
   An instanated database object of some form, say a DBI handle ($dbh) or a MongoDB client ($client). 
   Whatever is pass in must be compatiable with an installed DAD.
   $container
-  A HASH referance that is used to pass data into and out of the DAD. 
+  A HASH or ARRAY referance or a blessed class that is used to pass data into and out of the DAD. It is always returned from the underlying DAD.
   $ops
-  A HASH referance of options that can be passed down to the DAD.
+  A HASH referance of options that can be passed down to the DAD.  Varies by DAD.
   
 
 create
-  
   
   my $new_address = 
      $da->create($dbh, {street     => $street,
@@ -956,23 +956,27 @@ create
                         postal_code=> $pc,
                         region_id  => $province}, $opt);
                      
-This method will create a new record on the underlying database matching the passed in hash-keys with the 'elements' found on the DA.
-The underlying DAD will a HASH ref of the orignal data and any creation info the DAD may add in.
+This method will create a new record on the underlying DAD database.  It will attempt to match the 'KEYS' of the passed in hash ref with the 'elements' found on the DA.
+The underlying DAD will return the original HASH or ARRAY ref with creation info the undelying DAD may add in.
 
 retrieve
 
+   $address_da->add_condition({left=>{name=>id},
+                             right=>{value=>123}});
    my $address = $da->retrieve($dbh, {}, $opt);
+
+This method will return the requested records from the underlying DAD.
 
 update
 
+   $address_da->add_condition({left=>{name=>id},
+                             right=>{value=>123}});
+   my $address = $da->retrieve($dbh, {city=>22,
+                                      phone=>1234567890}, $opt);
+
+This method will update the matching records in the underlying DAD with the passed in hash. 
 delete
 
-add_condition
-add_element
-add_filter
-add_gather
-add_link
-add_sort
 
 no_create
 no_retrieve
@@ -986,18 +990,26 @@ delete_requires_condition
 view
 elements
 dynamic_elements
+add_element
 
 condtions
 dynamic_condtions
+add_condition
 
 links
 dynamic_links
+add_link
 
 sorts
 dynamic_sorts
+add_sort
 
 gathers
 dynamic_gathers
+add_gather
 
 filters
 dynamic_filters
+add_filter
+
+available_drivers
