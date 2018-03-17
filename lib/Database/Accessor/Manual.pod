@@ -1,0 +1,14 @@
+# PODNAME: Database::Accessor::Manual
+# ABSTRACT: What is Database::Accessor, and how do I use it?
+
+=pod
+
+=head1 Datatbase::Accessor is not an ORM
+
+=head1 Table Of Contents
+
+=for :list
+* L<Database::Accessor::Tutorial::GettingStarted>
+* L<Database::Accessor::Tutorial::Basics>
+
+=cut 
