@@ -6,19 +6,8 @@ use lib ('t/lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
-#use Test::Database::Accessor::Utils;
-
-#use Test::More 0.82;
-#use lib ('t/lib');
-#use strict;
-#use warnings;
 use MooseX::Test::Role;
 use Test::More tests => 44;
-#use Data::Dumper;
-
-#BEGIN {
-#    use_ok('Database::Accessor');
-#}
 
 
 my $da =
@@ -32,11 +21,11 @@ foreach my $attribute ( $da->meta->get_all_attributes ) {
     next
       if ( index( $attribute->name(), '_' ) eq 0 );
     my $dad_attribute = $attribute->name();
-    
+
    next
      if (  $attribute->can('description')
      and $attribute->description->{not_in_DAD} );
-     
+
     if ( $dad_role->can($dad_attribute) ) {
         pass("Role DAD can $dad_attribute");
         my $attr = $dad_role->meta->get_attribute($dad_attribute);

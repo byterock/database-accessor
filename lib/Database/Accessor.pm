@@ -1,7 +1,5 @@
     package Database::Accessor;
     
-    # ABSTRACT: CRUD Interface for any DB
-    # Dist::Zilla: +PkgVersion
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -15,7 +13,8 @@
     use Data::Dumper;
     use File::Spec;
     use namespace::autoclean;
-
+    # ABSTRACT: CRUD Interface for any DB
+    # Dist::Zilla: +PkgVersion
 
       around BUILDARGS => sub {
         my $orig  = shift;
@@ -86,7 +85,7 @@
                 $file =~ s{\.pm$}{};                      # remove .pm extension
                 $dir  =~ s/\\/\//gi;
                 $dir  =~ s/^.+Database\/Accessor\/DAD\///;
-                
+
                 my $_package=
                   join '::' => grep $_ => File::Spec->splitdir($dir);
 
@@ -104,14 +103,14 @@
                     $classname = join '::', 'Database', 'Accessor', 'DAD',
                       $file;
                 }
-                
+
                 # eval qq{package                   # hide from PAUSE
                           # Database::Accessor::DAD::_firesafe;    # ensures that the TRD is present in the path
                           # require $classname;    # load the driver
                 # };
 
                 eval "require $classname";
-                
+
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
@@ -999,6 +998,7 @@ add_condition
 links
 dynamic_links
 add_link
+Reteive
 
 sorts
 dynamic_sorts
@@ -1013,3 +1013,4 @@ dynamic_filters
 add_filter
 
 available_drivers
+Delete

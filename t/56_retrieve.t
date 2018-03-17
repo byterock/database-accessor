@@ -39,5 +39,3 @@ ok( $return_str->{type} eq Database::Accessor::Constants::RETRIEVE,
 eval { my $thig = $da->{elements}->[0]->{name};  };
 
 ok( $@, 'Can not directly access attributes directly' );
-
-
