@@ -15,6 +15,8 @@
     use namespace::autoclean;
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
+    # CONTRIBUTORS: bloggingsb - Bill Bloggins - <bill@bloggins.org>
+# SEEALSO: constant
 
       around BUILDARGS => sub {
         my $orig  = shift;
@@ -145,8 +147,9 @@
     );
 
     has available_drivers =>(
-        isa => 'HashRef',
-        is  => 'rw'
+        isa => 'ArrayRef',
+        is  => 'rw',
+        documentation=>"Returns an ArrayRef of HasRefs the DADs that are installed. The keys in the HashRef are 'DAD=>DAD name,class=>the DB class,ver=>the DAD Version'"
     );
         
      
@@ -808,6 +811,13 @@ __END__
   Have a Key-Pair Non SQL DB and don't know how to get the data out.
   
   Well Database::Accessor is for you!
+
+=head1 SEE ALSO
+
+Database::Accessor::Manual
+Database::Accessor::Tutorial
+Database::Accessor::Driver::WritersGuide
+Database::Accessor::Driver::SQL
 
 =head1 SYNOPSIS
 
