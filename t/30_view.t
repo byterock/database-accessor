@@ -10,7 +10,7 @@ use lib ('t/lib');
 # }
 
 # use Moose;
-# with(qw( Database::Accessor::Roles::DAD));
+# with(qw( Database::Accessor::Roles::Driver));
 
 # sub execute {
     # my $self = shift;

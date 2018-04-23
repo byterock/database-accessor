@@ -1,11 +1,10 @@
-package Database::Accessor::DAD::Test;
+package Database::Accessor::Driver::Test;
 
 BEGIN {
-    $Database::Accessor::DAD::Test::VERSION = "0.01";
+    $Database::Accessor::Driver::Test::VERSION = "0.01";
 }
-use lib qw(D:\GitHub\DA-blog\lib);
 use Moose;
-with(qw( Database::Accessor::Roles::DAD));
+with(qw( Database::Accessor::Roles::Driver));
 
 sub execute {
     my $self = shift;

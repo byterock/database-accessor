@@ -15,7 +15,7 @@ my $da =
 
 my $view = $da->view();
 
-my $dad_role = consuming_class("Database::Accessor::Roles::DAD");
+my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
 foreach my $attribute ( $da->meta->get_all_attributes ) {
     next

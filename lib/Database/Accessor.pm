@@ -37,7 +37,7 @@
         my $dad  = {};
         map { $self->_loadDADClassesFromDir( $_, $dad ) }
           grep { -d $_ }
-          map { File::Spec->catdir( $_, 'Database', 'Accessor', 'DAD' ) } @INC;
+          map { File::Spec->catdir( $_, 'Database', 'Accessor', 'Driver' ) } @INC;
 
         if ( $self->retrieve_only ) {
             foreach my $flag (qw(no_create no_update no_delete)) {
@@ -86,7 +86,7 @@
                 my ( $volume, $dir, $file ) = File::Spec->splitpath($_);
                 $file =~ s{\.pm$}{};                      # remove .pm extension
                 $dir  =~ s/\\/\//gi;
-                $dir  =~ s/^.+Database\/Accessor\/DAD\///;
+                $dir  =~ s/^.+Database\/Accessor\/Driver\///;
 
                 my $_package=
                   join '::' => grep $_ => File::Spec->splitdir($dir);
@@ -98,16 +98,16 @@
                 my $classname = "";
 
                 if ($package) {
-                    $classname = join '::', 'Database', 'Accessor', 'DAD',
+                    $classname = join '::', 'Database', 'Accessor', 'Driver',
                       $package, $file;
                 }
                 else {
-                    $classname = join '::', 'Database', 'Accessor', 'DAD',
+                    $classname = join '::', 'Database', 'Accessor', 'Driver',
                       $file;
                 }
 
                 # eval qq{package                   # hide from PAUSE
-                          # Database::Accessor::DAD::_firesafe;    # ensures that the TRD is present in the path
+                          # Database::Accessor::Driver::_firesafe;    # ensures that the TRD is present in the path
                           # require $classname;    # load the driver
                 # };
 
@@ -116,9 +116,9 @@
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
-"Database/Accessor/DAD/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
+"Database/Accessor/Driver/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
                     warn(
-"\n\n Warning Load of Database/Accessor/DAD/$file.pm failed: \n   Error=$err \n $advice\n"
+"\n\n Warning Load of Database/Accessor/Driver/$file.pm failed: \n   Error=$err \n $advice\n"
                     );
                     next;
                 }
@@ -126,7 +126,7 @@
                     next
                       unless (
                         does_role(
-                            $classname, 'Database::Accessor::Roles::DAD'
+                            $classname, 'Database::Accessor::Roles::Driver'
                         )
                       );    #now only loads this class
                     $dad->{ $classname->DB_Class } = $classname;
@@ -340,7 +340,7 @@
 
         die "$type No Database::Accessor::Driver loaded for "
           . ref($conn)
-          . " Maybe you have to install a Database::Accessor::DAD::?? for it?"
+          . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
         my $dad = $driver->new(
             {
@@ -713,7 +713,7 @@
     {
 
         package
-          Database::Accessor::Roles::DAD;
+          Database::Accessor::Roles::Driver;
 
         use Moose::Role;
         with qw(Database::Accessor::Types);

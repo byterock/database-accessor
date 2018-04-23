@@ -1,38 +1,30 @@
-# PODNAME: Database::Accessor::Manual
-# ABSTRACT: What is Database::Accessor, and how do I use it?
+# PODNAME: Database::Accessor::Tutorial
+# ABSTRACT: Want to learn Database::Accesor! Here is the place to start
 
 =pod
 
-=head1 Datatbase::Accessor is not an ORM
+=head1 Description
 
-=head1 Table Of Contents
+This is a tutorial for Database::Accessor or DA for short.  DA is a CRUD (Create, Retreive, Update Delete) layer for any DB. 
+If you are looking for all sorts of neat accessors and methors for you classes look elsewhere, as DA is not an ORM.  If
+you just a neat little backend for a set of classes DA is for you.  I you also have to face using both an SQL DB and a Non-SQL like Mongo i nthe same projectand want only 
+one backend then DA is for you.
 
-=for :list
-* L<Database::Accessor::Tutorial::GettingStarted>
-* L<Database::Accessor::Tutorial::Basics>
+This tutorial should give you all you need to get you started with DA.
 
-
-=pod
-
-=head1 NAME
-
-Database::Accessor::Manual - The index of the Manual
-
-=head1 Description 
-
-Here is where you can find all the documention for Database::Accessor or DA for short.  DA, as the name implies, is just a simple accesslayer for your data,
-it works in conjunction with a DAD (Databacse::Accessor::Driver) is intended to access
-=head1 Datatbase::Accessor is not an ORM
-
-=head1 Table Of Contents
+=head1 Sections
 
 =for :list
+
+* L<Database::Accessor::Tutorial::Concepts>
+
 * L<Database::Accessor::Tutorial::GettingStarted>
-* L<Database::Accessor::Tutorial::Basics>
+A quick document on what you will need to get DA up and working
+
+
 
 Database::Accessor::Tutorial::GettnigStarted
 
-    A quick document on what you will need to get Accessor working with a few examples of its usage, i.e. you will need a DB and the following schema. 
 
 Database::Accessor::Tutorial::Basics
 
@@ -117,5 +109,6 @@ Database::Accessor::CookBook
 Database::Accessor::Driver::WritersGuide
 
 A doc for people who are fool hardy enough to try and write a DAD
+
 
 =cut 
