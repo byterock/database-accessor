@@ -149,6 +149,7 @@
     has available_drivers =>(
         isa => 'ArrayRef',
         is  => 'rw',
+        traits  => ['MooseX::MetaDescription::Meta::Trait'],
         description =>{ not_in_DAD=>1 },
         documentation=>"Returns an ArrayRef of HasRefs the DADs that are installed. The keys in the HashRef are 'DAD=>DAD name,class=>the DB class,ver=>the DAD Version'"
     );
