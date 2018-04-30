@@ -30,6 +30,13 @@ use constant RETRIEVE    => 'RETRIEVE';
 use constant UPDATE      => 'UPDATE';
 use constant DELETE      => 'DELETE';
 
+use constant CRUD =>  {
+    Database::Accessor::Constants::CREATE   => 1,
+    Database::Accessor::Constants::RETRIEVE => 1,
+    Database::Accessor::Constants::UPDATE   => 1,
+    Database::Accessor::Constants::DELETE   => 1,
+};
+
 use constant LINKS => {
     Database::Accessor::Constants::OUTER => 1,
     Database::Accessor::Constants::LEFT  => 1,

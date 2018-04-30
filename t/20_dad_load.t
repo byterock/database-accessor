@@ -54,3 +54,9 @@ ok( $da->no_update() == 1,   "Cannot Update" );
 ok( $da->no_delete() == 1,   "Cannot Delete" );
 
 ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
+
+foreach my $type (qw(Create retrieve UPDATE DeLeTe)){
+    my $raw = $da->raw_query(Data::Test->new(),$type);
+    ok($raw->{DAD} eq 'Database::Accessor::Driver::Test','correct raw DAD class');
+    ok($raw->{query} eq uc($type).' query','correct '.uc($type)." raw query returned");
+}

@@ -20,4 +20,12 @@ sub DB_Class {
     return 'Data::Test';
 }
 
+sub raw_query {
+    my $self = shift;
+    my ($conn, $type) = @_;
+    return {DAD=>ref($self),
+            query=>$type.' query',
+        };
+}
+
 1;

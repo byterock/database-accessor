@@ -1,5 +1,5 @@
     package Database::Accessor;
-    
+    use lib 'D:\GitHub\database-accessor\lib';
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -8,6 +8,7 @@
     use MooseX::AccessorsOnly;
     use MooseX::AlwaysCoerce;
     use MooseX::Constructor::AllErrors;
+    use MooseX::Privacy;
 
     # use Carp;
     use Data::Dumper;
@@ -333,38 +334,7 @@
         },
     );
 
-    sub _execute {
-        my $self = shift;
-        my ( $type, $conn, $container, $opt ) = @_;
-        my $drivers = $self->_ldad();
-        # warn("JSP ".Dumper($drivers));
-        my $driver  = $drivers->{ ref($conn) };
-
-        die "$type No Database::Accessor::Driver loaded for "
-          . ref($conn)
-          . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
-          unless ($driver);
-        my $dad = $driver->new(
-            {
-                view               => $self->view,
-                elements           => $self->elements,
-                dynamic_elements   => $self->dynamic_elements,
-                conditions         => $self->conditions,
-                dynamic_conditions => $self->dynamic_conditions,
-                links              => $self->links,
-                dynamic_links      => $self->dynamic_links,
-                gathers            => $self->gathers,
-                dynamic_gathers    => $self->dynamic_gathers,
-                filters            => $self->filters,
-                dynamic_filters    => $self->dynamic_filters,
-                sorts              => $self->sorts,
-                dynamic_sorts      => $self->dynamic_sorts,
-            }
-        );
-        $dad->execute( $type, $conn, $container, $opt );
-        return $container;
-
-    }
+    
 
     sub create {
         my $self = shift;
@@ -433,6 +403,63 @@
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
     }
+
+    private_method _execute => sub  {
+        my $self = shift;
+        my ( $type, $conn, $container, $opt ) = @_;
+        my $dad = $self->_get_dad($conn);
+        $dad->execute( $type, $conn, $container, $opt );
+        return $container;
+
+    };
+# DADNote: The DAD will have to have the same function call 'raw_query' with one param ($type) CRUD return a string repesntaion of the query
+
+    sub raw_query {
+       my $self = shift;
+       my ($conn, $type) = @_;
+       
+       $self->_try_one_of(Database::Accessor::Constants::OPERATORS)
+          unless (exists( Database::Accessor::Constants::OPERATORS->{ uc($type) } ));
+
+       my $dad = $self->_get_dad($conn);
+       my $raw = $dad->raw_query($type);
+       return {DAD=>ref($dad),
+               query=>$raw};
+     }
+    
+    private_method _get_dad => sub {
+          my $self = shift;
+       my ($conn) = @_;
+       my $drivers = $self->_ldad();
+        # warn("JSP ".Dumper($drivers));
+      
+        my $driver  = $drivers->{ ref($conn) };
+
+        die "No Database::Accessor::Driver loaded for "
+          . ref($conn)
+          . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
+          unless ($driver);
+      
+        my $dad = $driver->new(
+            {
+                view               => $self->view,
+                elements           => $self->elements,
+                dynamic_elements   => $self->dynamic_elements,
+                conditions         => $self->conditions,
+                dynamic_conditions => $self->dynamic_conditions,
+                links              => $self->links,
+                dynamic_links      => $self->dynamic_links,
+                gathers            => $self->gathers,
+                dynamic_gathers    => $self->dynamic_gathers,
+                filters            => $self->filters,
+                dynamic_filters    => $self->dynamic_filters,
+                sorts              => $self->sorts,
+                dynamic_sorts      => $self->dynamic_sorts,
+            }
+        );
+        return $dad;
+    };
+ 
     1;
 
     {
@@ -722,6 +749,7 @@
         use namespace::autoclean;
         requires 'DB_Class';
         requires 'execute';
+        requires 'raw_query';
 
         has view => (
             is  => 'ro',
