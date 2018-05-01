@@ -22,10 +22,9 @@ sub DB_Class {
 
 sub raw_query {
     my $self = shift;
-    my ($conn, $type) = @_;
-    return {DAD=>ref($self),
-            query=>$type.' query',
-        };
+    my ($type) = @_;
+    return $type.' query';
+        
 }
 
 1;

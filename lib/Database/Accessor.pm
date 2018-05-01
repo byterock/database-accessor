@@ -1,5 +1,5 @@
     package Database::Accessor;
-    use lib 'D:\GitHub\database-accessor\lib';
+    
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -16,8 +16,7 @@
     use namespace::autoclean;
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
-    # CONTRIBUTORS: bloggingsb - Bill Bloggins - <bill@bloggins.org>
-# SEEALSO: constant
+    
 
       around BUILDARGS => sub {
         my $orig  = shift;
@@ -422,7 +421,7 @@
           unless (exists( Database::Accessor::Constants::OPERATORS->{ uc($type) } ));
 
        my $dad = $self->_get_dad($conn);
-       my $raw = $dad->raw_query($type);
+       my $raw = $dad->raw_query(uc($type));
        return {DAD=>ref($dad),
                query=>$raw};
      }
