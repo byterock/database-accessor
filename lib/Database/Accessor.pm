@@ -446,7 +446,7 @@
             die "Usage: Database::Accessor->"
               . lc($action)
               . "( Class , Hash-Ref||Class, Hash-Ref); "
-              . "The \$connection parameter must be either a Hash-Ref or a Class"
+              . "The \$container parameter must be either a Hash-Ref or a Class"
               if ( ref($container) ne 'HASH' or !blessed($container) );
 
         }
@@ -547,7 +547,8 @@
 
     {
 
-        package Database::Accessor::Base;
+        package 
+           Database::Accessor::Base;
         use Moose;
         use MooseX::Aliases;
         use MooseX::Constructor::AllErrors;
@@ -582,7 +583,8 @@
 
     {
 
-        package Database::Accessor::Roles::Alias;
+        package 
+           Database::Accessor::Roles::Alias;
         use Moose::Role;
         use namespace::autoclean;
 
@@ -597,7 +599,8 @@
 
     {
 
-        package Database::Accessor::Roles::Comparators;
+        package 
+           Database::Accessor::Roles::Comparators;
 
         use Moose::Role;
         use MooseX::Aliases;
@@ -639,7 +642,8 @@
 
     {
 
-        package Database::Accessor::Roles::PredicateArray;
+        package 
+           Database::Accessor::Roles::PredicateArray;
         use Moose::Role;
         use MooseX::Aliases;
         use namespace::autoclean;
@@ -656,7 +660,8 @@
     }
     {
 
-        package Database::Accessor::View;
+        package 
+           Database::Accessor::View;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Alias);
@@ -665,7 +670,8 @@
     }
     {
 
-        package Database::Accessor::Element;
+        package 
+           Database::Accessor::Element;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Alias );
@@ -699,7 +705,8 @@
 
     {
 
-        package Database::Accessor::Predicate;
+        package 
+           Database::Accessor::Predicate;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -720,7 +727,8 @@
 
     {
 
-        package Database::Accessor::Param;
+        package 
+           Database::Accessor::Param;
         use Moose;
         extends 'Database::Accessor::Base';
 
@@ -735,7 +743,8 @@
 
     {
 
-        package Database::Accessor::Function;
+        package 
+           Database::Accessor::Function;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -751,7 +760,8 @@
 
     {
 
-        package Database::Accessor::Expression;
+        package 
+           Database::Accessor::Expression;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -766,7 +776,8 @@
     }
     {
 
-        package Database::Accessor::Condition;
+        package 
+           Database::Accessor::Condition;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::PredicateArray);
@@ -775,7 +786,8 @@
     }
     {
 
-        package Database::Accessor::Link;
+        package 
+           Database::Accessor::Link;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::PredicateArray);
@@ -797,7 +809,8 @@
 
     {
 
-        package Database::Accessor::Sort;
+        package 
+           Database::Accessor::Sort;
         use Moose;
         extends 'Database::Accessor::Element';
         use namespace::autoclean;
@@ -812,7 +825,8 @@
     }
     {
 
-        package Database::Accessor::Roles::Driver;
+        package 
+           Database::Accessor::Roles::Driver;
 
         use Moose::Role;
         with qw(Database::Accessor::Types);
