@@ -1,5 +1,5 @@
     package Database::Accessor;
-    
+
     use Moose;
     with qw(Database::Accessor::Types);
     use Moose::Util qw(does_role);
@@ -9,16 +9,17 @@
     use MooseX::AlwaysCoerce;
     use MooseX::Constructor::AllErrors;
     use MooseX::Privacy;
+    use Scalar::Util qw(blessed);
 
     # use Carp;
     use Data::Dumper;
     use File::Spec;
     use namespace::autoclean;
+
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
-    
 
-      around BUILDARGS => sub {
+    around BUILDARGS => sub {
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
@@ -30,14 +31,15 @@
             $ops->{no_delete}   = 1;
         }
         return $class->$orig($ops);
-      };
+    };
 
     sub BUILD {
         my $self = shift;
         my $dad  = {};
         map { $self->_loadDADClassesFromDir( $_, $dad ) }
           grep { -d $_ }
-          map { File::Spec->catdir( $_, 'Database', 'Accessor', 'Driver' ) } @INC;
+          map { File::Spec->catdir( $_, 'Database', 'Accessor', 'Driver' ) }
+          @INC;
 
         if ( $self->retrieve_only ) {
             foreach my $flag (qw(no_create no_update no_delete)) {
@@ -76,6 +78,7 @@
         @files = map { $path . '/' . $_ } @files;
 
         for (@files) {
+
             # If the file is a directory
             if ( -d $_ ) {
                 $self->_loadDADClassesFromDir( $_, $dad );
@@ -84,16 +87,16 @@
             }
             elsif (/.pm$/) {    #we only care about pm files
                 my ( $volume, $dir, $file ) = File::Spec->splitpath($_);
-                $file =~ s{\.pm$}{};                      # remove .pm extension
+                $file =~ s{\.pm$}{};    # remove .pm extension
                 $dir  =~ s/\\/\//gi;
-                $dir  =~ s/^.+Database\/Accessor\/Driver\///;
+                $dir =~ s/^.+Database\/Accessor\/Driver\///;
 
-                my $_package=
+                my $_package =
                   join '::' => grep $_ => File::Spec->splitdir($dir);
 
                 # # untaint that puppy!
                 my ($package) =
-                  $_package=~ /^([[:word:]]+(?:::[[:word:]]+)*)$/;
+                  $_package =~ /^([[:word:]]+(?:::[[:word:]]+)*)$/;
 
                 my $classname = "";
 
@@ -106,10 +109,10 @@
                       $file;
                 }
 
-                # eval qq{package                   # hide from PAUSE
-                          # Database::Accessor::Driver::_firesafe;    # ensures that the TRD is present in the path
-                          # require $classname;    # load the driver
-                # };
+# eval qq{package                   # hide from PAUSE
+# Database::Accessor::Driver::_firesafe;    # ensures that the TRD is present in the path
+# require $classname;    # load the driver
+# };
 
                 eval "require $classname";
 
@@ -130,7 +133,7 @@
                         )
                       );    #now only loads this class
                     $dad->{ $classname->DB_Class } = $classname;
-                    
+
                 }
 
             }
@@ -146,74 +149,76 @@
         is  => 'rw',
     );
 
-    has available_drivers =>(
-        isa => 'ArrayRef',
-        is  => 'rw',
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>{ not_in_DAD=>1 },
-        documentation=>"Returns an ArrayRef of HasRefs the DADs that are installed. The keys in the HashRef are 'DAD=>DAD name,class=>the DB class,ver=>the DAD Version'"
+    has available_drivers => (
+        isa         => 'ArrayRef',
+        is          => 'rw',
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
+        documentation =>
+"Returns an ArrayRef of HasRefs the DADs that are installed. The keys in the HashRef are 'DAD=>DAD name,class=>the DB class,ver=>the DAD Version'"
     );
-        
-     
 
     has no_create => (
-        is      => 'ro',
-        isa     => 'Bool',
-        default => 0,
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>
-          { message => "Attempt to use create with no_create flag on!",
-            not_in_DAD=>1 }
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => {
+            message    => "Attempt to use create with no_create flag on!",
+            not_in_DAD => 1
+        }
     );
 
     has no_retrieve => (
-        is      => 'ro',
-        isa     => 'Bool',
-        default => 0,
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>
-          { message => "Attempt to use retrieve with no_retrieve flag on!",
-            not_in_DAD=>1 }
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => {
+            message    => "Attempt to use retrieve with no_retrieve flag on!",
+            not_in_DAD => 1
+        }
     );
     has no_update => (
-        is      => 'ro',
-        isa     => 'Bool',
-        default => 0,
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>
-          { message => "Attempt to use update with no_update flag on!",
-            not_in_DAD=>1 }
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => {
+            message    => "Attempt to use update with no_update flag on!",
+            not_in_DAD => 1
+        }
     );
     has no_delete => (
-        is      => 'ro',
-        isa     => 'Bool',
-        default => 0,
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>
-          { message => "Attempt to use delete with no_delete flag on!",
-            not_in_DAD=>1 }
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => {
+            message    => "Attempt to use delete with no_delete flag on!",
+            not_in_DAD => 1
+        }
     );
     has retrieve_only => (
-        is      => 'ro',
-        isa     => 'Bool',
-        default => 0,
-        traits  => ['MooseX::MetaDescription::Meta::Trait'],
-        description =>
-          { not_in_DAD=>1 }
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 }
 
     );
 
-  has [
-    qw(update_requires_condition
-      delete_requires_condition
-      )
-  ] => (
-    is          => 'ro',
-    isa         => 'Bool',
-    default     => 1,
-    traits  => ['MooseX::MetaDescription::Meta::Trait'],
-    description => { not_in_DAD => 1 }
-  );
+    has [
+        qw(update_requires_condition
+          delete_requires_condition
+          )
+      ] => (
+        is          => 'ro',
+        isa         => 'Bool',
+        default     => 1,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 }
+      );
 
     has view => (
         is       => 'ro',
@@ -333,8 +338,6 @@
         },
     );
 
-    
-
     sub create {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
@@ -371,22 +374,22 @@
 
         $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
-            
+
         return $container;
     }
 
     sub delete {
         my $self = shift;
-        my ( $conn, $container, $opt ) = @_;
+        my ( $conn, $opt ) = @_;
         die( $self->meta->get_attribute('no_delete')->description->{message} )
           if ( $self->no_delete() );
         $self->_need_condition( Database::Accessor::Constants::DELETE,
             $self->delete_requires_condition()
         );
-
+        my $container = {};
         $self->_execute( Database::Accessor::Constants::DELETE,
             $conn, $container, $opt );
-            
+
         return $container;
     }
 
@@ -403,42 +406,51 @@
           );
     }
 
-    private_method _execute => sub  {
+    private_method _execute => sub {
         my $self = shift;
-        my ( $type, $conn, $container, $opt ) = @_;
-        my $dad = $self->_get_dad($conn);
-        $dad->execute( $type, $conn, $container, $opt );
-        return $container;
+        my ( $action, $conn, $container, $opt ) = @_;
 
-    };
-# DADNote: The DAD will have to have the same function call 'raw_query' with one param ($type) CRUD return a string repesntaion of the query
-
-    sub raw_query {
-       my $self = shift;
-       my ($conn, $type) = @_;
-       
-       $self->_try_one_of(Database::Accessor::Constants::OPERATORS)
-          unless (exists( Database::Accessor::Constants::OPERATORS->{ uc($type) } ));
-
-       my $dad = $self->_get_dad($conn);
-       my $raw = $dad->raw_query(uc($type));
-       return {DAD=>ref($dad),
-               query=>$raw};
-     }
-    
-    private_method _get_dad => sub {
-          my $self = shift;
-       my ($conn) = @_;
-       my $drivers = $self->_ldad();
-        # warn("JSP ".Dumper($drivers));
-      
+        die "Usage: Database::Accessor->"
+          . lc($action)
+          . "(\$connection,\$container,\$options); "
+          . "You must supply a \$connection, and \$container "
+          if ( !blessed($conn) or $container == undef );
+        
+        my $drivers = $self->_ldad();
         my $driver  = $drivers->{ ref($conn) };
 
         die "No Database::Accessor::Driver loaded for "
           . ref($conn)
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
-      
+
+        if ( $action eq Database::Accessor::Constants::CREATE ) {
+            my $message =
+                "Usage: Database::Accessor->"
+              . lc($action)
+              . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); "
+              . "The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes";
+            if ( ref($container) eq "ARRAY" ) {
+                my @bad =
+                  grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
+                die $message
+                  . " The 'Array-Ref' is must contain only Hash-refs or Classes";
+            }
+            die $message
+              if ( ref($container) ne 'HASH' or !blessed($container) );
+
+        }
+        elsif ($action eq Database::Accessor::Constants::RETRIEVE
+            or $action eq Database::Accessor::Constants::UPDATE )
+        {
+            die "Usage: Database::Accessor->"
+              . lc($action)
+              . "( Class , Hash-Ref||Class, Hash-Ref); "
+              . "The \$connection parameter must be either a Hash-Ref or a Class"
+              if ( ref($container) ne 'HASH' or !blessed($container) );
+
+        }
+
         my $dad = $driver->new(
             {
                 view               => $self->view,
@@ -456,20 +468,93 @@
                 dynamic_sorts      => $self->dynamic_sorts,
             }
         );
-        return $dad;
+
+        my $result = $dad->execute( $action, $conn, $container, $opt );
+
     };
- 
+
+# DANote:  please fill in a new section for Options starting with DA_raw_query and include a blurb about the nameing convention
+# DADNote: The DAD will have to check for any DA_ flags and take the apporate action
+
+    # sub _sanity_check {
+        # my $self = shift;
+        # my ( $action, $container ) = @_;
+
+        # if ( $action eq Database::Accessor::Constants::CREATE ) {
+            # my $message =
+                # "Usage: Database::Accessor->"
+              # . lc($action)
+              # . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); "
+              # . "The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes";
+            # if ( ref($container) eq "ARRAY" ) {
+                # my @bad =
+                  # grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
+                # die $message
+                  # . " The 'Array-Ref' is must contain only Hash-refs or Classes";
+            # }
+            # die $message
+              # if ( ref($container) ne 'HASH' or !blessed($container) );
+
+        # }
+        # elsif ($action eq Database::Accessor::Constants::RETRIEVE
+            # or $action eq Database::Accessor::Constants::UPDATE )
+        # {
+            # die "Usage: Database::Accessor->"
+              # . lc($action)
+              # . "( Class , Hash-Ref||Class, Hash-Ref); "
+              # . "The \$connection parameter must be either a Hash-Ref or a Class"
+              # if ( ref($container) ne 'HASH' or !blessed($container) );
+
+        # }
+
+    # }
+
+    # private_method _get_dad => sub {
+        # my $self    = shift;
+        # my ($conn)  = @_;
+        # my $drivers = $self->_ldad();
+
+        # # warn("JSP ".Dumper($drivers));
+
+        # my $driver = $drivers->{ ref($conn) };
+
+        # die "No Database::Accessor::Driver loaded for "
+          # . ref($conn)
+          # . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
+          # unless ($driver);
+
+        # my $dad = $driver->new(
+            # {
+                # view               => $self->view,
+                # elements           => $self->elements,
+                # dynamic_elements   => $self->dynamic_elements,
+                # conditions         => $self->conditions,
+                # dynamic_conditions => $self->dynamic_conditions,
+                # links              => $self->links,
+                # dynamic_links      => $self->dynamic_links,
+                # gathers            => $self->gathers,
+                # dynamic_gathers    => $self->dynamic_gathers,
+                # filters            => $self->filters,
+                # dynamic_filters    => $self->dynamic_filters,
+                # sorts              => $self->sorts,
+                # dynamic_sorts      => $self->dynamic_sorts,
+            # }
+        # );
+        # return $dad;
+    # };
+
     1;
 
     {
-        package
-           Database::Accessor::Base;
+
+        package Database::Accessor::Base;
         use Moose;
         use MooseX::Aliases;
         use MooseX::Constructor::AllErrors;
         use MooseX::AlwaysCoerce;
         with qw(Database::Accessor::Types);
         use namespace::autoclean;
+
         # around BUILDARGS => sub {
 
         # my $orig  = shift;
@@ -497,8 +582,7 @@
 
     {
 
-        package
-           Database::Accessor::Roles::Alias;
+        package Database::Accessor::Roles::Alias;
         use Moose::Role;
         use namespace::autoclean;
 
@@ -513,8 +597,7 @@
 
     {
 
-        package
-           Database::Accessor::Roles::Comparators;
+        package Database::Accessor::Roles::Comparators;
 
         use Moose::Role;
         use MooseX::Aliases;
@@ -556,12 +639,10 @@
 
     {
 
-        package
-           Database::Accessor::Roles::PredicateArray;
+        package Database::Accessor::Roles::PredicateArray;
         use Moose::Role;
         use MooseX::Aliases;
         use namespace::autoclean;
-
 
         has predicates => (
             traits  => ['Array'],
@@ -575,8 +656,7 @@
     }
     {
 
-        package
-           Database::Accessor::View;
+        package Database::Accessor::View;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Alias);
@@ -585,8 +665,7 @@
     }
     {
 
-        package
-           Database::Accessor::Element;
+        package Database::Accessor::Element;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Alias );
@@ -620,8 +699,7 @@
 
     {
 
-        package
-           Database::Accessor::Predicate;
+        package Database::Accessor::Predicate;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -642,8 +720,7 @@
 
     {
 
-        package
-          Database::Accessor::Param;
+        package Database::Accessor::Param;
         use Moose;
         extends 'Database::Accessor::Base';
 
@@ -658,8 +735,7 @@
 
     {
 
-        package
-          Database::Accessor::Function;
+        package Database::Accessor::Function;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -675,8 +751,7 @@
 
     {
 
-        package
-          Database::Accessor::Expression;
+        package Database::Accessor::Expression;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators);
@@ -691,8 +766,7 @@
     }
     {
 
-        package
-          Database::Accessor::Condition;
+        package Database::Accessor::Condition;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::PredicateArray);
@@ -701,8 +775,7 @@
     }
     {
 
-        package
-          Database::Accessor::Link;
+        package Database::Accessor::Link;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::PredicateArray);
@@ -724,8 +797,7 @@
 
     {
 
-        package
-          Database::Accessor::Sort;
+        package Database::Accessor::Sort;
         use Moose;
         extends 'Database::Accessor::Element';
         use namespace::autoclean;
@@ -740,8 +812,7 @@
     }
     {
 
-        package
-          Database::Accessor::Roles::Driver;
+        package Database::Accessor::Roles::Driver;
 
         use Moose::Role;
         with qw(Database::Accessor::Types);
@@ -829,6 +900,7 @@
     1;
 
 __END__
+
 =pod
  
 
