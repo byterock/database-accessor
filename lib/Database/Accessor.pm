@@ -9,6 +9,7 @@
     use MooseX::AlwaysCoerce;
     use MooseX::Constructor::AllErrors;
     use MooseX::Privacy;
+    use MooseX::Attribute::ENV;
     use Scalar::Util qw(blessed);
 
     # use Carp;
@@ -207,6 +208,20 @@
         description => { not_in_DAD => 1 }
 
     );
+
+
+    has [
+        qw(da_compose_only
+           da_no_effect
+           da_warning
+          )
+      ] => (
+        is          => 'rw',
+        isa         => 'Bool',
+        default     => 0,
+        traits => ['ENV'],
+      );
+
 
     has [
         qw(update_requires_condition
@@ -466,85 +481,65 @@
                 dynamic_filters    => $self->dynamic_filters,
                 sorts              => $self->sorts,
                 dynamic_sorts      => $self->dynamic_sorts,
+                da_compose_only    => $self->da_compose_only,
+                da_no_effect       => $self->da_no_effect,
+                da_warning         => $self->da_warning
             }
         );
-
-        my $result = $dad->execute( $action, $conn, $container, $opt );
-
+        my $result = Database::Accessor::Result->new({DAD=>$driver});
+        $dad->execute($result, $action, $conn, $container, $opt );
+        $self->result($result);
+        return $result->is_error();
+        
     };
 
 # DANote:  please fill in a new section for Options starting with DA_raw_query and include a blurb about the nameing convention
 # DADNote: The DAD will have to check for any DA_ flags and take the apporate action
 
-    # sub _sanity_check {
-        # my $self = shift;
-        # my ( $action, $container ) = @_;
-
-        # if ( $action eq Database::Accessor::Constants::CREATE ) {
-            # my $message =
-                # "Usage: Database::Accessor->"
-              # . lc($action)
-              # . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); "
-              # . "The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes";
-            # if ( ref($container) eq "ARRAY" ) {
-                # my @bad =
-                  # grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-                # die $message
-                  # . " The 'Array-Ref' is must contain only Hash-refs or Classes";
-            # }
-            # die $message
-              # if ( ref($container) ne 'HASH' or !blessed($container) );
-
-        # }
-        # elsif ($action eq Database::Accessor::Constants::RETRIEVE
-            # or $action eq Database::Accessor::Constants::UPDATE )
-        # {
-            # die "Usage: Database::Accessor->"
-              # . lc($action)
-              # . "( Class , Hash-Ref||Class, Hash-Ref); "
-              # . "The \$connection parameter must be either a Hash-Ref or a Class"
-              # if ( ref($container) ne 'HASH' or !blessed($container) );
-
-        # }
-
-    # }
-
-    # private_method _get_dad => sub {
-        # my $self    = shift;
-        # my ($conn)  = @_;
-        # my $drivers = $self->_ldad();
-
-        # # warn("JSP ".Dumper($drivers));
-
-        # my $driver = $drivers->{ ref($conn) };
-
-        # die "No Database::Accessor::Driver loaded for "
-          # . ref($conn)
-          # . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
-          # unless ($driver);
-
-        # my $dad = $driver->new(
-            # {
-                # view               => $self->view,
-                # elements           => $self->elements,
-                # dynamic_elements   => $self->dynamic_elements,
-                # conditions         => $self->conditions,
-                # dynamic_conditions => $self->dynamic_conditions,
-                # links              => $self->links,
-                # dynamic_links      => $self->dynamic_links,
-                # gathers            => $self->gathers,
-                # dynamic_gathers    => $self->dynamic_gathers,
-                # filters            => $self->filters,
-                # dynamic_filters    => $self->dynamic_filters,
-                # sorts              => $self->sorts,
-                # dynamic_sorts      => $self->dynamic_sorts,
-            # }
-        # );
-        # return $dad;
-    # };
-
     1;
 
+    {
+        package 
+           Database::Accessor::Result;
+        use Moose;
+       
+        has is_error => (
+            is          => 'rw',
+            isa         => 'Bool',
+            default     => 0,
+        );
+        
+        has error => (
+            is       => 'rw',
+            isa      => 'Str|Object|Undef',
+        );
+        
+        has effected => (
+            isa         => 'Int|Undef',
+            is          => 'rw'
+        );
+        
+        has set => (
+            isa    => 'ArrayRef|Undef',
+            is          => 'rw'
+        );
+        
+        has query => (
+            is       => 'rw',
+            isa      => 'Str',
+        );
+        
+        has DAD => (
+            is       => 'ro',
+            isa      => 'Str',
+        );
+        
+        has DB => (
+            is       => 'rw',
+            isa      => 'Str',
+        );
+        
+    }
     {
 
         package 
@@ -833,8 +828,17 @@
         use namespace::autoclean;
         requires 'DB_Class';
         requires 'execute';
-        requires 'raw_query';
-
+     
+       has [
+        qw(da_compose_only
+           da_no_effect
+           da_warning
+          )
+        ] => (
+          is          => 'rw',
+          isa         => 'Bool',
+        );
+        
         has view => (
             is  => 'ro',
             isa => 'View',
