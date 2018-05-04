@@ -8,7 +8,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
-use Test::More tests => 9;
+use Test::More tests =>9;
 
 
 my $in_hash = {
@@ -32,6 +32,15 @@ my $in_hash = {
 my $da = Database::Accessor->new($in_hash);
 
 my $return_str = {};
+
+eval {
+ $da->delete( undef, $return_str );
+};
+
+ok( $@, 'No delete with out connection class' );
+
+
+
 my $data       = Data::Test->new();
 eval { $da->delete( $data, $return_str ); };
 ok( $@, 'Cannot delete without condition' );
@@ -82,8 +91,6 @@ $in_hash->{conditions} = $conditions;
 eval { $da->delete( $data, $return_str ); };
 ok( !$@, 'Can delete with static and dynamic conditions' );
 
-ok( $return_str->{type} eq Database::Accessor::Constants::DELETE,
-    'Delete constant passed in and out' );
 
 $in_hash->{no_delete} = 1;
 

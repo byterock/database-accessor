@@ -63,8 +63,8 @@ my $da = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
 
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 1 );
 
 my $in_hash2 = {
@@ -117,6 +117,7 @@ $da = Database::Accessor->new($in_hash2);
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
+
 Test::Database::Accessor::Utils::deep_links( $in_hash2, $da, $dad, 1 );
 1;

@@ -209,7 +209,13 @@
 
     );
 
+    has result => (
+        is          => 'rw',
+        isa         => 'Database::Accessor::Result|Undef',
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 }
 
+    );
     has [
         qw(da_compose_only
            da_no_effect
@@ -353,23 +359,49 @@
         },
     );
 
-    sub create {
-        my $self = shift;
-        my ( $conn, $container, $opt ) = @_;
+   sub create {
+    my $self = shift;
+    my ( $conn, $container, $opt ) = @_;
 
-        die( $self->meta->get_attribute('no_create')->description->{message} )
-          if ( $self->no_create() );
+    die( $self->meta->get_attribute('no_create')->description->{message} )
+      if ( $self->no_create() );
 
-        $self->_execute( Database::Accessor::Constants::CREATE,
-            $conn, $container, $opt );
-        return $container;
+    my $message =
+        "Usage: Database::Accessor->"
+      . lc(Database::Accessor::Constants::CREATE)
+      . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); ";
+
+    if ( ref($container) eq "ARRAY" ) {
+
+        die $message .= "The \$container Arry-Ref cannot be empty"
+          if ( !scalar( @{$container} ) );
+
+        my @bad =
+          grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
+        die $message
+          . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
+          if ( scalar(@bad) );
+
     }
+    else {
+
+        die $message .=
+"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes"
+          if ( !( ref($container) eq 'HASH' or blessed($container) ) );
+
+        die $message .= "The \$container Hash-Ref cannot be empty"
+          if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
+
+    }
+    return $self->_execute( Database::Accessor::Constants::CREATE,$conn, $container, $opt );
+}
 
     sub retrieve {
         my $self = shift;
-        my ( $conn, $container, $opt ) = @_;
+        my ( $conn, $opt ) = @_;
         die( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
+        my $container = {};
         $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
 
@@ -386,6 +418,18 @@
         $self->_need_condition( Database::Accessor::Constants::UPDATE,
             $self->update_requires_condition()
         );
+
+        my $message =
+            "Usage: Database::Accessor->"
+          . lc(Database::Accessor::Constants::UPDATE)
+          . "( Class , Hash-Ref||Class, Hash-Ref); ";
+
+        die $message
+          . "The \$container parameter must be either a Hash-Ref or a Class"
+          if ( !( ref($container) eq 'HASH' or blessed($container) ) );
+
+        die $message .= "The \$container Hash-Ref cannot be empty"
+          if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
 
         $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
@@ -423,48 +467,27 @@
 
     private_method _execute => sub {
         my $self = shift;
-        my ( $action, $conn, $container, $opt ) = @_;
-
+        my ( $action, $conn,$container , $opt ) = @_;
+        
+        my $usage = "(\$connection,\$options); ";
+        $usage = "(\$connection,\$container,\$options); "
+          if ( $action eq Database::Accessor::Constants::CREATE 
+            or $action eq Database::Accessor::Constants::UPDATE);
+            
         die "Usage: Database::Accessor->"
           . lc($action)
-          . "(\$connection,\$container,\$options); "
-          . "You must supply a \$connection, and \$container "
-          if ( !blessed($conn) or $container == undef );
-        
-        my $drivers = $self->_ldad();
+          . $usage 
+          . "You must supply a \$connection class"
+             if ( !blessed($conn) );
+        my $drivers = $self->_ldad();
         my $driver  = $drivers->{ ref($conn) };
 
-        die "No Database::Accessor::Driver loaded for "
+        die " Database::Accessor->"
+          . lc($action)
+          ." No Database::Accessor::Driver loaded for "
           . ref($conn)
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
-
-        if ( $action eq Database::Accessor::Constants::CREATE ) {
-            my $message =
-                "Usage: Database::Accessor->"
-              . lc($action)
-              . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); "
-              . "The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes";
-            if ( ref($container) eq "ARRAY" ) {
-                my @bad =
-                  grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-                die $message
-                  . " The 'Array-Ref' is must contain only Hash-refs or Classes";
-            }
-            die $message
-              if ( ref($container) ne 'HASH' or !blessed($container) );
-
-        }
-        elsif ($action eq Database::Accessor::Constants::RETRIEVE
-            or $action eq Database::Accessor::Constants::UPDATE )
-        {
-            die "Usage: Database::Accessor->"
-              . lc($action)
-              . "( Class , Hash-Ref||Class, Hash-Ref); "
-              . "The \$container parameter must be either a Hash-Ref or a Class"
-              if ( ref($container) ne 'HASH' or !blessed($container) );
-
-        }
 
         my $dad = $driver->new(
             {
@@ -486,11 +509,14 @@
                 da_warning         => $self->da_warning
             }
         );
-        my $result = Database::Accessor::Result->new({DAD=>$driver});
-        $dad->execute($result, $action, $conn, $container, $opt );
+        my $result = Database::Accessor::Result->new(
+            { DAD => $driver, operation => $action } );
+        $dad->execute( $result, $action, $conn, $container, $opt );
         $self->result($result);
-        return $result->is_error();
-        
+        return 0
+          if ( $result->is_error() );
+        return 1;
+
     };
 
 # DANote:  please fill in a new section for Options starting with DA_raw_query and include a blurb about the nameing convention
@@ -498,7 +524,7 @@
 
     1;
 
-    {
+    { 
         package 
            Database::Accessor::Result;
         use Moose;
@@ -538,6 +564,10 @@
             is       => 'rw',
             isa      => 'Str',
         );
+        
+        has operation =>( is       => 'ro',
+                   isa      => 'Str',
+        )
         
     }
     {
@@ -835,7 +865,7 @@
            da_warning
           )
         ] => (
-          is          => 'rw',
+          is          => 'ro',
           isa         => 'Bool',
         );
         

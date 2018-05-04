@@ -72,7 +72,7 @@ foreach my $link ( @{ $in_hash->{links} } ) {
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 
@@ -84,7 +84,7 @@ ok(
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 
@@ -98,7 +98,7 @@ ok(
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 1;

@@ -33,7 +33,7 @@ my $in_hash = {
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $return->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 foreach my $element ( @{ $in_hash->{elements} } ) {
     ok( $da->add_element($element), "can add an single Dynamic element" );
@@ -53,7 +53,7 @@ ok(
 
 $da->retrieve( Data::Test->new(), {} );
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{elements}, $da->dynamic_elements,
     $dad->elements,       'Array Dynamic Element'
@@ -65,7 +65,7 @@ ok(
 );
 
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{elements}, $da->dynamic_elements,

@@ -46,7 +46,8 @@ my $return_str = {};
 my $data       = Data::Test->new();
 
 $da->retrieve( Data::Test->new(), $return_str );
-my $dad = $return_str->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
+
 
 Test::Database::Accessor::Utils::deep_element( $in_hash->{sorts}, $da->sorts,
     $dad->sorts, 'Sorts' );

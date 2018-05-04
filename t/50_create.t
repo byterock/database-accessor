@@ -8,7 +8,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
-use Test::More tests => 1;
+use Test::More tests => 7;
 
 my $in_hash = {
     view     => { name => 'People' },
@@ -31,8 +31,41 @@ my $in_hash = {
 my $da = Database::Accessor->new($in_hash);
 
 my $return_str = {};
+my $container_array = [];
 my $data       = Data::Test->new();
 
-my $dad = $da->create( $data, $return_str );
+eval {
+ $da->create( undef, $return_str );
+};
 
-ok( $return_str->{type} eq Database::Accessor::Constants::CREATE )
+ok( $@, 'No Create with out connection class' );
+
+eval {
+ $da->create( $data, $return_str );
+};
+
+ok( $@, 'No Create with empty hash-ref container ' );
+
+$return_str->{key}=1;
+
+ok($da->create( $data, $return_str ),"Container can be a non empty Hash-ref");
+ok($da->create( $data, $data ),"Container can be a Class");
+
+eval {
+ $da->create( $data, $container_array );
+};
+
+ok( $@, 'No Create with empty array-ref container ' );
+
+push(@{$container_array},1);
+push(@{$container_array},$return_str);
+push(@{$container_array},$data);
+eval {
+ $da->create( $data, $container_array );
+};
+
+ok( $@, 'No Create with array-ref container that has a scalar' );
+
+shift(@{$container_array});
+ok($da->create( $data, $container_array ),"Container can be an Array-ref of Hash-ref and Classed");
+

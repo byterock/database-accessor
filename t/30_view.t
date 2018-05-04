@@ -50,7 +50,7 @@ my $in_hash = {
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $return->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 bless( $in_hash->{view}, "Database::Accessor::View" );
 
 cmp_deeply( $da->view, methods( %{ $in_hash->{view} } ), "DA View is correct" );

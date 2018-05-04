@@ -46,7 +46,7 @@ foreach my $condition ( @{ $in_hash->{conditions} } ) {
 }
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $return->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},     $da->dynamic_conditions(),
@@ -55,7 +55,7 @@ Test::Database::Accessor::Utils::deep_predicate(
 
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 ok(
     $da->add_condition( @{ $in_hash->{conditions} } ),
@@ -69,7 +69,7 @@ Test::Database::Accessor::Utils::deep_predicate(
 
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 ok(
     $da->add_condition( $in_hash->{conditions} ),

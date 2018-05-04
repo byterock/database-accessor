@@ -36,7 +36,7 @@ foreach my $gather ( @{ $in_hash->{gathers} } ) {
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
-my $dad = $return->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{gathers},   $da->dynamic_gathers,
@@ -84,7 +84,7 @@ foreach my $filter ( @{ $in_hash->{filters} } ) {
 }
 
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),
@@ -99,7 +99,7 @@ ok(
 );
 
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),
@@ -114,7 +114,7 @@ ok(
 );
 
 $da->retrieve( Data::Test->new(), $return );
-$dad = $return->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),

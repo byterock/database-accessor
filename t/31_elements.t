@@ -34,8 +34,7 @@ my $in_hash = {
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $return->{dad};
-
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_element( $in_hash->{elements},
     $da->elements, $dad->elements, 'Element' );
 1;

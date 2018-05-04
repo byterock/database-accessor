@@ -8,11 +8,13 @@ with(qw( Database::Accessor::Roles::Driver));
 
 sub execute {
     my $self = shift;
-    my ( $type, $conn, $container, $opt ) = @_;
-
-    $container->{dad}  = $self;
-    $container->{type} = $type;
-
+    my ($result, $type, $conn, $container, $opt ) = @_;
+    $result->effected(10);
+    $result->query($type.' Query');
+    $result->set([9,8,7,6,5,4,3,2,1,0]);
+    $result->DB('Data::Test');
+    $result->error($self);  #kludge for testing.  Sends the DAD back to ensure it is correct
+    return $result;
 }
 
 sub DB_Class {
@@ -20,11 +22,6 @@ sub DB_Class {
     return 'Data::Test';
 }
 
-sub raw_query {
-    my $self = shift;
-    my ($type) = @_;
-    return $type.' query';
-        
-}
+
 
 1;

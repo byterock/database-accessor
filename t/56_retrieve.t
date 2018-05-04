@@ -29,12 +29,20 @@ my $in_hash = {
     ],
 };
 
+
 my $da = Database::Accessor->new($in_hash);
 my $return_str = {};
+
+eval {
+ $da->retrieve( undef, $return_str );
+};
+
+ok( $@, 'No retrieve with out connection class' );
+
+
 my $data       = Data::Test->new();
 $da->retrieve( $data, $return_str );
-ok( $return_str->{type} eq Database::Accessor::Constants::RETRIEVE,
-    'Retrieve constant passed in and out' );
+
 
 eval { my $thig = $da->{elements}->[0]->{name};  };
 

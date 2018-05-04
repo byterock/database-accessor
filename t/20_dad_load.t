@@ -7,7 +7,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 52;
+use Test::More tests => 68;
 
 
 my $da =
@@ -46,7 +46,7 @@ foreach my $attribute ( $da->meta->get_all_attributes ) {
         fail("Role DAD can $dad_attribute");
     }
 
-}
+} 
 
 ok( $da->no_create() == 1,   "Cannot Create" );
 ok( $da->no_retrieve() == 0, "Can Retrieve" );
@@ -55,8 +55,26 @@ ok( $da->no_delete() == 1,   "Cannot Delete" );
 
 ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
-foreach my $type (qw(Create retrieve UPDATE DeLeTe)){
-    my $raw = $da->raw_query(Data::Test->new(),$type);
-    ok($raw->{DAD} eq 'Database::Accessor::Driver::Test','correct raw DAD class');
-    ok($raw->{query} eq uc($type).' query','correct '.uc($type)." raw query returned");
+my $da_new = Database::Accessor->new( { delete_requires_condition=>0,
+                                        update_requires_condition=>0,
+                                        view => { name => 'test' } } );
+
+ok( $da_new->no_create() == 0,   "Can Create" );
+ok( $da_new->no_retrieve() == 0, "Can Retrieve" );
+ok( $da_new->no_update() == 0,   "Can Update" );
+ok( $da_new->no_delete() == 0,   "Can Delete" );
+
+ok( ref($da_new) eq 'Database::Accessor', "DA is a Database::Accessor" );
+
+foreach my $type (qw(create retrieve update delete)){
+    my $container = {key=>1};
+     ok($da_new->$type(Data::Test->new(),$container),"$type Query ran");
+     if ($type eq 'create') {
+       ok($da_new->result()->is_error == 0,"$type->No Error");
+       ok($da_new->result()->effected() == 10,"$type->10 rows effected");
+       ok($da_new->result()->query() eq uc($type).' Query','correct '.uc($type)." query returned");
+       ok($da_new->result()->DAD() eq 'Database::Accessor::Driver::Test',"$type->correct raw DAD class");
+       ok($da_new->result()->DB() eq 'Data::Test',"$type->correct DB");
+       ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class")
+     }
 }

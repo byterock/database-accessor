@@ -37,7 +37,7 @@ foreach my $sort ( @{ $in_hash->{sorts} } ) {
 my $return_str = {};
 $da->retrieve( Data::Test->new(), $return_str );
 
-my $dad = $return_str->{dad};
+my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{sorts},   $da->dynamic_sorts,
@@ -50,7 +50,7 @@ ok(
 );
 
 $da->retrieve( Data::Test->new(), $return_str );
-$dad = $return_str->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{sorts},   $da->dynamic_sorts,
     $dad->dynamic_sorts, 'Array of dynamic sorts'
@@ -60,7 +60,7 @@ ok( $da->add_sort( $in_hash->{sort} ),
     "can add an Array Ref of Dynamic sorts" );
 
 $dad = $da->retrieve( Data::Test->new(), $return_str );
-$dad = $return_str->{dad};
+$dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{sorts},   $da->dynamic_sorts,
     $dad->dynamic_sorts, 'Array Ref of dynamic sorts'

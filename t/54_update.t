@@ -8,7 +8,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
-use Test::More tests => 5;
+use Test::More tests => 8;
 
 
 my $in_hash = {
@@ -43,8 +43,17 @@ my $conditions = [
 ];
 my $da = Database::Accessor->new($in_hash);
 
-my $return_str = {};
+my $return_str = {key=>1};
 my $data       = Data::Test->new();
+
+
+eval {
+ $da->update( undef, $return_str );
+};
+
+ok( $@, 'No update with out connection class' );
+
+
 eval { $da->update( $data, $return_str ); };
 ok( $@, 'Cannot update without condition' );
 $in_hash->{update_requires_condition} = 0;
@@ -78,3 +87,14 @@ $in_hash->{conditions} = $conditions;
 
 eval { $da->update( $data, $return_str ); };
 ok( !$@, 'Can update with static and dynamic conditions' );
+
+
+ok($da->create( $data, $data ),"Update container can be a Class");
+
+$return_str = {};
+eval {
+ $da->update( $data, $return_str );
+};
+
+ok( $@, 'No Update with empty hash-ref container ' );
+
