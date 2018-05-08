@@ -24,13 +24,22 @@
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
-
+        
         if ( $ops->{retrieve_only} ) {
             $ops->{no_create}   = 1;
             $ops->{no_retrieve} = 0;
             $ops->{no_update}   = 1;
             $ops->{no_delete}   = 1;
         }
+        my $view_name = $ops->{view}->{name};
+        
+        foreach my $element (@{ $ops->{elements}}){
+            $element->{view} = $view_name
+              if (!exists($element->{expression}) 
+                 and !exists($element->{function})
+                 and !exists($element->{value})
+                 and  $element->{view} eq undef );        }
+        
         return $class->$orig($ops);
     };
 
@@ -219,13 +228,23 @@
     has [
         qw(da_compose_only
            da_no_effect
-           da_warning
+           da_warning           
           )
       ] => (
         is          => 'rw',
         isa         => 'Bool',
         default     => 0,
         traits => ['ENV'],
+      );
+      has [
+        qw(all_elements_present
+          )
+      ] => (
+        is          => 'rw',
+        isa         => 'Bool',
+        default     => 0,
+        traits      => ['ENV', 'MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 }
       );
 
 
@@ -255,17 +274,17 @@
         handles => { element_count => 'count', },
     );
 
-    has dynamic_elements => (
-        isa      => 'ArrayRefofElements',
-        traits   => ['Array'],
-        is       => 'rw',
-        default  => sub { [] },
-        init_arg => undef,
-        handles  => {
-            add_element           => 'push',
-            dynamic_element_count => 'count',
-        },
-    );
+    # has dynamic_elements => (
+        # isa      => 'ArrayRefofElements',
+        # traits   => ['Array'],
+        # is       => 'rw',
+        # default  => sub { [] },
+        # init_arg => undef,
+        # handles  => {
+            # add_element           => 'push',
+            # dynamic_element_count => 'count',
+        # },
+    # );
 
     has conditions => (
         is      => 'ro',
@@ -393,6 +412,10 @@
           if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
 
     }
+    
+        $self->_all_elements_present($message,$container)
+       if ($self->all_elements_present);
+
     return $self->_execute( Database::Accessor::Constants::CREATE,$conn, $container, $opt );
 }
 
@@ -402,10 +425,10 @@
         die( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
         my $container = {};
-        $self->_execute( Database::Accessor::Constants::RETRIEVE,
+        
+        return $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
-
-        return $container;
+     
     }
 
     sub update {
@@ -431,10 +454,12 @@
         die $message .= "The \$container Hash-Ref cannot be empty"
           if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
 
-        $self->_execute( Database::Accessor::Constants::UPDATE,
+        $self->_all_elements_present($message,$container)
+          if ($self->all_elements_present);
+        
+                return $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
 
-        return $container;
     }
 
     sub delete {
@@ -442,14 +467,14 @@
         my ( $conn, $opt ) = @_;
         die( $self->meta->get_attribute('no_delete')->description->{message} )
           if ( $self->no_delete() );
+          
         $self->_need_condition( Database::Accessor::Constants::DELETE,
             $self->delete_requires_condition()
         );
+        
         my $container = {};
-        $self->_execute( Database::Accessor::Constants::DELETE,
+        return $self->_execute( Database::Accessor::Constants::DELETE,
             $conn, $container, $opt );
-
-        return $container;
     }
 
     sub _need_condition {
@@ -464,11 +489,46 @@
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
     }
+    
+        sub _all_elements_present {
+        my $self = shift;
+        my ( $message, $container ) = @_;
+
+        if ( ref($container) eq "ARRAY" ) {
+            foreach my $sub_container ( @{$container} ) {
+                $self->_all_elements_present($sub_container);
+            }
+        }
+        else {
+            foreach my $element ( $self->elements() ) {
+
+                next
+                  if ( !( $element->view )
+                    and $element->view ne $self->view->name() )
+                  ;    #ignore elements on other view (joins etc)
+
+                if ( ref($container) eq 'HASH' ) {
+                    die $message
+                      . "The Hash-Ref \$container must have a "
+                      . $element->name
+                      . " key present!"
+                      if ( !exists( $container->{ $element->name } ) );
+                }
+                else {
+                    die $message
+                      . "The Class \$container must have a "
+                      . $element->name
+                      . " attribute!"
+                      if ( !( $container->can( $element->name ) ) );
+                }
+            }
+        }
+    }
+
 
     private_method _execute => sub {
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
-        
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
           if ( $action eq Database::Accessor::Constants::CREATE 
@@ -711,10 +771,18 @@
 
         );
 
-        has 'is_identity' => (
-            is  => 'rw',
-            isa => 'bool',
-        );
+        has [
+            qw(no_create
+              no_retrieve
+              no_update
+              is_identity
+              only_retrieve
+              )
+          ] => (
+            is      => 'rw',
+            isa     => 'Bool',
+            default => 0,
+          );
 
         has 'aggregate' => (
             is  => 'rw',

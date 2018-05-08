@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -68,7 +69,7 @@ ok( ref($da_new) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 foreach my $type (qw(create retrieve update delete)){
     my $container = {key=>1};
-     ok($da_new->$type(Data::Test->new(),$container),"$type Query ran");
+     ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
      if ($type eq 'create') {
        ok($da_new->result()->is_error == 0,"$type->No Error");
        ok($da_new->result()->effected() == 10,"$type->10 rows effected");

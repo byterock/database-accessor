@@ -1,7 +1,8 @@
 #!perl
 use strict;
 use warnings;
-use lib ('t/lib');
+
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -15,7 +16,7 @@ my $in_hash = {
     elements => [
         {
             name  => 'first_name',
-            view  => 'People',
+            #view  => 'People',
             alias => 'user'
         },
         {
@@ -32,6 +33,9 @@ my $in_hash = {
 };
 
 my $da     = Database::Accessor->new($in_hash);
+
+ok($da->elements->[0]->view eq 'People', "View taked from DA view name");
+
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
