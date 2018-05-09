@@ -8,7 +8,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 
 my $in_hash = {

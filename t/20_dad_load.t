@@ -8,7 +8,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 68;
+use Test::More tests => 65;
 
 
 my $da =
