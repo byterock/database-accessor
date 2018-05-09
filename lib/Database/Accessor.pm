@@ -38,7 +38,7 @@
               if (!exists($element->{expression}) 
                  and !exists($element->{function})
                  and !exists($element->{value})
-                 and  $element->{view} eq undef );        }
+                 and $element->{view} eq undef );        }
         
         return $class->$orig($ops);
     };
@@ -525,7 +525,28 @@
         }
     }
 
-
+             
+    private_method get_dad_elements => sub {
+        my $self = shift;
+        my ( $action) = @_;
+        
+        my @allowed;        foreach my $element (@{$self->elements}){
+            
+           next
+             if ($action eq Database::Accessor::Constants::CREATE
+                 and $element->only_retrieve 
+                 or  $element->no_create);
+           next
+             if ($action eq Database::Accessor::Constants::UPDATE
+                 and $element->only_retrieve 
+                 or  $element->no_update);
+                 
+           next
+             if ($action eq Database::Accessor::Constants::UPDATE
+                 and $element->no_retrieve);           push(@allowed,$element);
+        } 
+        return \@allowed;    };
+    
     private_method _execute => sub {
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
@@ -549,21 +570,22 @@
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
 
+  
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => $self->elements,
-                dynamic_elements   => $self->dynamic_elements,
+                elements           => $self->get_dad_elements($action),
+#               dynamic_elements   => $self->dynamic_elements,
                 conditions         => $self->conditions,
                 dynamic_conditions => $self->dynamic_conditions,
                 links              => $self->links,
                 dynamic_links      => $self->dynamic_links,
-                gathers            => $self->gathers,
-                dynamic_gathers    => $self->dynamic_gathers,
-                filters            => $self->filters,
-                dynamic_filters    => $self->dynamic_filters,
-                sorts              => $self->sorts,
-                dynamic_sorts      => $self->dynamic_sorts,
+                gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->gathers : [],
+                dynamic_gathers    => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_gathers : [],
+                filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->filters : [],
+                dynamic_filters    => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_filters : [],
+                sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->sorts : [],
+                dynamic_sorts      => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_sorts : [],,
                 da_compose_only    => $self->da_compose_only,
                 da_no_effect       => $self->da_no_effect,
                 da_warning         => $self->da_warning
@@ -971,11 +993,11 @@
             isa => 'ArrayRefofElements',
 
         );
-        has dynamic_elements => (
-            isa     => 'ArrayRefofElements',
-            is      => 'ro',
-            default => sub { [] },
-        );
+        # has dynamic_elements => (
+            # isa     => 'ArrayRefofElements',
+            # is      => 'ro',
+            # default => sub { [] },
+        # );
 
         has dynamic_conditions => (
             is      => 'ro',
