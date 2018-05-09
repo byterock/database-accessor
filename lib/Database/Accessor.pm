@@ -38,7 +38,8 @@
               if (!exists($element->{expression}) 
                  and !exists($element->{function})
                  and !exists($element->{value})
-                 and $element->{view} eq undef );        }
+                 or (!exists($element->{view})
+                 or $element->{view} eq undef) );        }
         
         return $class->$orig($ops);
     };
@@ -803,7 +804,7 @@
           ] => (
             is      => 'rw',
             isa     => 'Bool',
-            default => 0,
+#            default => 0,
           );
 
         has 'aggregate' => (
