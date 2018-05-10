@@ -1,7 +1,83 @@
-    package Database::Accessor;
+    
+   {
+
+        package 
+           Database::Accessor::Roles::Common;
+
+        use Moose::Role;
+        with qw(Database::Accessor::Types);
+        use MooseX::AlwaysCoerce;
+        use namespace::autoclean;
+     
+       has [
+        qw(da_compose_only
+           da_no_effect
+           da_warning
+          )
+        ] => (
+          is          => 'ro',
+          isa         => 'Bool',
+        );
+        
+        has view => (
+            is  => 'ro',
+            isa => 'View',
+        );
+
+        has elements => (
+            isa => 'ArrayRefofElements',
+            is  => 'ro',
+            traits  => ['Array'],
+            handles => { element_count => 'count', },
+            default => sub { [] },
+        );
+        has conditions => (
+            isa => 'ArrayRefofConditions',
+            is  => 'ro',
+            traits  => ['Array'],
+            handles => { condition_count => 'count', },
+            default => sub { [] },
+        );
+
+        has links => (
+            is  => 'ro',
+            isa => 'ArrayRefofLinks',
+            traits  => ['Array'],
+            handles => { link_count => 'count', },
+            default => sub { [] },
+        );
+
+        has gathers => (
+            is  => 'ro',
+            isa => 'ArrayRefofElements',
+            traits  => ['Array'],
+            handles => { gather_count => 'count', },
+            default => sub { [] },
+
+        );
+        has filters => (
+            is  => 'ro',
+            isa => 'ArrayRefofConditions',
+            traits  => ['Array'],
+            handles => { filter_count => 'count', },
+            default => sub { [] },
+        );
+
+        has sorts => (
+            is  => 'ro',
+            isa => 'ArrayRefofElements',
+            traits  => ['Array'],
+            handles => { sort_count => 'count', },
+            default => sub { [] },
+        );
+    
+        1;
+
+    }    package Database::Accessor;
 
     use Moose;
-    with qw(Database::Accessor::Types);
+    with qw(Database::Accessor::Types
+            Database::Accessor::Roles::Common);
     use Moose::Util qw(does_role);
     use Database::Accessor::Constants;
     use MooseX::MetaDescription;
@@ -226,17 +302,17 @@
         description => { not_in_DAD => 1 }
 
     );
-    has [
-        qw(da_compose_only
-           da_no_effect
-           da_warning           
-          )
-      ] => (
-        is          => 'rw',
-        isa         => 'Bool',
-        default     => 0,
-        traits => ['ENV'],
-      );
+    # has [
+        # qw(da_compose_only
+           # da_no_effect
+           # da_warning           
+          # )
+      # ] => (
+        # is          => 'rw',
+        # isa         => 'Bool',
+        # default     => 0,
+        # traits => ['ENV'],
+      # );
       has [
         qw(all_elements_present
           )
@@ -261,19 +337,19 @@
         description => { not_in_DAD => 1 }
       );
 
-    has view => (
-        is       => 'ro',
-        isa      => 'View',
-        required => 1,
-    );
+    # has view => (
+        # is       => 'ro',
+        # isa      => 'View',
+        # required => 1,
+    # );
 
-    has elements => (
-        isa     => 'ArrayRefofElements',
-        traits  => ['Array'],
-        is      => 'ro',
-        default => sub { [] },
-        handles => { element_count => 'count', },
-    );
+    # has elements => (
+        # isa     => 'ArrayRefofElements',
+        # traits  => ['Array'],
+        # is      => 'ro',
+        # default => sub { [] },
+        # handles => { element_count => 'count', },
+    # );
 
     # has dynamic_elements => (
         # isa      => 'ArrayRefofElements',
@@ -287,17 +363,18 @@
         # },
     # );
 
-    has conditions => (
-        is      => 'ro',
-        isa     => 'ArrayRefofConditions',
-        traits  => ['Array'],
-        default => sub { [] },
-        handles => { condition_count => 'count', },
-    );
+    # has conditions => (
+        # is      => 'ro',
+        # isa     => 'ArrayRefofConditions',
+        # traits  => ['Array'],
+        # default => sub { [] },
+        # handles => { condition_count => 'count', },
+    # );
 
     has dynamic_conditions => (
         isa      => 'ArrayRefofConditions',
-        traits   => ['Array'],
+        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -309,7 +386,8 @@
 
     has dynamic_links => (
         isa      => 'ArrayRefofLinks',
-        traits   => ['Array'],
+        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -318,16 +396,17 @@
             dynamic_link_count => 'count',
         },
     );
-    has links => (
-        is      => 'ro',
-        isa     => 'ArrayRefofLinks',
-        default => sub { [] },
+    # has links => (
+        # is      => 'ro',
+        # isa     => 'ArrayRefofLinks',
+        # default => sub { [] },
 
-    );
+    # );
 
     has dynamic_gathers => (
         isa      => 'ArrayRefofElements',
-        traits   => ['Array'],
+        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -336,22 +415,23 @@
             dynamic_gather_count => 'count',
         },
     );
-    has gathers => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
-        default => sub { [] },
+    # has gathers => (
+        # is      => 'ro',
+        # isa     => 'ArrayRefofElements',
+        # default => sub { [] },
 
-    );
-    has filters => (
-        is      => 'ro',
-        isa     => 'ArrayRefofConditions',
-        default => sub { [] },
+    # );
+    # has filters => (
+        # is      => 'ro',
+        # isa     => 'ArrayRefofConditions',
+        # default => sub { [] },
 
-    );
+    # );
 
     has dynamic_filters => (
         isa      => 'ArrayRefofConditions',
-        traits   => ['Array'],
+        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -360,16 +440,17 @@
             dynamic_filter_count => 'count',
         },
     );
-    has sorts => (
-        is      => 'ro',
-        isa     => 'ArrayRefofElements',
-        default => sub { [] },
+    # has sorts => (
+        # is      => 'ro',
+        # isa     => 'ArrayRefofElements',
+        # default => sub { [] },
 
-    );
+    # );
 
     has dynamic_sorts => (
         isa      => 'ArrayRefofElements',
-        traits   => ['Array'],
+        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
         init_arg => undef,
@@ -571,22 +652,15 @@
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
 
-  
         my $dad = $driver->new(
             {
                 view               => $self->view,
                 elements           => $self->get_dad_elements($action),
-#               dynamic_elements   => $self->dynamic_elements,
-                conditions         => $self->conditions,
-                dynamic_conditions => $self->dynamic_conditions,
-                links              => $self->links,
-                dynamic_links      => $self->dynamic_links,
-                gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->gathers : [],
-                dynamic_gathers    => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_gathers : [],
-                filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->filters : [],
-                dynamic_filters    => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_filters : [],
-                sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->sorts : [],
-                dynamic_sorts      => ($action eq Database::Accessor::Constants::RETRIEVE) ? $self->dynamic_sorts : [],,
+                conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
+                links              => [@{$self->links},@{$self->dynamic_links}],
+                gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
+                filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->filters },@{ $self->dynamic_filters }] : [],
+                sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
                 da_compose_only    => $self->da_compose_only,
                 da_no_effect       => $self->da_no_effect,
                 da_warning         => $self->da_warning
@@ -945,93 +1019,96 @@
            Database::Accessor::Roles::Driver;
 
         use Moose::Role;
-        with qw(Database::Accessor::Types);
+        with qw(Database::Accessor::Types
+                Database::Accessor::Roles::Common);
         use namespace::autoclean;
         requires 'DB_Class';
         requires 'execute';
      
-       has [
-        qw(da_compose_only
-           da_no_effect
-           da_warning
-          )
-        ] => (
-          is          => 'ro',
-          isa         => 'Bool',
-        );
+       # has [
+        # qw(da_compose_only
+           # da_no_effect
+           # da_warning
+          # )
+        # ] => (
+          # is          => 'ro',
+          # isa         => 'Bool',
+        # );
         
-        has view => (
-            is  => 'ro',
-            isa => 'View',
-        );
-
-        has elements => (
-            isa => 'ArrayRefofElements',
-            is  => 'ro',
-        );
-        has conditions => (
-            isa => 'ArrayRefofConditions',
-            is  => 'ro',
-        );
-
-        has links => (
-            is  => 'ro',
-            isa => 'ArrayRefofLinks',
-        );
-
-        has gathers => (
-            is  => 'ro',
-            isa => 'ArrayRefofElements',
-
-        );
-        has filters => (
-            is  => 'ro',
-            isa => 'ArrayRefofConditions',
-        );
-
-        has sorts => (
-            is  => 'ro',
-            isa => 'ArrayRefofElements',
-
-        );
-        # has dynamic_elements => (
-            # isa     => 'ArrayRefofElements',
-            # is      => 'ro',
-            # default => sub { [] },
+        # has view => (
+            # is  => 'ro',
+            # isa => 'View',
         # );
 
-        has dynamic_conditions => (
-            is      => 'ro',
-            isa     => 'ArrayRefofConditions',
-            default => sub { [] },
+        # has elements => (
+            # isa => 'ArrayRefofElements',
+            # is  => 'ro',
+            # traits  => ['Array'],
+            # handles => { element_count => 'count', },
+        # );
+        # has conditions => (
+            # isa => 'ArrayRefofConditions',
+            # is  => 'ro',
+        # );
 
-        );
+        # has links => (
+            # is  => 'ro',
+            # isa => 'ArrayRefofLinks',
+        # );
 
-        has dynamic_links => (
-            is      => 'ro',
-            isa     => 'ArrayRefofLinks',
-            default => sub { [] },
+        # has gathers => (
+            # is  => 'ro',
+            # isa => 'ArrayRefofElements',
 
-        );
+        # );
+        # has filters => (
+            # is  => 'ro',
+            # isa => 'ArrayRefofConditions',
+        # );
 
-        has dynamic_gathers => (
-            is      => 'ro',
-            isa     => 'ArrayRefofElements',
-            default => sub { [] },
+        # has sorts => (
+            # is  => 'ro',
+            # isa => 'ArrayRefofElements',
 
-        );
-        has dynamic_filters => (
-            is      => 'ro',
-            isa     => 'ArrayRefofConditions',
-            default => sub { [] },
+        # );
+        # # has dynamic_elements => (
+            # # isa     => 'ArrayRefofElements',
+            # # is      => 'ro',
+            # # default => sub { [] },
+        # # );
 
-        );
-        has dynamic_sorts => (
-            is      => 'ro',
-            isa     => 'ArrayRefofElements',
-            default => sub { [] },
+        # has dynamic_conditions => (
+            # is      => 'ro',
+            # isa     => 'ArrayRefofConditions',
+            # default => sub { [] },
 
-        );
+        # );
+
+        # has dynamic_links => (
+            # is      => 'ro',
+            # isa     => 'ArrayRefofLinks',
+            # default => sub { [] },
+
+        # );
+
+        # has dynamic_gathers => (
+            # is      => 'ro',
+            # isa     => 'ArrayRefofElements',
+            # default => sub { [] },
+
+        # );
+        # has dynamic_filters => (
+            # is      => 'ro',
+            # isa     => 'ArrayRefofConditions',
+            # default => sub { [] },
+
+        # );
+        # has dynamic_sorts => (
+            # is      => 'ro',
+            # isa     => 'ArrayRefofElements',
+            # default => sub { [] },
+
+        # );
         1;
 
     }

@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -69,3 +70,6 @@ ok( $@, 'No Create with array-ref container that has a scalar' );
 shift(@{$container_array});
 ok($da->create( $data, $container_array ),"Container can be an Array-ref of Hash-ref and Classed");
 
+my $driver = $da->result()->error(); #klugde for testing
+warn("JSP=".scalar($driver->gathers()->count));
+ok(scalar(@{$driver->gathers()}) == 0,'No gathers');

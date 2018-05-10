@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -120,4 +121,10 @@ $da->retrieve( Data::Test->new(), $return );
 $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash2, $da, $dad, 1 );
+
+$da->create( Data::Test->new(), {test=>1} );
+
+$dad = $da->result->error(); #note to others this is a kludge for testing
+
+warn("JPS dad=".Dumper($dad));
 1;

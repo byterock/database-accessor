@@ -8,13 +8,13 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 65;
+use Test::More tests => 50;
 
 
 my $da =
   Database::Accessor->new( { retrieve_only => 1, view => { name => 'test' } } );
 
-my $view = $da->view();
+
 
 my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
