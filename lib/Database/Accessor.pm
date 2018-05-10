@@ -73,7 +73,8 @@
     
         1;
 
-    }    package Database::Accessor;
+    }    
+package Database::Accessor;
 
     use Moose;
     with qw(Database::Accessor::Types
@@ -115,7 +116,8 @@
                  and !exists($element->{function})
                  and !exists($element->{value})
                  or (!exists($element->{view})
-                 or $element->{view} eq undef) );        }
+                 or $element->{view} eq undef) );
+        }
         
         return $class->$orig($ops);
     };
@@ -495,7 +497,8 @@
 
     }
     
-        $self->_all_elements_present($message,$container)
+    
+    $self->_all_elements_present($message,$container)
        if ($self->all_elements_present);
 
     return $self->_execute( Database::Accessor::Constants::CREATE,$conn, $container, $opt );
@@ -536,10 +539,11 @@
         die $message .= "The \$container Hash-Ref cannot be empty"
           if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
 
-        $self->_all_elements_present($message,$container)
+        $self->_all_elements_present($message,$container)
           if ($self->all_elements_present);
         
-                return $self->_execute( Database::Accessor::Constants::UPDATE,
+        
+        return $self->_execute( Database::Accessor::Constants::UPDATE,
             $conn, $container, $opt );
 
     }
@@ -572,7 +576,8 @@
           );
     }
     
-        sub _all_elements_present {
+    
+    sub _all_elements_present {
         my $self = shift;
         my ( $message, $container ) = @_;
 
@@ -612,7 +617,8 @@
         my $self = shift;
         my ( $action) = @_;
         
-        my @allowed;        foreach my $element (@{$self->elements}){
+        my @allowed;
+        foreach my $element (@{$self->elements}){
             
            next
              if ($action eq Database::Accessor::Constants::CREATE
@@ -625,9 +631,11 @@
                  
            next
              if ($action eq Database::Accessor::Constants::UPDATE
-                 and $element->no_retrieve);           push(@allowed,$element);
+                 and $element->no_retrieve);
+           push(@allowed,$element);
         } 
-        return \@allowed;    };
+        return \@allowed;
+    };
     
     private_method _execute => sub {
         my $self = shift;
@@ -642,7 +650,7 @@
           . $usage 
           . "You must supply a \$connection class"
              if ( !blessed($conn) );
-        my $drivers = $self->_ldad();
+        my $drivers = $self->_ldad();
         my $driver  = $drivers->{ ref($conn) };
 
         die " Database::Accessor->"
