@@ -40,7 +40,7 @@ my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_element(
     $in_hash->{gathers},   $da->dynamic_gathers,
-    $dad->dynamic_gathers, 'Dynamic Gather'
+    $dad->gathers, 'Dynamic Gather'
 );
 
 $da = Database::Accessor->new( { view => { name => 'People' } } );
@@ -88,7 +88,7 @@ $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),
-    $dad->dynamic_filters(), 'dynamic filters'
+    $dad->filters(), 'dynamic filters'
 );
 
 $da = Database::Accessor->new( { view => { name => 'People' } } );
@@ -103,7 +103,7 @@ $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),
-    $dad->dynamic_filters(), 'array ref of dynamic filters'
+    $dad->filters(), 'array ref of dynamic filters'
 );
 
 $da = Database::Accessor->new( { view => { name => 'People' } } );
@@ -118,6 +118,6 @@ $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{filters},     $da->dynamic_filters(),
-    $dad->dynamic_filters(), 'Array of dynamic filters'
+    $dad->filters(), 'Array of dynamic filters'
 );
 1;

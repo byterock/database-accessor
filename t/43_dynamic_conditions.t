@@ -50,7 +50,7 @@ my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},     $da->dynamic_conditions(),
-    $dad->dynamic_conditions(), 'dynamic conditions'
+    $dad->conditions(), 'dynamic conditions'
 );
 
 $return = {};
@@ -64,7 +64,7 @@ ok(
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->dynamic_conditions, 'Array Dynamic condition'
+    $dad->conditions, 'Array Dynamic condition'
 );
 
 $return = {};
@@ -78,6 +78,6 @@ ok(
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->dynamic_conditions, 'Array Ref Dynamic condition'
+    $dad->conditions, 'Array Ref Dynamic condition'
 );
 1;

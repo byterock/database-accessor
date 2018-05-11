@@ -86,13 +86,14 @@ sub deep_links {
                 "Dad Link $index is a Link" );
         }
         else {
-            ok(
+           ok(
                 ref( $da->dynamic_links()->[$index] ) eq
                   "Database::Accessor::Link",
-                "Da synamic_link $index is a Link"
+                "Da dynamic_link $index is a Link"
             );
-            ok(
-                ref( $dad->dynamic_links()->[$index] ) eq
+            
+           ok(
+                ref( $dad->links()->[$da->link_count()+$index] ) eq
                   "Database::Accessor::Link",
                 "Dad link $index is a Link"
             );
@@ -124,14 +125,14 @@ sub deep_links {
                 "DA dynamic Link View $index correct"
             );
             cmp_deeply(
-                $dad->dynamic_links()->[$index]->to,
+                $dad->links()->[$da->link_count()+$index]->to,
                 methods( %{ $in->{to} } ),
                 "DAD Link View $index correct"
             );
 
             Test::Database::Accessor::Utils::deep_predicate(
                 $in->{predicates}, $da->dynamic_links()->[$index],
-                , $dad->dynamic_links()->[$index],
+                , $dad->links()->[$da->link_count()+$index],
                 'Dynamic Link'
             );
         }
