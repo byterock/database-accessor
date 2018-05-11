@@ -616,21 +616,19 @@ package Database::Accessor;
     private_method get_dad_elements => sub {
         my $self = shift;
         my ( $action) = @_;
-        
         my @allowed;
         foreach my $element (@{$self->elements}){
-            
            next
              if ($action eq Database::Accessor::Constants::CREATE
-                 and $element->only_retrieve 
-                 or  $element->no_create);
+                 and ($element->only_retrieve 
+                 or  $element->no_create));
            next
              if ($action eq Database::Accessor::Constants::UPDATE
-                 and $element->only_retrieve 
-                 or  $element->no_update);
+                 and ($element->only_retrieve 
+                 or  $element->no_update));
                  
            next
-             if ($action eq Database::Accessor::Constants::UPDATE
+             if ($action eq Database::Accessor::Constants::RETRIEVE
                  and $element->no_retrieve);
            push(@allowed,$element);
         } 

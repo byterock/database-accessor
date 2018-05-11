@@ -8,10 +8,11 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 7;
+use Test::More tests => 14;
 
 
 my $in_hash = {
+     
     view     => { name => 'People' },
     elements => [
         {
@@ -41,4 +42,35 @@ $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
 Test::Database::Accessor::Utils::deep_element( $in_hash->{elements},
     $da->elements, $dad->elements, 'Element' );
+       
+$in_hash->{delete_requires_condition} = 0;
+$in_hash->{update_requires_condition} = 0; 
+$in_hash->{elements}->[0]->{no_retrieve} = 1;
+$in_hash->{elements}->[1]->{no_create}   = 1;
+$in_hash->{elements}->[2]->{no_update}   = 1;
+
+$da = Database::Accessor->new($in_hash);
+$da->retrieve( Data::Test->new(), $return );
+$dad = $da->result->error();
+ok($dad->element_count == 2,"only two Elements retrieve");
+ok($dad->elements->[0]->name eq 'last_name',"last_name is index 0");
+ok($dad->elements->[1]->name eq 'user_id',"user_id is index 1");
+
+delete($in_hash->{elements}->[0]->{no_retrieve});
+$in_hash->{elements}->[0]->{only_retrieve} = 1;
+
+$da->create( Data::Test->new(), {test=>1} );
+$dad = $da->result->error();
+ok($dad->element_count == 1,"only one Element on create");
+ok($dad->elements->[0]->name eq 'user_id',"user_id is index 0");
+
+$da->update( Data::Test->new(), {test=>1} );
+$dad = $da->result->error();
+ok($dad->element_count == 1,"only one Element on create");
+ok($dad->elements->[0]->name eq 'last_name',"last_name is index 0");
+
+
+
+
+
 1;

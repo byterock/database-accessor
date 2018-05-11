@@ -122,9 +122,7 @@ $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash2, $da, $dad, 1 );
 
-$da->create( Data::Test->new(), {test=>1} );
 
-$dad = $da->result->error(); #note to others this is a kludge for testing
 
-warn("JPS dad=".Dumper($dad));
+
 1;

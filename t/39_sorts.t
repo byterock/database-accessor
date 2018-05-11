@@ -7,9 +7,11 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 8;
+use Test::More tests => 11;
 
 my $in_hash = {
+     delete_requires_condition => 0,
+    update_requires_condition => 0,
     view     => { name => 'People' },
     elements => [
         {
@@ -64,5 +66,11 @@ if ($@) {
 }
 else {
     fail("View is Required");
+}
+
+foreach my $type (qw(create update delete)){
+   $da->$type( Data::Test->new(), {test=>1} );
+   $dad = $da->result->error(); #note to others this is a kludge for testing
+   ok($dad->sort_count ==0, "No Sorts on $type");
 }
 1;
