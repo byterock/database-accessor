@@ -17,8 +17,10 @@
         ] => (
           is          => 'ro',
           isa         => 'Bool',
+          default     => 0,
+          traits => ['ENV'],
         );
-        
+
         has view => (
             is  => 'ro',
             isa => 'View',
