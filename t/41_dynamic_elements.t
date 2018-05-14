@@ -2,11 +2,11 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
-
 use Test::More tests => 23;
 
 my $in_hash = {
