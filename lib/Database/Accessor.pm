@@ -12,8 +12,7 @@
        has [
         qw(da_compose_only
            da_no_effect
-           da_warning
-          )
+         )
         ] => (
           is          => 'ro',
           isa         => 'Bool',
@@ -21,6 +20,14 @@
           traits => ['ENV'],
         );
 
+
+        has da_warning => (
+            is  => 'rw',
+            isa => 'Int',
+            default     => 0,
+            traits => ['ENV'],
+        );
+        
         has view => (
             is  => 'ro',
             isa => 'View',
@@ -30,7 +37,9 @@
             isa => 'ArrayRefofElements',
             is  => 'ro',
             traits  => ['Array'],
-            handles => { element_count => 'count', },
+            handles => { element_count => 'count',
+                         get_element_by_name  => 'first',
+                       },
             default => sub { [] },
         );
         has conditions => (
@@ -1028,11 +1037,26 @@ package Database::Accessor;
 
         use Moose::Role;
         with qw(Database::Accessor::Types
-                Database::Accessor::Roles::Common);
+          Database::Accessor::Roles::Common);
         use namespace::autoclean;
         requires 'DB_Class';
         requires 'execute';
-     
+
+        has params => (
+            is => 'rw',
+            isa =>'ArrayRefofParams',
+            traits  => ['Array'],
+            handles => { param_count => 'count', },
+            default => sub { [] },
+        );
+        
+        sub da_warn {
+           my $self       = shift;
+           my ($package, $filename, $line) = caller();
+           my ($sub,$message) =  @_;
+           warn("$package->$sub(), line:$line, $message");
+           
+        }
        # has [
         # qw(da_compose_only
            # da_no_effect
