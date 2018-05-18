@@ -129,7 +129,7 @@ package Database::Accessor;
                  or (!exists($element->{view})
                  or $element->{view} eq undef) );
         }
-        
+       
         return $class->$orig($ops);
     };
 
@@ -517,6 +517,7 @@ package Database::Accessor;
 
     sub retrieve {
         my $self = shift;
+        
         my ( $conn, $opt ) = @_;
         die( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
@@ -740,7 +741,7 @@ package Database::Accessor;
         );
         
         has operation =>( is       => 'ro',
-                   isa      => 'Str',
+                          isa      => 'Str',
         )
         
     }
@@ -1046,7 +1047,8 @@ package Database::Accessor;
             is => 'rw',
             isa =>'ArrayRefofParams',
             traits  => ['Array'],
-            handles => { param_count => 'count', },
+            handles => { param_count => 'count',
+                         add_param   => 'push' },
             default => sub { [] },
         );
         
