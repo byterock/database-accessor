@@ -38,7 +38,7 @@
             is  => 'ro',
             traits  => ['Array'],
             handles => { element_count => 'count',
-                         get_element_by_name  => 'first',
+                         _get_element_by_name  => 'first',
                        },
             default => sub { [] },
         );
@@ -81,9 +81,16 @@
             handles => { sort_count => 'count', },
             default => sub { [] },
         );
-    
-        1;
-
+       
+       sub get_element_by_name {
+           my $self = shift;
+           my ($name) = @_;
+           my $found = $self->_get_element_by_name(sub {$_->name eq $name});
+           return $found;
+       }
+       
+       1;
+       
     }    
 package Database::Accessor;
 
