@@ -19,8 +19,14 @@
           default     => 0,
           traits => ['ENV'],
         );
-
-
+        
+       has da_raise_error_off => (
+            is  => 'rw',
+            isa => 'Bool',
+            default     => 0,
+            traits => ['ENV'],
+        );
+        
         has da_warning => (
             is  => 'rw',
             isa => 'Int',
@@ -688,7 +694,9 @@ package Database::Accessor;
                 sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
                 da_compose_only    => $self->da_compose_only,
                 da_no_effect       => $self->da_no_effect,
-                da_warning         => $self->da_warning
+                da_warning         => $self->da_warning,
+                da_raise_error_off => $self->da_raise_error_off,
+                
             }
         );
         my $result = Database::Accessor::Result->new(
