@@ -941,9 +941,8 @@ package Database::Accessor;
         );
         has condition => (
             is      => 'rw',
-            isa     => 'Operator',
-            default => '='
-
+            isa     => 'Operator|Undef',
+            default => undef
         );
         1;
     }
