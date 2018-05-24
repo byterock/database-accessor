@@ -474,16 +474,28 @@ package Database::Accessor;
     # );
 
     has dynamic_sorts => (
-        isa      => 'ArrayRefofElements',
-        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        isa         => 'ArrayRefofElements',
+        traits      => [ 'Array', 'MooseX::MetaDescription::Meta::Trait' ],
         description => { not_in_DAD => 1 },
-        is       => 'rw',
-        default  => sub { [] },
-        init_arg => undef,
-        handles  => {
+        is          => 'rw',
+        default     => sub { [] },
+        init_arg    => undef,
+        handles     => {
             add_sort           => 'push',
             dynamic_sort_count => 'count',
         },
+    );
+    
+    has _parens_are_open => (
+        traits  => ['Counter'],
+        is      => 'rw',
+        default => 0,
+        isa     => 'Int',
+        handles => {
+            _inc_parens   => 'inc',
+            _dec_parens   => 'dec',
+            _reset_parens => 'reset'
+        }
     );
 
    sub create {
@@ -660,6 +672,49 @@ package Database::Accessor;
         return \@allowed;
     };
     
+
+    
+    private_method _parenthes_check => sub {
+        my $self = shift;
+        my ($action) = @_;
+        $self->_reset_parens();
+        $self->_count_parenthes( @{ $self->conditions },
+            @{ $self->dynamic_conditions } );
+        die " Database::Accessor->"
+          . lc($action)
+          . " Unbalanced parenthes in your conditions and dynamic_conditions. Please check them!"
+          if ( $self->_parens_are_open() );
+
+        if ( $action eq Database::Accessor::Constants::RETRIEVE ) {
+            $self->_reset_parens();
+            $self->_count_parenthes( @{ $self->filters },
+                @{ $self->dynamic_filters } );
+            die " Database::Accessor->"
+              . lc($action)
+              . " Unbalanced parenthes in your filters and dynamic_filters. Please check them!"
+              if ( $self->_parens_are_open() );
+        }
+
+    };
+
+    private_method _count_parenthes => sub {
+        my $self            = shift;
+        my (@conditions)    = @_;
+        my $predicate_count = 0;
+        foreach my $condition (@conditions) {
+            foreach my $predicate ( @{ $condition->{predicates} } ) {
+                $self->_inc_parens()
+                  if ( $predicate->open_parenthes() );
+                $self->_dec_parens()
+                  if ( $predicate->close_parenthes() );
+                $predicate->condition(Database::Accessor::Constants::AND)
+                  if ( $predicate_count and !$predicate->condition() );
+                $predicate_count=1;
+            }
+        }
+    };
+
+
     private_method _execute => sub {
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
@@ -683,6 +738,7 @@ package Database::Accessor;
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
 
+        $self->_parenthes_check($action);
         my $dad = $driver->new(
             {
                 view               => $self->view,
