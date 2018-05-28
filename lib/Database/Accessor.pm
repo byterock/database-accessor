@@ -133,7 +133,8 @@ package Database::Accessor;
             $ops->{no_delete}   = 1;
         }
         my $view_name = $ops->{view}->{name};
-        
+        $view_name = $ops->{view}->{alias}
+          if (exists($ops->{view}->{alias}));
         foreach my $element (@{ $ops->{elements}}){
             $element->{view} = $view_name
               if (!exists($element->{expression}) 
