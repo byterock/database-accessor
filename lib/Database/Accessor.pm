@@ -801,6 +801,11 @@ package Database::Accessor;
             isa      => 'Str',
         );
         
+        has params => (
+            is       => 'rw',
+            isa      => 'ArrayRef|Undef',
+        );
+        
         has DAD => (
             is       => 'ro',
             isa      => 'Str',
