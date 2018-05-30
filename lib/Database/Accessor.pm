@@ -132,18 +132,7 @@ package Database::Accessor;
             $ops->{no_update}   = 1;
             $ops->{no_delete}   = 1;
         }
-        my $view_name = $ops->{view}->{name};
-        $view_name = $ops->{view}->{alias}
-          if (exists($ops->{view}->{alias}));
-        foreach my $element (@{ $ops->{elements}}){
-            $element->{view} = $view_name
-              if (!exists($element->{expression}) 
-                 and !exists($element->{function})
-                 and !exists($element->{value})
-                 or (!exists($element->{view})
-                 or $element->{view} eq undef) );
-        }
-       
+        
         return $class->$orig($ops);
     };
 
@@ -650,31 +639,51 @@ package Database::Accessor;
         }
     }
 
-             
     private_method get_dad_elements => sub {
         my $self = shift;
-        my ( $action) = @_;
+        my ($action) = @_;
         my @allowed;
-        foreach my $element (@{$self->elements}){
-           next
-             if ($action eq Database::Accessor::Constants::CREATE
-                 and ($element->only_retrieve 
-                 or  $element->no_create));
-           next
-             if ($action eq Database::Accessor::Constants::UPDATE
-                 and ($element->only_retrieve 
-                 or  $element->no_update));
-                 
-           next
-             if ($action eq Database::Accessor::Constants::RETRIEVE
-                 and $element->no_retrieve);
-           push(@allowed,$element);
-        } 
+
+        foreach my $element ( @{ $self->elements } ) {
+
+            next
+              if (
+                $action eq Database::Accessor::Constants::CREATE
+                and (  $element->only_retrieve
+                    or $element->no_create )
+              );
+
+            next
+              if (
+                $action eq Database::Accessor::Constants::UPDATE
+                and (  $element->only_retrieve
+                    or $element->no_update )
+              );
+
+            next
+              if (  $action eq Database::Accessor::Constants::RETRIEVE
+                and $element->no_retrieve );
+
+            unless ( $element->view() ) {
+                $element->view( $self->view->name() );
+                $element->view( $self->view()->alias() )
+                  if ( $self->view()->alias() );
+            }
+
+            next
+              if (
+                (
+                        $element->view ne $self->view->name
+                    and $element->view ne $self->view->alias
+                )
+                and (  $action eq Database::Accessor::Constants::CREATE
+                    or $action eq Database::Accessor::Constants::UPDATE )
+              );
+            push( @allowed, $element );
+        }
         return \@allowed;
     };
-    
 
-    
     private_method _parenthes_check => sub {
         my $self = shift;
         my ($action) = @_;
@@ -756,6 +765,7 @@ package Database::Accessor;
                 
             }
         );
+        
         my $result = Database::Accessor::Result->new(
             { DAD => $driver, operation => $action } );
         $dad->execute( $result, $action, $conn, $container, $opt );
