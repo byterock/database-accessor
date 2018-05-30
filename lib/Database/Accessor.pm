@@ -532,12 +532,10 @@ package Database::Accessor;
 
     sub retrieve {
         my $self = shift;
-        
         my ( $conn, $opt ) = @_;
         die( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
         my $container = {};
-        
         return $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
      
@@ -641,12 +639,13 @@ package Database::Accessor;
 
     private_method get_dad_elements => sub {
         my $self = shift;
-        my ($action) = @_;
+        my ($action,$opt) = @_;
         my @allowed;
-
-        foreach my $element ( @{ $self->elements } ) {
-
-            next
+        foreach my $element (@{$self->elements()} ) {
+            next 
+              if (exists($opt->{only_elements})
+                  and !exists($opt->{only_elements}->{$element->name}));
+             next
               if (
                 $action eq Database::Accessor::Constants::CREATE
                 and (  $element->only_retrieve
@@ -728,6 +727,8 @@ package Database::Accessor;
     private_method _execute => sub {
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
+        
+       
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
           if ( $action eq Database::Accessor::Constants::CREATE 
@@ -752,7 +753,7 @@ package Database::Accessor;
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => $self->get_dad_elements($action),
+                elements           => $self->get_dad_elements($action,$opt),
                 conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
