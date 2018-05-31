@@ -29,7 +29,9 @@ use constant CREATE      => 'CREATE';
 use constant RETRIEVE    => 'RETRIEVE';
 use constant UPDATE      => 'UPDATE';
 use constant DELETE      => 'DELETE';
-
+use constant OPTIONS => {
+    only_elements =>'HASH'
+};
 use constant CRUD =>  {
     Database::Accessor::Constants::CREATE   => 1,
     Database::Accessor::Constants::RETRIEVE => 1,

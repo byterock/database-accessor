@@ -20,8 +20,8 @@ my $in_hash = {
             },
             right           => { value => 'test' },
             operator        => '=',
-            open_parenthes  => 1,
-            close_parenthes => 0,
+            open_parentheses  => 1,
+            close_parentheses => 0,
             condition       => 'AND',
         },
         {
@@ -32,8 +32,8 @@ my $in_hash = {
             },
             right           => { value => 'test' },
             operator        => '=',
-            open_parenthes  => 0,
-            close_parenthes => 1
+            open_parentheses  => 0,
+            close_parentheses => 1
         }
       ]
 

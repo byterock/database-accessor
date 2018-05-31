@@ -636,7 +636,22 @@ package Database::Accessor;
             }
         }
     }
-
+    private_method check_options => sub {
+        my $self = shift;
+        my ($action,$opt) = @_;
+        die "The Option param for $action must be a Hash-Ref"
+           if (ref($opt) ne 'HASH');
+           
+        foreach my $key (keys(%{$opt})){
+             die "The $key option param for $action must be a "
+                 .Database::Accessor::Constants::OPTIONS->{$key}
+                 ."-Ref not a "
+                 . ref($opt->{$key})
+             if(exists(Database::Accessor::Constants::OPTIONS->{$key})
+                and ref($opt->{$key}) ne Database::Accessor::Constants::OPTIONS->{$key});
+        }
+    };
+    
     private_method get_dad_elements => sub {
         my $self = shift;
         my ($action,$opt) = @_;
@@ -683,39 +698,39 @@ package Database::Accessor;
         return \@allowed;
     };
 
-    private_method _parenthes_check => sub {
+    private_method _parentheses_check => sub {
         my $self = shift;
         my ($action) = @_;
         $self->_reset_parens();
-        $self->_count_parenthes( @{ $self->conditions },
+        $self->_count_parentheses( @{ $self->conditions },
             @{ $self->dynamic_conditions } );
         die " Database::Accessor->"
           . lc($action)
-          . " Unbalanced parenthes in your conditions and dynamic_conditions. Please check them!"
+          . " Unbalanced parentheses in your conditions and dynamic_conditions. Please check them!"
           if ( $self->_parens_are_open() );
 
         if ( $action eq Database::Accessor::Constants::RETRIEVE ) {
             $self->_reset_parens();
-            $self->_count_parenthes( @{ $self->filters },
+            $self->_count_parentheses( @{ $self->filters },
                 @{ $self->dynamic_filters } );
             die " Database::Accessor->"
               . lc($action)
-              . " Unbalanced parenthes in your filters and dynamic_filters. Please check them!"
+              . " Unbalanced parentheses in your filters and dynamic_filters. Please check them!"
               if ( $self->_parens_are_open() );
         }
 
     };
 
-    private_method _count_parenthes => sub {
+    private_method _count_parentheses => sub {
         my $self            = shift;
         my (@conditions)    = @_;
         my $predicate_count = 0;
         foreach my $condition (@conditions) {
             foreach my $predicate ( @{ $condition->{predicates} } ) {
                 $self->_inc_parens()
-                  if ( $predicate->open_parenthes() );
+                  if ( $predicate->open_parentheses() );
                 $self->_dec_parens()
-                  if ( $predicate->close_parenthes() );
+                  if ( $predicate->close_parentheses() );
                 $predicate->condition(Database::Accessor::Constants::AND)
                   if ( $predicate_count and !$predicate->condition() );
                 $predicate_count=1;
@@ -728,7 +743,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
         
-       
+        
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
           if ( $action eq Database::Accessor::Constants::CREATE 
@@ -749,7 +764,10 @@ package Database::Accessor;
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
           unless ($driver);
 
-        $self->_parenthes_check($action);
+        $self->check_options($action, $opt )
+          if ($opt);
+          
+        $self->_parentheses_check($action);
         my $dad = $driver->new(
             {
                 view               => $self->view,
@@ -908,7 +926,7 @@ package Database::Accessor;
             coerce   => 1,
         );
 
-        has open_parenthes => (
+        has open_parentheses => (
 
             is      => 'rw',
             isa     => 'Bool',
@@ -917,7 +935,7 @@ package Database::Accessor;
 
         );
 
-        has close_parenthes => (
+        has close_parentheses => (
             is      => 'rw',
             isa     => 'Bool',
             default => 0,
@@ -1271,13 +1289,13 @@ Database::Accessor::Driver::SQL
                                  view => 'People'},
                        right => { value    => 'Jane'},
                                  operator => '=',
-                                 open_parenthes =>1,},
+                                 open_parentheses =>1,},
                      { condition      =>'AND',
                        left           =>{ name  =>'Last_name',
                                           view  =>'People'},
                        right          =>{ value =>'Doe'},
                        operator       => '=',
-                       close_parenthes=> 1
+                       close_parentheses=> 1
                       }]
     });
   $da->add_condition({left      =>{name =>'country_id',
