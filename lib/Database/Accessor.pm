@@ -833,7 +833,11 @@ package Database::Accessor;
         
         has params => (
             is       => 'rw',
-            isa      => 'ArrayRef|Undef',
+            isa      => 'ArrayRef|ArrayRefofParams',
+            traits  => ['Array'],
+            handles => { param_count => 'count',
+                         add_param   => 'push' },
+            default => sub { [] },
         );
         
         has DAD => (
@@ -1150,7 +1154,7 @@ package Database::Accessor;
 
         has params => (
             is => 'rw',
-            isa =>'ArrayRefofParams',
+            isa =>'ArrayRef|ArrayRefofParams',
             traits  => ['Array'],
             handles => { param_count => 'count',
                          add_param   => 'push' },
