@@ -395,6 +395,7 @@ package Database::Accessor;
         default  => sub { [] },
         init_arg => undef,
         handles  => {
+            reset_conditions        => 'clear',
             add_condition           => 'push',
             dynamic_condition_count => 'count',
         },
@@ -408,6 +409,7 @@ package Database::Accessor;
         default  => sub { [] },
         init_arg => undef,
         handles  => {
+            reset_links        => 'clear',
             add_link           => 'push',
             dynamic_link_count => 'count',
         },
@@ -427,6 +429,7 @@ package Database::Accessor;
         default  => sub { [] },
         init_arg => undef,
         handles  => {
+            reset_gathers        => 'clear',
             add_gather           => 'push',
             dynamic_gather_count => 'count',
         },
@@ -452,6 +455,7 @@ package Database::Accessor;
         default  => sub { [] },
         init_arg => undef,
         handles  => {
+            reset_filters        => 'clear',
             add_filter           => 'push',
             dynamic_filter_count => 'count',
         },
@@ -471,6 +475,7 @@ package Database::Accessor;
         default     => sub { [] },
         init_arg    => undef,
         handles     => {
+            reset_sorts        => 'clear',
             add_sort           => 'push',
             dynamic_sort_count => 'count',
         },
