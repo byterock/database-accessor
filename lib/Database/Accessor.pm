@@ -493,57 +493,53 @@ package Database::Accessor;
         }
     );
 
-   sub create {
-    my $self = shift;
-    my ( $conn, $container, $opt ) = @_;
 
-    die( $self->meta->get_attribute('no_create')->description->{message} )
-      if ( $self->no_create() );
-
-    my $message =
-        "Usage: Database::Accessor->"
-      . lc(Database::Accessor::Constants::CREATE)
-      . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); ";
-
-    if ( ref($container) eq "ARRAY" ) {
-
-        die $message .= "The \$container Arry-Ref cannot be empty"
-          if ( !scalar( @{$container} ) );
-
-        my @bad =
-          grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-        die $message
-          . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
-          if ( scalar(@bad) );
-
-    }
-    else {
-
-        die $message .=
-"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes"
-          if ( !( ref($container) eq 'HASH' or blessed($container) ) );
-
-        die $message .= "The \$container Hash-Ref cannot be empty"
-          if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
-
-    }
-    
-    
-    $self->_all_elements_present($message,$container)
-       if ($self->all_elements_present);
-
-    return $self->_execute( Database::Accessor::Constants::CREATE,$conn, $container, $opt );
-}
-
-    sub retrieve {
+    sub _create_or_update {
         my $self = shift;
-        my ( $conn, $opt ) = @_;
-        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
-          if ( $self->no_retrieve() );
-        my $container = {};
-        return $self->_execute( Database::Accessor::Constants::RETRIEVE,
+        my ( $action, $conn, $container, $opt ) = @_;
+
+        my $message =
+            "Usage: Database::Accessor->"
+          . lc($action)
+          . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); ";
+
+        if ( ref($container) eq "ARRAY" ) {
+
+            die $message .= "The \$container Arry-Ref cannot be empty"
+              if ( !scalar( @{$container} ) );
+
+            my @bad =
+              grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
+            die $message
+              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
+              if ( scalar(@bad) );
+
+        }
+        else {
+
+            die $message .=
+"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes"
+              if ( !( ref($container) eq 'HASH' or blessed($container) ) );
+
+            die $message .= "The \$container Hash-Ref cannot be empty"
+              if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
+
+        }
+
+        $self->_all_elements_present( $message, $container )
+          if ( $self->all_elements_present );
+
+        return $self->_execute( $action, $conn, $container, $opt );
+    }
+    sub create {
+        my $self = shift;
+        my ( $conn, $container, $opt ) = @_;
+
+        die( $self->meta->get_attribute('no_create')->description->{message} )
+          if ( $self->no_create() );
+        return $self->_create_or_update( Database::Accessor::Constants::CREATE,
             $conn, $container, $opt );
-     
+
     }
 
     sub update {
@@ -556,27 +552,54 @@ package Database::Accessor;
         $self->_need_condition( Database::Accessor::Constants::UPDATE,
             $self->update_requires_condition()
         );
+        return $self->_create_or_update( Database::Accessor::Constants::UPDATE,
+            $conn, $container, $opt );
+    }
 
-        my $message =
-            "Usage: Database::Accessor->"
-          . lc(Database::Accessor::Constants::UPDATE)
-          . "( Class , Hash-Ref||Class, Hash-Ref); ";
-
-        die $message
-          . "The \$container parameter must be either a Hash-Ref or a Class"
-          if ( !( ref($container) eq 'HASH' or blessed($container) ) );
-
-        die $message .= "The \$container Hash-Ref cannot be empty"
-          if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
-
-        $self->_all_elements_present($message,$container)
-          if ($self->all_elements_present);
-        
-        
-        return $self->_execute( Database::Accessor::Constants::UPDATE,
+    sub retrieve {
+        my $self = shift;
+        my ( $conn, $opt ) = @_;
+        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
+          if ( $self->no_retrieve() );
+        my $container = {};
+        return $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
 
     }
+
+
+      
+    # sub update {
+        # my $self = shift;
+        # my ( $conn, $container, $opt ) = @_;
+
+        # die( $self->meta->get_attribute('no_update')->description->{message} )
+          # if ( $self->no_update() );
+
+        # $self->_need_condition( Database::Accessor::Constants::UPDATE,
+            # $self->update_requires_condition()
+        # );
+
+        # my $message =
+            # "Usage: Database::Accessor->"
+          # . lc(Database::Accessor::Constants::UPDATE)
+          # . "( Class , Hash-Ref||Class, Hash-Ref); ";
+
+        # die $message
+          # . "The \$container parameter must be either a Hash-Ref or a Class"
+          # if ( !( ref($container) eq 'HASH' or blessed($container) ) );
+
+        # die $message .= "The \$container Hash-Ref cannot be empty"
+          # if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
+
+        # $self->_all_elements_present($message,$container)
+          # if ($self->all_elements_present);
+        
+        
+        # return $self->_execute( Database::Accessor::Constants::UPDATE,
+            # $conn, $container, $opt );
+
+    # }
 
     sub delete {
         my $self = shift;
