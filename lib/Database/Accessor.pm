@@ -14,7 +14,7 @@
            da_no_effect
          )
         ] => (
-          is          => 'ro',
+          is          => 'rw',
           isa         => 'Bool',
           default     => 0,
           traits => ['ENV'],
@@ -1079,7 +1079,7 @@ package Database::Accessor;
 
         has value => (
             is    => 'rw',
-            isa   => 'Str|Undef|ArrayRef',
+            isa   => 'Str|Undef|ArrayRef|Database::Accessor',
             alias => 'param',
         );
 
