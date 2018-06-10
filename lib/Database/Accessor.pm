@@ -679,7 +679,18 @@ package Database::Accessor;
                 and ref($opt->{$key}) ne Database::Accessor::Constants::OPTIONS->{$key});
         }
     };
-    
+
+    private_method check_view => sub {
+        my $self = shift;
+        my ($element) = @_;
+
+        unless ( $element->view() ) {
+            $element->view( $self->view->name() );
+            $element->view( $self->view()->alias() )
+              if ( $self->view()->alias() );
+        }
+
+    };
     private_method get_dad_elements => sub {
         my $self = shift;
         my ($action,$opt) = @_;
@@ -706,11 +717,7 @@ package Database::Accessor;
               if (  $action eq Database::Accessor::Constants::RETRIEVE
                 and $element->no_retrieve );
 
-            unless ( $element->view() ) {
-                $element->view( $self->view->name() );
-                $element->view( $self->view()->alias() )
-                  if ( $self->view()->alias() );
-            }
+            $self->check_view($element);
 
             next
               if (
@@ -762,6 +769,10 @@ package Database::Accessor;
                 $predicate->condition(Database::Accessor::Constants::AND)
                   if ( $predicate_count and !$predicate->condition() );
                 $predicate_count=1;
+                $self->check_view($predicate->right)
+                  if(ref($predicate->right) eq 'Database::Accessor::Element');
+                $self->check_view($predicate->left)
+                  if(ref($predicate->left) eq 'Database::Accessor::Element');
             }
         }
     };
@@ -796,6 +807,7 @@ package Database::Accessor;
           if ($opt);
           
         $self->_parentheses_check($action);
+        
         my $dad = $driver->new(
             {
                 view               => $self->view,
