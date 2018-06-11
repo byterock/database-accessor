@@ -18,7 +18,7 @@ my $in_hash = {
         {
             name  => 'first_name',
             #view  => 'People',
-            alias => 'user'
+            #alias => 'user'
         },
         {
             name  => 'last_name',
@@ -30,18 +30,19 @@ my $in_hash = {
             view  => 'People',
             alias => 'user'
         },
+       
     ],
 };
 
 my $da     = Database::Accessor->new($in_hash);
-
-ok($da->elements->[0]->view eq 'People', "View taked from DA view name");
-
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
+ok($dad->elements->[0]->view eq 'People', "View taked from DA view name");
+
 Test::Database::Accessor::Utils::deep_element( $in_hash->{elements},
     $da->elements, $dad->elements, 'Element' );
+
        
 $in_hash->{delete_requires_condition} = 0;
 $in_hash->{update_requires_condition} = 0; 
@@ -69,6 +70,30 @@ $dad = $da->result->error();
 ok($dad->element_count == 1,"only one Element on create");
 ok($dad->elements->[0]->name eq 'last_name',"last_name is index 0");
 
+push(@{$in_hash->{elements}},{value =>'static data'});
+# warn("dat=".Dumper($in_hash));
+
+ $da = Database::Accessor->new($in_hash);
+ $da->create( Data::Test->new(), {test=>1} );
+ $dad = $da->result->error();
+ ok($dad->element_count == 1,"only 1 on create");
+ $da->retrieve( Data::Test->new() );
+ $dad = $da->result->error();
+ ok($dad->element_count == 4,"4 Elements on retrieve");
+ $dad = $da->result->error();
+ ok(ref($dad->elements->[3]) eq 'Database::Accessor::Param','4th element is a Param class');
+ $da->update( Data::Test->new(), {test=>1} );
+ $dad = $da->result->error();
+ ok($dad->element_count == 1,"only 1 on update");
+ $da->delete( Data::Test->new() );
+ $dad = $da->result->error();
+ ok($dad->element_count == 0,"none on delete");
+ 
+ 
+ 
+ $dad = $da->result->error();
+ warn("dat=".Dumper($dad));
+ 
 
 
 

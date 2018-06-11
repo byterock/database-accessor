@@ -696,6 +696,11 @@ package Database::Accessor;
         my ($action,$opt) = @_;
         my @allowed;
         foreach my $element (@{$self->elements()} ) {
+            if (ref($element) eq 'Database::Accessor::Param'){
+                push(@allowed,$element)
+                  if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
+                next;
+            }
             next 
               if (exists($opt->{only_elements})
                   and !exists($opt->{only_elements}->{$element->name}));
@@ -811,7 +816,7 @@ package Database::Accessor;
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => $self->get_dad_elements($action,$opt),
+                elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
                 conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
