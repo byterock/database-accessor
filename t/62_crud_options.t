@@ -10,7 +10,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 3;
+use Test::More tests => 6;
 use Test::Fatal;
 my @vars = qw(da_warning da_no_effect da_compose_only);
 

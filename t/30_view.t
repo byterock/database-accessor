@@ -76,7 +76,8 @@ else {
     fail("Cannot change attribute directly");
 }
 
-eval { $da = Database::Accessor->new( {} ); };
+eval { $da = Database::Accessor->new(  {} ); };
+
 if ($@) {
     pass("View is Required");
     ok( ref($@) eq 'MooseX::Constructor::AllErrors::Error::Constructor',

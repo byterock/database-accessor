@@ -63,8 +63,6 @@ my $conditions = [
         },
         right           => { value => 'test' },
         operator        => '=',
-        open_parentheses  => 1,
-        close_parentheses => 0,
         condition       => 'AND',
     }
 ];
@@ -74,7 +72,7 @@ $in_hash->{conditions} = $conditions;
 $da = Database::Accessor->new($in_hash);
 eval { $da->delete( $data, $return_str ); };
 
-ok( !$@, 'Can delete with only static condition' );
+ok( !$@, "$@ Can delete with only static condition" );
 
 delete( $in_hash->{conditions} );
 

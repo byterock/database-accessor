@@ -12,19 +12,13 @@
        has [
         qw(da_compose_only
            da_no_effect
+           da_raise_error_off
          )
         ] => (
           is          => 'rw',
           isa         => 'Bool',
           default     => 0,
           traits => ['ENV'],
-        );
-        
-       has da_raise_error_off => (
-            is  => 'rw',
-            isa => 'Bool',
-            default     => 0,
-            traits => ['ENV'],
         );
         
         has da_warning => (
@@ -37,6 +31,7 @@
         has view => (
             is  => 'ro',
             isa => 'View',
+            required => 1
         );
 
         has elements => (
@@ -620,7 +615,6 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $required ) = @_;
         my $is_required = $required || 0;
-
         die "Attempt to $action without condition"
           if (
             $is_required
@@ -727,8 +721,9 @@ package Database::Accessor;
             next
               if (
                 (
-                        $element->view ne $self->view->name
-                    and $element->view ne $self->view->alias
+                   $element->view ne $self->view->name
+                   and $self->view->alias
+                   and $element->view ne $self->view->alias
                 )
                 and (  $action eq Database::Accessor::Constants::CREATE
                     or $action eq Database::Accessor::Constants::UPDATE )
@@ -944,10 +939,8 @@ package Database::Accessor;
         use namespace::autoclean;
 
         has 'alias' => (
-
             is  => 'rw',
             isa => 'Str',
-
         );
 
     }

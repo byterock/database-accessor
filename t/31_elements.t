@@ -8,7 +8,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 14;
+use Test::More tests => 19;
 
 
 my $in_hash = {
@@ -90,9 +90,6 @@ push(@{$in_hash->{elements}},{value =>'static data'});
  ok($dad->element_count == 0,"none on delete");
  
  
- 
- $dad = $da->result->error();
- warn("dat=".Dumper($dad));
  
 
 

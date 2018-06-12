@@ -7,14 +7,17 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 50;
+use Test::More tests => 53;
 
 
 my $da =
   Database::Accessor->new( { retrieve_only => 1, view => { name => 'test' } } );
 
 
-
+my %read_write = (da_compose_only=>1,
+                  da_no_effect=>1,
+                  da_raise_error_off=>1,
+                  da_warning=>1);
 my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
 foreach my $attribute ( $da->meta->get_all_attributes ) {
@@ -39,8 +42,15 @@ foreach my $attribute ( $da->meta->get_all_attributes ) {
                   . ". Should be a "
                   . $attribute->type_constraint() );
         }
-        ok( !$attr->get_write_method ,
-            "Role DAD attribute: $dad_attribute is Read Only" );
+        if (exists($read_write{$attribute->name()})){
+        
+          ok( $attr->get_write_method ,
+            "Role DAD attribute: $dad_attribute is Read Write" );
+        }
+        else {
+           ok( !$attr->get_write_method ,
+            "Role DAD attribute: $dad_attribute is Read Only" ); 
+        }
     }
     else {
         fail("Role DAD can $dad_attribute");

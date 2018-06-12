@@ -36,8 +36,8 @@ my $conditions = [
         },
         right           => { value => 'test' },
         operator        => '=',
-        open_parentheses  => 1,
-        close_parentheses => 0,
+#        open_parentheses  => 1,
+#        close_parentheses => 0,
         condition       => 'AND',
     }
 ];
