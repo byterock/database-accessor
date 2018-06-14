@@ -678,10 +678,18 @@ package Database::Accessor;
         my $self = shift;
         my ($element) = @_;
 
-        unless ( $element->view() ) {
-            $element->view( $self->view->name() );
-            $element->view( $self->view()->alias() )
-              if ( $self->view()->alias() );
+        if (ref($element) eq 'Database::Accessor::Element'){
+          unless ( $element->view() ) {
+              $element->view( $self->view->name() );
+              $element->view( $self->view()->alias() )
+                if ( $self->view()->alias() );
+          }
+       }
+        else {
+            $self->check_view($element->right)
+              if (ref($element->right) eq 'Database::Accessor::Element');
+            $self->check_view($element->left)
+              if (ref($element->left) eq 'Database::Accessor::Element');  
         }
 
     };
@@ -690,6 +698,12 @@ package Database::Accessor;
         my ($action,$opt) = @_;
         my @allowed;
         foreach my $element (@{$self->elements()} ) {
+            
+            if (ref($element) eq 'Database::Accessor::Param'){
+                push(@allowed,$element)
+                  if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
+                next;
+            }
             if (ref($element) eq 'Database::Accessor::Param'){
                 push(@allowed,$element)
                   if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
@@ -720,8 +734,8 @@ package Database::Accessor;
 
             next
               if (
-                (
-                   $element->view ne $self->view->name
+                (  ref($element) eq 'Database::Accessor::Element'
+                   and $element->view ne $self->view->name
                    and $self->view->alias
                    and $element->view ne $self->view->alias
                 )
@@ -938,6 +952,8 @@ package Database::Accessor;
         use Moose::Role;
         use namespace::autoclean;
 
+
+
         has 'alias' => (
             is  => 'rw',
             isa => 'Str',
@@ -945,6 +961,27 @@ package Database::Accessor;
 
     }
 
+    {
+
+        package 
+           Database::Accessor::Roles::Element;
+        use Moose::Role;
+        use namespace::autoclean;
+
+
+    has [
+            qw(no_create
+              no_retrieve
+              no_update
+              only_retrieve
+              )
+          ] => (
+            is      => 'rw',
+            isa     => 'Bool',
+          );
+
+ }
+ 
     {
 
         package 
@@ -1022,7 +1059,8 @@ package Database::Accessor;
            Database::Accessor::Element;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::Alias );
+        with qw(Database::Accessor::Roles::Alias
+                Database::Accessor::Roles::Element );
 
         has '+name' => ( required => 1 );
 
@@ -1035,11 +1073,7 @@ package Database::Accessor;
         );
 
         has [
-            qw(no_create
-              no_retrieve
-              no_update
-              is_identity
-              only_retrieve
+            qw(is_identity
               )
           ] => (
             is      => 'rw',
@@ -1102,7 +1136,8 @@ package Database::Accessor;
            Database::Accessor::Function;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::Comparators);
+        with qw(Database::Accessor::Roles::Comparators
+                Database::Accessor::Roles::Element);
 
         has 'function' => (
             isa      => 'Str',
@@ -1119,7 +1154,8 @@ package Database::Accessor;
            Database::Accessor::Expression;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::Comparators);
+        with qw(Database::Accessor::Roles::Comparators
+                );
 
         has 'expression' => (
             isa      => 'NumericOperator',
