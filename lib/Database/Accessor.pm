@@ -677,7 +677,7 @@ package Database::Accessor;
     private_method check_view => sub {
         my $self = shift;
         my ($element) = @_;
-
+ 
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
               $element->view( $self->view->name() );
@@ -686,10 +686,14 @@ package Database::Accessor;
           }
        }
         else {
-            $self->check_view($element->right)
-              if (ref($element->right) eq 'Database::Accessor::Element');
-            $self->check_view($element->left)
-              if (ref($element->left) eq 'Database::Accessor::Element');  
+           return 
+              if (ref($element) ne "Database::Accessor::Function");
+            map( $self->check_view($_),@{$element->left})              
+              if (ref($element->left) eq "ARRAY");
+            map( $self->check_view($_),@{$element->right})
+               if (ref($element->right) eq "ARRAY");
+            $self->check_view($element->right);
+            $self->check_view($element->left);
         }
 
     };
@@ -698,7 +702,6 @@ package Database::Accessor;
         my ($action,$opt) = @_;
         my @allowed;
         foreach my $element (@{$self->elements()} ) {
-            
             if (ref($element) eq 'Database::Accessor::Param'){
                 push(@allowed,$element)
                   if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
