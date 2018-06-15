@@ -81,7 +81,9 @@ coerce 'Element', from 'HashRef', via {
     return _element_coerce($_);
 };
 coerce 'View',  from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
-coerce 'Param', from 'HashRef', via { Database::Accessor::Param->new( %{$_} ) };
+coerce 'Param', from 'HashRef', via { 
+    return  _element_coerce($_);
+};
 
 coerce 'ArrayRefofLinks', from 'ArrayRef', via {
     return _link_array_or_object($_);
@@ -97,7 +99,7 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
 };
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
-    _right_left_coerce($_);
+   _right_left_coerce($_);
 };
 
 coerce 'ArrayRefofElements', from 'ArrayRef', via {
@@ -121,6 +123,8 @@ coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
 
 sub _right_left_coerce {
     my ($in) = @_;
+    
+   
     my $objects = [];
     foreach my $object ( @{$in} ) {
         if ( ref($object) eq "ARRAY" ) {
@@ -135,7 +139,6 @@ sub _right_left_coerce {
 
 sub _element_coerce {
     my ($hash) = @_;
-
     my $object;
     if ( exists( $hash->{expression} ) ) {
         $object = Database::Accessor::Expression->new( %{$hash} );

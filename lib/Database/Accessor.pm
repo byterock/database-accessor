@@ -562,40 +562,6 @@ package Database::Accessor;
 
     }
 
-
-      
-    # sub update {
-        # my $self = shift;
-        # my ( $conn, $container, $opt ) = @_;
-
-        # die( $self->meta->get_attribute('no_update')->description->{message} )
-          # if ( $self->no_update() );
-
-        # $self->_need_condition( Database::Accessor::Constants::UPDATE,
-            # $self->update_requires_condition()
-        # );
-
-        # my $message =
-            # "Usage: Database::Accessor->"
-          # . lc(Database::Accessor::Constants::UPDATE)
-          # . "( Class , Hash-Ref||Class, Hash-Ref); ";
-
-        # die $message
-          # . "The \$container parameter must be either a Hash-Ref or a Class"
-          # if ( !( ref($container) eq 'HASH' or blessed($container) ) );
-
-        # die $message .= "The \$container Hash-Ref cannot be empty"
-          # if ( ( ref($container) eq 'HASH' and !keys( %{$container} ) ) );
-
-        # $self->_all_elements_present($message,$container)
-          # if ($self->all_elements_present);
-        
-        
-        # return $self->_execute( Database::Accessor::Constants::UPDATE,
-            # $conn, $container, $opt );
-
-    # }
-
     sub delete {
         my $self = shift;
         my ( $conn, $opt ) = @_;
@@ -686,8 +652,12 @@ package Database::Accessor;
           }
        }
         else {
+           
            return 
-              if (ref($element) ne "Database::Accessor::Function");
+              if ((ref($element) ne "Database::Accessor::Function")
+              and
+                 (ref($element) ne "Database::Accessor::Expression"));
+                 
             map( $self->check_view($_),@{$element->left})              
               if (ref($element->left) eq "ARRAY");
             map( $self->check_view($_),@{$element->right})
@@ -989,22 +959,19 @@ package Database::Accessor;
 
         package 
            Database::Accessor::Roles::Comparators;
-
         use Moose::Role;
         use MooseX::Aliases;
         use namespace::autoclean;
         has left => (
             is       => 'rw',
-            isa      => 'Element',
+            isa      => 'Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             required => 1,
             coerce   => 1,
         );
-
         has right => (
             is => 'rw',
             isa =>
 'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
-            required => 1,
             coerce   => 1,
         );
 
@@ -1158,6 +1125,7 @@ package Database::Accessor;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators
+                Database::Accessor::Roles::Element
                 );
 
         has 'expression' => (
