@@ -8,7 +8,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 19;
+use Test::More tests => 39;
 
 
 my $in_hash = {
@@ -90,9 +90,64 @@ push(@{$in_hash->{elements}},{value =>'static data'});
  ok($dad->element_count == 0,"none on delete");
  
  
+ $in_hash->{elements} = [{ function => 'left',
+                                 left  => { name => 'salary' },
+                                 right => { expression => '*',
+                                                 left  => { name => 'bonus' },
+                                                 right => { param=>.05 }} },
+                          { function => 'abs',
+                                 left  => { expression => '*',
+                                                 left  => { name => 'bonus',
+                                                            view => 'Other' },
+                                                 right => { param=>-.05 }} },
+                          { expression => '+',
+                                 left  => { name => 'salary',
+                                            view => 'NotPeople' },
+                                 right => { expression => '*',
+                                                 left  => { name => 'bonus',
+                                                            },
+                                                 right => { function => 'abs',
+                                                                left => { expression => '*',
+                                                                                left => { name => 'bonus',
+                                                                                          view => 'Other' },
+                                                                               right => { name => 'bonus' }} }} 
+                           }];
+
+ $da     = Database::Accessor->new($in_hash);
+ 
+ $da->retrieve( Data::Test->new() );
+ $dad = $da->result->error();
+ 
+ ok(ref($dad->elements->[0]) eq 'Database::Accessor::Function','Element 0 is an function');
+ ok($dad->elements->[0]->left->view eq 'People','function left has correct view');
+ ok(ref($dad->elements->[0]->right) eq 'Database::Accessor::Expression','Element 0 right is an expression');
+ ok($dad->elements->[0]->right->left->view eq 'People','Element 0 right expression right has correct view');
+
+ ok(ref($dad->elements->[1]->left) eq 'Database::Accessor::Expression','Element 1 right is an expression');
+ ok($dad->elements->[1]->left->left->view eq 'Other','Function 1 left has correct view');
+ ok(!$dad->elements->[1]->right,'No Element 1 right');
+
+ ok(ref($dad->elements->[2]) eq 'Database::Accessor::Expression','Element 2 is an expression');
+ ok($dad->elements->[2]->left->view eq 'NotPeople','Function 2 left has correct view');
+ ok(ref($dad->elements->[2]->right) eq 'Database::Accessor::Expression','Element 2 right is an expression');
+ ok(ref($dad->elements->[2]->right->left) eq 'Database::Accessor::Element','Element 2 right->left is an element');
+ ok($dad->elements->[2]->right->left->view eq 'People','Function 2 right->left has correct view');
+ 
+ ok(ref($dad->elements->[2]->right->right) eq 'Database::Accessor::Function','Element 2 right->right is an functuion');
+ ok(ref($dad->elements->[2]->right->right->left) eq 'Database::Accessor::Expression','Element 2 right->right->left is an Epresion');
+ ok($dad->elements->[2]->right->right->left->left->view eq 'Other','Function 2 right->right->left has correct view');
+ ok(!$dad->elements->[2]->right->right->right,'No Element 2 right->right->right');
+ ok(ref($dad->elements->[2]->right->right->left->left) eq 'Database::Accessor::Element','Element 2 right->right->left->left is an Element');
+ ok($dad->elements->[2]->right->right->left->left->view eq 'Other','Function 2 right->right->left->left has correct view');
+ ok(ref($dad->elements->[2]->right->right->left->right) eq 'Database::Accessor::Element','Element 2 right->right->left->right is an Element');
+ ok($dad->elements->[2]->right->right->left->right->view eq 'People','Function 2 right->right->left->right has correct view');
  
 
 
 
+
+ 
+ 
+ 
 
 1;
