@@ -348,40 +348,6 @@ package Database::Accessor;
         description => { not_in_DAD => 1 }
       );
 
-    # has view => (
-        # is       => 'ro',
-        # isa      => 'View',
-        # required => 1,
-    # );
-
-    # has elements => (
-        # isa     => 'ArrayRefofElements',
-        # traits  => ['Array'],
-        # is      => 'ro',
-        # default => sub { [] },
-        # handles => { element_count => 'count', },
-    # );
-
-    # has dynamic_elements => (
-        # isa      => 'ArrayRefofElements',
-        # traits   => ['Array'],
-        # is       => 'rw',
-        # default  => sub { [] },
-        # init_arg => undef,
-        # handles  => {
-            # add_element           => 'push',
-            # dynamic_element_count => 'count',
-        # },
-    # );
-
-    # has conditions => (
-        # is      => 'ro',
-        # isa     => 'ArrayRefofConditions',
-        # traits  => ['Array'],
-        # default => sub { [] },
-        # handles => { condition_count => 'count', },
-    # );
-
     has dynamic_conditions => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
@@ -409,12 +375,7 @@ package Database::Accessor;
             dynamic_link_count => 'count',
         },
     );
-    # has links => (
-        # is      => 'ro',
-        # isa     => 'ArrayRefofLinks',
-        # default => sub { [] },
 
-    # );
 
     has dynamic_gathers => (
         isa      => 'ArrayRefofElements',
@@ -429,18 +390,6 @@ package Database::Accessor;
             dynamic_gather_count => 'count',
         },
     );
-    # has gathers => (
-        # is      => 'ro',
-        # isa     => 'ArrayRefofElements',
-        # default => sub { [] },
-
-    # );
-    # has filters => (
-        # is      => 'ro',
-        # isa     => 'ArrayRefofConditions',
-        # default => sub { [] },
-
-    # );
 
     has dynamic_filters => (
         isa      => 'ArrayRefofConditions',
@@ -656,7 +605,9 @@ package Database::Accessor;
            return 
               if ((ref($element) ne "Database::Accessor::Function")
               and
-                 (ref($element) ne "Database::Accessor::Expression"));
+                 (ref($element) ne "Database::Accessor::Expression")
+               and
+                 (ref($element) ne "Database::Accessor::Predicate"));
                  
             map( $self->check_view($_),@{$element->left})              
               if (ref($element->left) eq "ARRAY");
@@ -666,6 +617,18 @@ package Database::Accessor;
             $self->check_view($element->left);
         }
 
+    };
+    private_method check_predicates => sub {
+         my $self = shift;
+         my ($items) = @_;
+        
+         foreach my $item (@{$items}){
+           foreach my $predicate (@{$item->predicates()}){
+                warn("elements=".Dumper($predicate));
+             $self->check_view($predicate);             
+         }
+        }
+         return $items;
     };
     private_method get_dad_elements => sub {
         my $self = shift;
@@ -719,7 +682,7 @@ package Database::Accessor;
         }
         return \@allowed;
     };
-
+    
     private_method _parentheses_check => sub {
         my $self = shift;
         my ($action) = @_;
@@ -799,7 +762,7 @@ package Database::Accessor;
             {
                 view               => $self->view,
                 elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
-                conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
+                conditions         => $self->check_predicates([@{$self->conditions},@{$self->dynamic_conditions}]),
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
                 filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->filters },@{ $self->dynamic_filters }] : [],
