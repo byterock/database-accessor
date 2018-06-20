@@ -624,7 +624,6 @@ package Database::Accessor;
         
          foreach my $item (@{$items}){
            foreach my $predicate (@{$item->predicates()}){
-                warn("elements=".Dumper($predicate));
              $self->check_view($predicate);             
          }
         }
@@ -763,7 +762,7 @@ package Database::Accessor;
                 view               => $self->view,
                 elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
                 conditions         => $self->check_predicates([@{$self->conditions},@{$self->dynamic_conditions}]),
-                links              => [@{$self->links},@{$self->dynamic_links}],
+                links              => $self->check_predicates([@{$self->links},@{$self->dynamic_links}]),
                 gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
                 filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->filters },@{ $self->dynamic_filters }] : [],
                 sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
