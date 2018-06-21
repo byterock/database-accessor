@@ -27,6 +27,8 @@ class_type 'Param',      { class => 'Database::Accessor::Param' };
 class_type 'Link',       { class => 'Database::Accessor::Link' };
 class_type 'Function',   { class => 'Database::Accessor::Function' };
 class_type 'Expression', { class => 'Database::Accessor::Expression' };
+class_type 'Gather',     { class => 'Database::Accessor::Gather' };
+
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
   'ArrayRef[Element|Param|Function|Expression]';
@@ -76,6 +78,8 @@ subtype 'Order',
     "The Order '$_', is not a valid Accessor Order!"
       . _try_one_of( Database::Accessor::Constants::ORDERS() );
   };
+
+coerce 'Gather', from 'HashRef', via { Database::Accessor::Gather->new( %{$_} ) };
 
 coerce 'Element', from 'HashRef', via {
     return _element_coerce($_);

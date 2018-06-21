@@ -2,7 +2,8 @@
 use strict;
 use warnings;
 use lib ('t/lib');
-
+use lib ('D:\GitHub\database-accessor\lib');
+use lib ('D:\GitHub\database-accessor\t\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -11,77 +12,108 @@ use Test::Database::Accessor::Utils;
 use Test::More tests => 16;
 
 
+
+BEGIN {
+    use_ok('Database::Accessor::Gather');
+}
+
+my $gather = Database::Accessor::Gather->new( { elements => [
+            {
+                name => 'first_name',
+                view => 'People4'
+            },
+        ],
+        conditions => [
+            {
+                left => {
+                    name => 'last_name',
+                    view => 'People7'
+                },
+                right             => { value => 'test' },
+                operator          => '=',
+                open_parentheses  => 1,
+                close_parentheses => 0,
+                condition         => 'AND',
+            },
+        ]
+      });
+ok( ref($gather) eq 'Database::Accessor::Gather', "gather is a Gather" );
+isa_ok($gather,"Database::Accessor::Base", "Gather is a Database::Accessor::Base");
+
+
+
 my $in_hash = {
     delete_requires_condition => 0,
     update_requires_condition => 0,
-    view     => { name => 'People' },
-    elements => [
+    view                      => { name => 'People' },
+    elements                  => [
         {
             name => 'first_name',
-            view => 'People'
+            view => 'People1'
         },
         {
             name => 'last_name',
-            view => 'People'
+            view => 'People2'
         },
         {
             name => 'user_id',
-            view => 'People'
+            view => 'People3'
         }
     ],
-    gathers => [
-        {
-            name => 'first_name',
-            view => 'People'
-        },
-        {
-            name => 'last_name',
-            view => 'People'
-        },
-        {
-            name => 'user_id',
-            view => 'People'
-        }
-    ],
-    filters => [
-        {
-            left => {
-                name => 'last_name',
-                view => 'People'
-            },
-            right           => { value => 'test' },
-            operator        => '=',
-            open_parentheses  => 1,
-            close_parentheses => 0,
-            condition       => 'AND',
-        },
-        {
-            condition => 'AND',
-            left      => {
+    gather => {
+        elements => [
+            {
                 name => 'first_name',
-                view => 'People'
+                view => 'People4'
             },
-            right           => { value => 'test' },
-            operator        => '=',
-            open_parentheses  => 0,
-            close_parentheses => 1
-        }
-      ]
-
-    ,
-};
+            {
+                name => 'last_name',
+                view => 'People5'
+            },
+            {
+                name => 'user_id',
+                view => 'People6'
+            }
+        ],
+        conditions => [
+            {
+                left => {
+                    name => 'last_name',
+                    view => 'People7'
+                },
+                right             => { value => 'test' },
+                operator          => '=',
+                open_parentheses  => 1,
+                close_parentheses => 0,
+                condition         => 'AND',
+            },
+            {
+                condition => 'AND',
+                left      => {
+                    name => 'first_name',
+                    view => 'People8'
+                },
+                right             => { value => 'test' },
+                operator          => '=',
+                open_parentheses  => 0,
+                close_parentheses => 1
+            }
+        ]
+      },
+  };
 
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
-Test::Database::Accessor::Utils::deep_element( $in_hash->{gathers},
-    $da->gathers, $dad->gathers, 'Gather' );
-Test::Database::Accessor::Utils::deep_predicate( $in_hash->{filters},
-    $da->filters(), $dad->filters(), 'Filters' );
 
+
+Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
+    $da->gather->elements, $dad->gather->elements, 'Gather' );
+warn("test11");
 foreach my $type (qw(create update delete)){
    $da->$type( Data::Test->new(), {test=>1} );
+   warn("here21 ");
    $dad = $da->result->error(); #note to others this is a kludge for testing
    ok($dad->gather_count ==0, "No Gathers on $type");
    ok($dad->filter_count ==0, "No Filters on $type");

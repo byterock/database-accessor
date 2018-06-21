@@ -59,14 +59,16 @@
             default => sub { [] },
         );
 
-        has gathers => (
+        has gather => (
             is  => 'ro',
-            isa => 'ArrayRefofElements',
-            traits  => ['Array'],
-            handles => { gather_count => 'count', },
-            default => sub { [] },
+            isa => 'Gather|Undef',
 
         );
+        sub gather_count{
+            my $self = shift;
+            return 1
+              if $self->gather();
+        }
         has filters => (
             is  => 'ro',
             isa => 'ArrayRefofConditions',
@@ -377,20 +379,30 @@ package Database::Accessor;
     );
 
 
-    has dynamic_gathers => (
-        isa      => 'ArrayRefofElements',
-        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+    has dynamic_gather => (
+        isa      => 'Gather',
+        traits   => ['MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
-        default  => sub { [] },
-        init_arg => undef,
-        handles  => {
-            reset_gathers        => 'clear',
-            add_gather           => 'push',
-            dynamic_gather_count => 'count',
-        },
     );
 
+    sub add_gather {
+      my $self = shift;
+      my ($gather) = @_;
+      $self->dynamic_gather($gather);
+    }
+    sub reset_gather {
+      my $self = shift;
+      $self->dynamic_gather(undef);
+      
+    }
+    
+    sub dynamic_gather_count{
+       my $self = shift;
+       return 1
+         if $self->dynamic_gather();
+    }
+    
     has dynamic_filters => (
         isa      => 'ArrayRefofConditions',
         traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
@@ -693,15 +705,15 @@ package Database::Accessor;
           . " Unbalanced parentheses in your conditions and dynamic_conditions. Please check them!"
           if ( $self->_parens_are_open() );
 
-        if ( $action eq Database::Accessor::Constants::RETRIEVE ) {
-            $self->_reset_parens();
-            $self->_count_parentheses( @{ $self->filters },
-                @{ $self->dynamic_filters } );
-            die " Database::Accessor->"
-              . lc($action)
-              . " Unbalanced parentheses in your filters and dynamic_filters. Please check them!"
-              if ( $self->_parens_are_open() );
-        }
+        # if ( $action eq Database::Accessor::Constants::RETRIEVE ) {
+            # $self->_reset_parens();
+            # $self->_count_parentheses( @{ $self->filters },
+                # @{ $self->dynamic_filters } );
+            # die " Database::Accessor->"
+              # . lc($action)
+              # . " Unbalanced parentheses in your filters and dynamic_filters. Please check them!"
+              # if ( $self->_parens_are_open() );
+        # }
 
     };
 
@@ -756,6 +768,22 @@ package Database::Accessor;
           if ($opt);
           
         $self->_parentheses_check($action);
+        my $gather = undef;
+        if ($action eq Database::Accessor::Constants::RETRIEVE and ($self->gather() || $self->dynamic_gather()) ){
+           my @elements;
+           my @conditions;
+           if ($self->gather()) {               
+              push(@elements,@{$self->gather()->elements()});
+              push(@conditions,@{$self->gather()->conditions});
+           }
+           if ($self->dynamic_gather()){
+              push(@elements, @{$self->dynamic_gather()->elements()});
+              push(@conditions,@{$self->dynamic_gather()->conditions});
+           }
+                     
+           $gather = Database::Accessor::Gather->new({elements=>\@elements,
+                                                      conditions=>$self->check_predicates(\@conditions)});
+        }
         
         my $dad = $driver->new(
             {
@@ -763,8 +791,7 @@ package Database::Accessor;
                 elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
                 conditions         => $self->check_predicates([@{$self->conditions},@{$self->dynamic_conditions}]),
                 links              => $self->check_predicates([@{$self->links},@{$self->dynamic_links}]),
-                gathers            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->gathers },@{ $self->dynamic_gathers }] : [],
-                filters            => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->filters },@{ $self->dynamic_filters }] : [],
+                gather             => $gather,
                 sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
                 da_compose_only    => $self->da_compose_only,
                 da_no_effect       => $self->da_no_effect,
@@ -1106,6 +1133,29 @@ package Database::Accessor;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::PredicateArray);
 
+        1;
+    }
+    {
+       package 
+           Database::Accessor::Gather;
+        use Moose;
+        extends 'Database::Accessor::Base';
+       
+        has elements => (
+            isa => 'ArrayRefofElements',
+            is  => 'rw',
+            traits  => ['Array'],
+            handles => { element_count => 'count',
+                       },
+            required=>1,
+        );
+        has conditions => (
+            isa => 'ArrayRefofConditions',
+            is  => 'rw',
+            traits  => ['Array'],
+            handles => { condition_count => 'count', },
+            default => sub { [] },
+        );
         1;
     }
     {
