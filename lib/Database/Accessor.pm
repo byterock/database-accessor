@@ -69,13 +69,13 @@
             return 1
               if $self->gather();
         }
-        has filters => (
-            is  => 'ro',
-            isa => 'ArrayRefofConditions',
-            traits  => ['Array'],
-            handles => { filter_count => 'count', },
-            default => sub { [] },
-        );
+        # has filters => (
+            # is  => 'ro',
+            # isa => 'ArrayRefofConditions',
+            # traits  => ['Array'],
+            # handles => { filter_count => 'count', },
+            # default => sub { [] },
+        # );
 
         has sorts => (
             is  => 'ro',
@@ -380,7 +380,7 @@ package Database::Accessor;
 
 
     has dynamic_gather => (
-        isa      => 'Gather',
+        isa      => 'Gather|Undef',
         traits   => ['MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
@@ -403,19 +403,19 @@ package Database::Accessor;
          if $self->dynamic_gather();
     }
     
-    has dynamic_filters => (
-        isa      => 'ArrayRefofConditions',
-        traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
-        description => { not_in_DAD => 1 },
-        is       => 'rw',
-        default  => sub { [] },
-        init_arg => undef,
-        handles  => {
-            reset_filters        => 'clear',
-            add_filter           => 'push',
-            dynamic_filter_count => 'count',
-        },
-    );
+    # has dynamic_filters => (
+        # isa      => 'ArrayRefofConditions',
+        # traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
+        # description => { not_in_DAD => 1 },
+        # is       => 'rw',
+        # default  => sub { [] },
+        # init_arg => undef,
+        # handles  => {
+            # reset_filters        => 'clear',
+            # add_filter           => 'push',
+            # dynamic_filter_count => 'count',
+        # },
+    # );
     # has sorts => (
         # is      => 'ro',
         # isa     => 'ArrayRefofElements',
