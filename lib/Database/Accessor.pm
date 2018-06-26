@@ -69,13 +69,6 @@
             return 1
               if $self->gather();
         }
-        # has filters => (
-            # is  => 'ro',
-            # isa => 'ArrayRefofConditions',
-            # traits  => ['Array'],
-            # handles => { filter_count => 'count', },
-            # default => sub { [] },
-        # );
 
         has sorts => (
             is  => 'ro',
@@ -630,17 +623,7 @@ package Database::Accessor;
         }
 
     };
-    private_method check_predicates => sub {
-         my $self = shift;
-         my ($items) = @_;
-        
-         foreach my $item (@{$items}){
-           foreach my $predicate (@{$item->predicates()}){
-             $self->check_view($predicate);             
-         }
-        }
-         return $items;
-    };
+
     private_method get_dad_elements => sub {
         my $self = shift;
         my ($action,$opt) = @_;
@@ -677,8 +660,6 @@ package Database::Accessor;
               if (  $action eq Database::Accessor::Constants::RETRIEVE
                 and $element->no_retrieve );
 
-            $self->check_view($element);
-
             next
               if (
                 (  ref($element) eq 'Database::Accessor::Element'
@@ -698,44 +679,57 @@ package Database::Accessor;
         my $self = shift;
         my ($action) = @_;
         $self->_reset_parens();
-        $self->_count_parentheses( @{ $self->conditions },
-            @{ $self->dynamic_conditions } );
+        my @items;
+        push( @items,
+            @{ $self->conditions },
+            @{ $self->dynamic_conditions },
+            @{ $self->links },
+            @{ $self->dynamic_links },
+            @{ $self->sorts },
+            @{ $self->dynamic_sorts },
+            @{ $self->elements } );
+
+        if ( $self->gather() ) {
+            push(
+                @items,
+                (
+                    @{ $self->gather->conditions }, @{ $self->gather->elements }
+                )
+            );
+        }
+
+        foreach my $condition (@items) {
+            if ( $condition->can('predicates') ) {
+                my $predicate_count = 0;
+                foreach my $predicate ( @{ $condition->predicates() } ) {
+                    $self->_inc_parens()
+                      if ( $predicate->open_parentheses() );
+                    $self->_dec_parens()
+                      if ( $predicate->close_parentheses() );
+                    $predicate->condition(Database::Accessor::Constants::AND)
+                      if ( $predicate_count and !$predicate->condition() );
+                    $predicate_count = 1;
+                    $self->check_view( $predicate->right )
+                      if (
+                        ref( $predicate->right ) eq
+                        'Database::Accessor::Element' );
+                    $self->check_view( $predicate->left )
+                      if (
+                        ref( $predicate->left ) eq
+                        'Database::Accessor::Element' );
+                }
+            }
+            else {
+                $self->check_view($condition);
+            }
+        }
+
         die " Database::Accessor->"
           . lc($action)
           . " Unbalanced parentheses in your conditions and dynamic_conditions. Please check them!"
           if ( $self->_parens_are_open() );
 
-        # if ( $action eq Database::Accessor::Constants::RETRIEVE ) {
-            # $self->_reset_parens();
-            # $self->_count_parentheses( @{ $self->filters },
-                # @{ $self->dynamic_filters } );
-            # die " Database::Accessor->"
-              # . lc($action)
-              # . " Unbalanced parentheses in your filters and dynamic_filters. Please check them!"
-              # if ( $self->_parens_are_open() );
-        # }
 
-    };
-
-    private_method _count_parentheses => sub {
-        my $self            = shift;
-        my (@conditions)    = @_;
-        my $predicate_count = 0;
-        foreach my $condition (@conditions) {
-            foreach my $predicate ( @{ $condition->{predicates} } ) {
-                $self->_inc_parens()
-                  if ( $predicate->open_parentheses() );
-                $self->_dec_parens()
-                  if ( $predicate->close_parentheses() );
-                $predicate->condition(Database::Accessor::Constants::AND)
-                  if ( $predicate_count and !$predicate->condition() );
-                $predicate_count=1;
-                $self->check_view($predicate->right)
-                  if(ref($predicate->right) eq 'Database::Accessor::Element');
-                $self->check_view($predicate->left)
-                  if(ref($predicate->left) eq 'Database::Accessor::Element');
-            }
-        }
     };
 
 
@@ -782,15 +776,15 @@ package Database::Accessor;
            }
                      
            $gather = Database::Accessor::Gather->new({elements=>\@elements,
-                                                      conditions=>$self->check_predicates(\@conditions)});
+                                                      conditions=>\@conditions});
         }
         
         my $dad = $driver->new(
             {
                 view               => $self->view,
                 elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
-                conditions         => $self->check_predicates([@{$self->conditions},@{$self->dynamic_conditions}]),
-                links              => $self->check_predicates([@{$self->links},@{$self->dynamic_links}]),
+                conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
+                links              => [@{$self->links},@{$self->dynamic_links}],
                 gather             => $gather,
                 sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
                 da_compose_only    => $self->da_compose_only,

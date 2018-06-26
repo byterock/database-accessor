@@ -272,6 +272,8 @@ $da->add_condition( {
             close_parentheses => 1,
         });
 $da->retrieve( Data::Test->new(), $return );
+
+warn(Dumper($da->result->error->conditions->[4]->predicates));
 ok($da->result->error->conditions->[4]->predicates->[0]->condition() eq 'AND','And added to last condtion predicate');
 
 
