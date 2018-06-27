@@ -46,15 +46,15 @@ sub deep_predicate {
         }
 
         foreach
-          my $index2 ( 0 .. ( $preticates[$index]->predicates_count() - 1 ) )
+          my $index2 ( 0 .. ( scalar(@{$in}) - 1 ) )
         {
             cmp_deeply(
-                $preticates[$index]->predicates->[$index2],
+                $preticates[$index]->predicates,
                 methods( %{$predicate} ),
                 "DA $type $index2->predicates $index correct"
             );
             cmp_deeply(
-                $dad_preticates[$index]->predicates->[$index2],
+                $dad_preticates[$index]->predicates,
                 methods( %{$predicate} ),
                 "DAD $type $index2->predicates $index correct"
             );
@@ -113,10 +113,13 @@ sub deep_links {
                 methods( %{ $in->{to} } ),
                 "DAD Link View $index correct"
             );
+            
 
-            Test::Database::Accessor::Utils::deep_predicate( $in->{predicates},
-                $da->links()->[$index],
-                , $dad->links()->[$index], 'Link' );
+            
+              Test::Database::Accessor::Utils::deep_predicate( $in->{conditions},
+                $da->links()->[$index]->conditions,
+                , $dad->links()->[$index]->conditions, 'Link' );
+            
         }
         else {
             cmp_deeply(
@@ -131,8 +134,8 @@ sub deep_links {
             );
 
             Test::Database::Accessor::Utils::deep_predicate(
-                $in->{predicates}, $da->dynamic_links()->[$index],
-                , $dad->links()->[$da->link_count()+$index],
+                $in->{conditions}, $da->dynamic_links()->[$index]->conditions,
+                , $dad->links()->[$da->link_count()+$index]->conditions,
                 'Dynamic Link'
             );
         }

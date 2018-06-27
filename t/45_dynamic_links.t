@@ -2,6 +2,8 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
+
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -21,7 +23,7 @@ my $in_hash = {
                 alias => 'a_country'
             },
             type       => 'Left',
-            predicates => [
+            conditions => [
                 {
                     left => {
                         name => 'country_id',
@@ -44,7 +46,7 @@ my $in_hash = {
                 alias => 'a_country'
             },
             type       => 'Left',
-            predicates => [
+            conditions => [
                 {
                     left => {
                         name => 'country_id',

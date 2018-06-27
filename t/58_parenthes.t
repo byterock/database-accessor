@@ -227,7 +227,7 @@ $da     = Database::Accessor->new($in_hash2);
 like(
     exception {$da->retrieve( Data::Test->new()) },
     qr /Unbalanced parentheses in your conditions and dynamic_condition/,
-    "Caught unbalanced condtion parentheses"
+    "Caught unbalanced condition parentheses"
 );
 
 
@@ -258,7 +258,7 @@ $da->add_condition( {
 like(
     exception {$da->retrieve( Data::Test->new()) },
     qr /Unbalanced parentheses in your conditions and dynamic_condition/,
-    "Caught unbalanced condtion parentheses"
+    "Caught unbalanced condition parentheses"
 );
 
 $da->add_condition( {
@@ -274,7 +274,7 @@ $da->add_condition( {
 $da->retrieve( Data::Test->new(), $return );
 
 warn(Dumper($da->result->error->conditions->[4]->predicates));
-ok($da->result->error->conditions->[4]->predicates->[0]->condition() eq 'AND','And added to last condtion predicate');
+ok($da->result->error->conditions->[4]->predicates->[0]->condition() eq 'AND','And added to last condition predicate');
 
 
 $da     = Database::Accessor->new($in_hash3);

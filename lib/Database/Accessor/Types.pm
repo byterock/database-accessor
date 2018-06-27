@@ -19,6 +19,7 @@ use Database::Accessor::Param;
 use Database::Accessor::Link;
 use Database::Accessor::Function;
 use Database::Accessor::Expression;
+
 class_type 'View',       { class => 'Database::Accessor::View' };
 class_type 'Element',    { class => 'Database::Accessor::Element' };
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
@@ -80,7 +81,7 @@ subtype 'Order',
   };
 
 coerce 'Gather', from 'HashRef', via { Database::Accessor::Gather->new( %{$_} ) };
-
+coerce 'Predicate', from 'HashRef', via { Database::Accessor::Predicate->new( %{$_} ) };
 coerce 'Element', from 'HashRef', via {
     return _element_coerce($_);
 };
@@ -96,11 +97,16 @@ coerce 'ArrayRefofLinks', from 'ArrayRef', via {
 };
 
 coerce 'ArrayRefofConditions', from 'ArrayRef', via {
+    
+
     return _predicate_array_or_object( "Database::Accessor::Condition", $_ );
 }, from 'HashRef', via {
-    return [ Database::Accessor::Condition->new( { predicates => [$_] } ) ];
+       
+    return [ Database::Accessor::Condition->new( { predicates => $_ } ) ];
 
 };
+
+
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
    _right_left_coerce($_);
@@ -181,7 +187,7 @@ sub _predicate_array_or_object {
             );
         }
         else {
-            push( @{$objects}, $class->new( { predicates => [$object] } ) );
+            push( @{$objects}, $class->new( { predicates => $object } ) );
         }
     }
     return $objects;

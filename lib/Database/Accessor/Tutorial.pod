@@ -32,7 +32,7 @@ Database::Accessor::Tutorial::Basics
 
 Database::Accessor::Tutorial::Conditions
 
-    This document will expand on the basics by introducing the concept of a 'predicate' in the way of a simple 'Condtion' and also introduce the 'Param' element.
+    This document will expand on the basics by introducing the concept of a 'predicate' in the way of a simple 'condition' and also introduce the 'Param' element.
 
 Database::Accessor::Tutorial::BasicDynamic
 
@@ -58,9 +58,9 @@ Database::Accessor::Tutorial::AdvancedElements
 
     This POD will look at element Aggregates with Gather and Filters. mixing function, expression and other elements in advanced predicates
 
-Database::Accessor::Tutorial::AdvancedCondtions
+Database::Accessor::Tutorial::Advancedconditions
 
-    This POD will look at multi predicate condtions, functions and expression in conditions and an special conditions like 'IN' 
+    This POD will look at multi predicate conditions, functions and expression in conditions and an special conditions like 'IN' 
 
 Database::Accessor::Tutorial::AdvancedLinks
 

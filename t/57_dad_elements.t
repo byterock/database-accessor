@@ -163,44 +163,44 @@ $elements = $dad->conditions;
     warn( Dumper($elements) );
 
 ok(
-    $elements->[0]->predicates->[0]->left->view() eq 'Other',
-    'First condtion left does not inherit view'
+    $elements->[0]->predicates->left->view() eq 'Other',
+    'First condition left does not inherit view'
 );
 ok(
-    $elements->[0]->predicates->[0]->right->view() eq 'People',
-    'First condtion right inherits view'
+    $elements->[0]->predicates->right->view() eq 'People',
+    'First condition right inherits view'
 );
 ok(
-    $elements->[1]->predicates->[0]->left->view() eq 'People',
-    'Second condtion left inherits view'
+    $elements->[1]->predicates->left->view() eq 'People',
+    'Second condition left inherits view'
 );
 ok(
-    $elements->[1]->predicates->[0]->left->view() eq 'other',
-    'Second condtion right does not inherit view'
-);
-
-ok(
-    $elements->[2]->predicates->[0]->left->left->left->view() eq 'other',
-    'Third condtion left->left->left does not inherit view'
+    $elements->[1]->predicates->left->view() eq 'other',
+    'Second condition right does not inherit view'
 );
 
 ok(
-    $elements->[2]->predicates->[0]->right->view() eq 'People',
-    'Third condtion right inherits view'
+    $elements->[2]->predicates->left->left->left->view() eq 'other',
+    'Third condition left->left->left does not inherit view'
+);
+
+ok(
+    $elements->[2]->predicates->right->view() eq 'People',
+    'Third condition right inherits view'
 );
 ok(
-    $elements->[3]->predicates->[0]->left->left->view() eq 'People',
-    'Fourth condtion left->left inherits view'
+    $elements->[3]->predicates->left->left->view() eq 'People',
+    'Fourth condition left->left inherits view'
 );
 ok(
-    $elements->[3]->predicates->[0]->right->view() eq 'People',
-    'Fourth condtion right inherits view'
+    $elements->[3]->predicates->right->view() eq 'People',
+    'Fourth condition right inherits view'
 );
 ok(
-    $elements->[3]->predicates->[0]->left->right->left->left->view() eq 'Other',
-    'Fourth condtion left->right->left->left does not inherit view'
+    $elements->[3]->predicates->left->right->left->left->view() eq 'Other',
+    'Fourth condition left->right->left->left does not inherit view'
 );
 ok(
-    $elements->[3]->predicates->[0]->left->right->left->right->view() eq 'People',
-    'Fourth condtion left->right->left->right inherit view'
+    $elements->[3]->predicates->left->right->left->right->view() eq 'People',
+    'Fourth condition left->right->left->right inherit view'
 );

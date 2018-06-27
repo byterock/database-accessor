@@ -39,7 +39,7 @@ my $in_hash = {
                 alias => 'a_country'
             },
             type       => 'Left',
-            predicates => [
+            conditions => [
                 {
                     left => {
                         name => 'country_id',
@@ -95,7 +95,7 @@ my $in_hash2 = {
             alias => 'a_country'
         },
         type       => 'Left',
-        predicates => [
+        conditions => [
             {
                 left => {
                     name => 'country_id',

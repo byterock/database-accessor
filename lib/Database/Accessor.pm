@@ -701,7 +701,7 @@ package Database::Accessor;
         foreach my $condition (@items) {
             if ( $condition->can('predicates') ) {
                 my $predicate_count = 0;
-                foreach my $predicate ( @{ $condition->predicates() } ) {
+                my $predicate = $condition->predicates(); 
                     $self->_inc_parens()
                       if ( $predicate->open_parentheses() );
                     $self->_dec_parens()
@@ -717,7 +717,7 @@ package Database::Accessor;
                       if (
                         ref( $predicate->left ) eq
                         'Database::Accessor::Element' );
-                }
+                
             }
             else {
                 $self->check_view($condition);
@@ -978,24 +978,24 @@ package Database::Accessor;
         1;
     }
 
-    {
+    # {
 
-        package 
-           Database::Accessor::Roles::PredicateArray;
-        use Moose::Role;
-        use MooseX::Aliases;
-        use namespace::autoclean;
+        # package 
+           # Database::Accessor::Roles::PredicateArray;
+        # use Moose::Role;
+        # use MooseX::Aliases;
+        # use namespace::autoclean;
 
-        has predicates => (
-            traits  => ['Array'],
-            is      => 'rw',
-            isa     => 'ArrayRefofPredicates',
-            coerce  => 1,
-            alias   => 'conditions',
-            handles => { predicates_count => 'count', },
-        );
-        1;
-    }
+        # has predicates => (
+            # traits  => ['Array'],
+            # is      => 'rw',
+            # isa     => 'ArrayRefofPredicates',
+            # coerce  => 1,
+            # alias   => 'conditions',
+            # handles => { predicates_count => 'count', },
+        # );
+        # 1;
+    # }
     {
 
         package 
@@ -1125,7 +1125,12 @@ package Database::Accessor;
            Database::Accessor::Condition;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::PredicateArray);
+        has predicates => (
+            is      => 'rw',
+            isa     => 'Predicate',
+            coerce  => 1,
+            alias   => 'conditions',
+        );
 
         1;
     }
@@ -1158,8 +1163,16 @@ package Database::Accessor;
            Database::Accessor::Link;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::PredicateArray);
+       
+               has conditions => (
+            isa => 'ArrayRefofConditions',
+            is  => 'ro',
+            traits  => ['Array'],
+            handles => { condition_count => 'count', },
+            default => sub { [] },
+        );
 
+        1;
         has to => (
             is       => 'rw',
             isa      => 'View',
@@ -1512,8 +1525,8 @@ elements
 dynamic_elements
 add_element
 
-condtions
-dynamic_condtions
+conditions
+dynamic_conditions
 add_condition
 
 links

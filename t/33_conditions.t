@@ -9,7 +9,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 9;
+use Test::More tests => 12;
 
 BEGIN {
     use_ok('Database::Accessor') || print "Bail out!";
@@ -62,10 +62,14 @@ my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
+
+warn(Dumper($da));
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions}, $da->conditions(),
     $dad->conditions(),     'conditions'
 );
+
+
 
 my $in_hash3 = {
     view     => { name => 'People' },
@@ -98,13 +102,12 @@ my $in_hash3 = {
 my $da2 = Database::Accessor->new($in_hash3);
 
 ok( ref( $da2->conditions()->[0] ) eq "Database::Accessor::Condition",
-    'DA has a condtion' );
-ok( scalar( @{ $da2->conditions() } ) == 1, 'DA has only 1 condtion' );
-ok( scalar( @{ $da2->conditions()->[0]->predicates } ) == 1,
-    'DA has only 1 predicate' );
+    'DA has a condition' );
+ok( scalar( @{ $da2->conditions() } ) == 1, 'DA has only 1 condition' );
+
 ok(
-    ref( $da2->conditions()->[0]->predicates->[0] ) eq
+    ref( $da2->conditions()->[0]->predicates ) eq
       "Database::Accessor::Predicate",
-    'DA has a condtion predicate is a predicate'
+    'DA has a condition predicate is a predicate'
 );
 1;
