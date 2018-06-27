@@ -117,7 +117,7 @@ my $in_hash3 = {
             view => 'People'
         }
     ],
-    gathers => [
+    gather =>{elements=>[
         {
             name => 'first_name',
             view => 'People'
@@ -129,9 +129,8 @@ my $in_hash3 = {
         {
             name => 'user_id',
             view => 'People'
-        }
-    ],
-    filters => [
+        }],
+        condtions=>[
         {
             left => {
                 name => 'last_name',
@@ -154,9 +153,7 @@ my $in_hash3 = {
             open_parentheses  => 0,
             close_parentheses => 1
         }
-      ]
-
-    ,
+      ]}
 };
 
 my $in_hash4 = {
@@ -177,7 +174,7 @@ my $in_hash4 = {
             view => 'People'
         }
     ],
-    gathers => [
+    gather =>{elements=> [
         {
             name => 'first_name',
             view => 'People'
@@ -189,9 +186,8 @@ my $in_hash4 = {
         {
             name => 'user_id',
             view => 'People'
-        }
-    ],
-    filters => [
+        }],
+        condtions=> [
         {
             left => {
                 name => 'last_name',
@@ -215,7 +211,7 @@ my $in_hash4 = {
             close_parentheses => 0
         }
       ]
-
+}
     ,
 };
 my $da     = Database::Accessor->new($in_hash);
@@ -274,7 +270,7 @@ $da->add_condition( {
 $da->retrieve( Data::Test->new(), $return );
 
 warn(Dumper($da->result->error->conditions->[4]->predicates));
-ok($da->result->error->conditions->[4]->predicates->[0]->condition() eq 'AND','And added to last condition predicate');
+ok($da->result->error->conditions->[4]->predicates->condition() eq 'AND','And added to last condition predicate');
 
 
 $da     = Database::Accessor->new($in_hash3);
@@ -300,20 +296,20 @@ $da->add_filter({left => {
             condition       => 'AND',
         });
 
-ok($da->retrieve( Data::Test->new(), $return ),"Balanced filter parentheses");
+# ok($da->retrieve( Data::Test->new(), $return ),"Balanced filter parentheses");
 
-$da->add_filter( {
-            left => {
-                name => 'last_name2',
-                view => 'People'
-            },
-            right           => { value => 'test->9' },
-            operator        => '=',
-            open_parentheses  => 0,
-        });
-$da->retrieve( Data::Test->new(), $return );
+# $da->add_filter( {
+            # left => {
+                # name => 'last_name2',
+                # view => 'People'
+            # },
+            # right           => { value => 'test->9' },
+            # operator        => '=',
+            # open_parentheses  => 0,
+        # });
+# $da->retrieve( Data::Test->new(), $return );
 
-ok($da->result->error->filters->[3]->predicates->[0]->condition() eq 'AND','And added to last filter predicate');
+# ok($da->result->error->filters->[3]->predicates->[0]->condition() eq 'AND','And added to last filter predicate');
 
 
 1;

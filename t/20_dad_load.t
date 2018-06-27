@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 53;
+use Test::More tests => 50;
 
 
 my $da =

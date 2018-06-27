@@ -2,14 +2,12 @@
 use strict;
 use warnings;
 use lib ('t/lib');
-use lib ('D:\GitHub\database-accessor\lib');
-use lib ('D:\GitHub\database-accessor\t\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 16;
+use Test::More tests => 12;
 
 
 
@@ -110,12 +108,10 @@ my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
     $da->gather->elements, $dad->gather->elements, 'Gather' );
-warn("test11");
 foreach my $type (qw(create update delete)){
    $da->$type( Data::Test->new(), {test=>1} );
-   warn("here21 ");
    $dad = $da->result->error(); #note to others this is a kludge for testing
-   ok($dad->gather_count ==0, "No Gathers on $type");
-   ok($dad->filter_count ==0, "No Filters on $type");
+   ok(!$dad->gather_count, "No Gathers on $type");
+  
 }
 1;

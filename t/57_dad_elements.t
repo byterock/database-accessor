@@ -12,7 +12,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 39;
+use Test::More tests => 19;
 my $in_hash = {
     view     => { name => 'People' },
     elements => [
@@ -160,7 +160,7 @@ $da->add_condition({
     );
 
 $elements = $dad->conditions;
-    warn( Dumper($elements) );
+    # warn( Dumper($elements) );
 
 ok(
     $elements->[0]->predicates->left->view() eq 'Other',
@@ -174,13 +174,14 @@ ok(
     $elements->[1]->predicates->left->view() eq 'People',
     'Second condition left inherits view'
 );
+
 ok(
-    $elements->[1]->predicates->left->view() eq 'other',
+    $elements->[1]->predicates->right->view() eq 'other',
     'Second condition right does not inherit view'
 );
 
 ok(
-    $elements->[2]->predicates->left->left->left->view() eq 'other',
+    $elements->[2]->predicates->left->left->left->view() eq 'Other',
     'Third condition left->left->left does not inherit view'
 );
 
@@ -188,6 +189,8 @@ ok(
     $elements->[2]->predicates->right->view() eq 'People',
     'Third condition right inherits view'
 );
+
+
 ok(
     $elements->[3]->predicates->left->left->view() eq 'People',
     'Fourth condition left->left inherits view'
@@ -200,6 +203,7 @@ ok(
     $elements->[3]->predicates->left->right->left->left->view() eq 'Other',
     'Fourth condition left->right->left->left does not inherit view'
 );
+warn(Dumper($elements->[3]));
 ok(
     $elements->[3]->predicates->left->right->left->right->view() eq 'People',
     'Fourth condition left->right->left->right inherit view'

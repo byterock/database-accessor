@@ -2,12 +2,13 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 16;
+use Test::More tests => 28;
 
 my $da = Database::Accessor->new( { view => { name => 'People' } } );
 

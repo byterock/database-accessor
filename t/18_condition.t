@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 
-use Test::More tests => 7;
+use Test::More tests => 6;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -12,7 +12,7 @@ BEGIN {
 
 my $condition = Database::Accessor::Condition->new(
     {
-        predicates => [
+        predicates => 
             {
                 left => {
                     name => 'field-1',
@@ -24,18 +24,15 @@ my $condition = Database::Accessor::Condition->new(
                 },
                 operator => '='
             }
-        ]
+        
     }
 );
+
 
 ok( ref($condition) eq 'Database::Accessor::Condition',
     "condition is a Condition" );
 isa_ok($condition,"Database::Accessor::Base", "Condition is a Database::Accessor::Base");
-ok(
-    does_role( $condition, "Database::Accessor::Roles::PredicateArray" ) eq 1,
-    "condition does role Database::Accessor::Roles::PredicateArray"
-);
-ok( ref( $condition->predicates()->[0] ) eq 'Database::Accessor::Predicate',
+ok( ref( $condition->predicates() ) eq 'Database::Accessor::Predicate',
     "predicated contains a predicate" );
-ok( $condition->predicates()->[0]->operator() eq '=',
+ok( $condition->predicates()->operator() eq '=',
     "predicat->0 has operator '='" );

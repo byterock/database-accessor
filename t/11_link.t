@@ -14,7 +14,7 @@ my $link = Database::Accessor::Link->new(
     {
         type       => 'left',
         to         => { name => 'test' },
-        predicates => [
+        conditions => [
             {
                 left => {
                     name => 'field-1',
@@ -32,14 +32,14 @@ my $link = Database::Accessor::Link->new(
 
 ok( ref($link) eq 'Database::Accessor::Link', "link is a Link" );
 
-ok(
-    does_role( $link, "Database::Accessor::Roles::PredicateArray" ) eq 1,
-    "link does role Database::Accessor::Roles::PredicateArray"
-);
-ok( ref( $link->predicates()->[0] ) eq 'Database::Accessor::Predicate',
-    "predicated contains a predicate" );
-ok( $link->predicates()->[0]->operator() eq '=',
-    "predicat->0 has operator '='" );
+
+ok( ref( $link->conditions()->[0] ) eq 'Database::Accessor::Condition',
+    "Conditions contains a conditiion" );
+ok( ref( $link->conditions()->[0]->predicates() ) eq 'Database::Accessor::Predicate',
+    "Conditions contains a conditiion" );
+    
+ok( $link->conditions()->[0]->predicates->operator() eq '=',
+    "Condtion->[0]->predicates has operator '='" );
 
 ok( ref($link->to)  eq 'Database::Accessor::View',   "to is a View" );
 ok( $link->type  eq 'left',     "type is 'left'" );
