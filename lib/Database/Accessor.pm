@@ -594,7 +594,7 @@ package Database::Accessor;
         }
     };
 
-    private_method check_view => sub {
+    private_method _check_view => sub {
         my $self = shift;
         my ($element) = @_;
  
@@ -605,21 +605,20 @@ package Database::Accessor;
                 if ( $self->view()->alias() );
           }
        }
-        else {
+       elsif (ref($element) eq 'Database::Accessor::Condition'){
            
+           $self->_check_view($element->predicates->right);
+            $self->_check_view($element->predicates->left);
+       }
+        else {
            return 
-              if ((ref($element) ne "Database::Accessor::Function")
-              and
-                 (ref($element) ne "Database::Accessor::Expression")
-               and
-                 (ref($element) ne "Database::Accessor::Predicate"));
-                 
-            map( $self->check_view($_),@{$element->left})              
+              unless(does_role($element,"Database::Accessor::Roles::Comparators"));
+            map( $self->_check_view($_),@{$element->left})              
               if (ref($element->left) eq "ARRAY");
-            map( $self->check_view($_),@{$element->right})
+            map( $self->_check_view($_),@{$element->right})
                if (ref($element->right) eq "ARRAY");
-            $self->check_view($element->right);
-            $self->check_view($element->left);
+            $self->_check_view($element->right);
+            $self->_check_view($element->left);
         }
 
     };
@@ -683,52 +682,36 @@ package Database::Accessor;
         push( @items,
             @{ $self->conditions },
             @{ $self->dynamic_conditions },
-            @{ $self->links },
-            @{ $self->dynamic_links },
+            # @{ $self->links },
+            # @{ $self->dynamic_links },
             @{ $self->sorts },
             @{ $self->dynamic_sorts },
             @{ $self->elements } );
-
-        if ( $self->gather() ) {
+        foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
+            push(@items,$link->conditions); 
+        }    
+        if ( $self->gather() || $self->dynamic_gather()  ) {
             push(
                 @items,
                 (
-                    @{ $self->gather->conditions }, @{ $self->gather->elements }
+                    @{ $self->gather->conditions }, @{ $self->gather->elements }, @{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }
                 )
             );
         }
-
+         
         foreach my $condition (@items) {
-            if ( $condition->can('predicates') ) {
-                my $predicate_count = 0;
-                my $predicate = $condition->predicates(); 
-                    $self->_inc_parens()
-                      if ( $predicate->open_parentheses() );
-                    $self->_dec_parens()
-                      if ( $predicate->close_parentheses() );
-                    $predicate->condition(Database::Accessor::Constants::AND)
-                      if ( $predicate_count and !$predicate->condition() );
-                    $predicate_count = 1;
-                    $self->check_view( $predicate->right )
-                      if (
-                        ref( $predicate->right ) eq
-                        'Database::Accessor::Element' );
-                    $self->check_view( $predicate->left )
-                      if (
-                        ref( $predicate->left ) eq
-                        'Database::Accessor::Element' );
-                
-            }
+            if (ref($condition) eq 'ARRAY'){
+                map( $self->_check_view($_),@{$condition});
+                            }
             else {
-                $self->check_view($condition);
-            }
+               $self->_check_view($condition);
+           }
         }
 
         die " Database::Accessor->"
           . lc($action)
           . " Unbalanced parentheses in your conditions and dynamic_conditions. Please check them!"
           if ( $self->_parens_are_open() );
-
 
     };
 
