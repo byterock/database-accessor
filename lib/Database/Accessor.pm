@@ -594,7 +594,7 @@ package Database::Accessor;
         }
     };
 
-    private_method _check_view => sub {
+    private_method _check_element => sub {
         my $self = shift;
         my ($element) = @_;
  
@@ -607,18 +607,18 @@ package Database::Accessor;
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
            
-           $self->_check_view($element->predicates->right);
-            $self->_check_view($element->predicates->left);
+           $self->_check_element($element->predicates->right);
+            $self->_check_element($element->predicates->left);
        }
         else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
-            map( $self->_check_view($_),@{$element->left})              
-              if (ref($element->left) eq "ARRAY");
-            map( $self->_check_view($_),@{$element->right})
-               if (ref($element->right) eq "ARRAY");
-            $self->_check_view($element->right);
-            $self->_check_view($element->left);
+              
+           $self->_inc_parens()
+             if ( $element->open_parentheses() );
+           $self->_dec_parens()
+             if ( $element->close_parentheses() );            $self->_check_element($element->right);
+            $self->_check_element($element->left);
         }
 
     };
@@ -674,7 +674,7 @@ package Database::Accessor;
         return \@allowed;
     };
     
-    private_method _parentheses_check => sub {
+    private_method _elements_check => sub {
         my $self = shift;
         my ($action) = @_;
         $self->_reset_parens();
@@ -689,22 +689,19 @@ package Database::Accessor;
             @{ $self->elements } );
         foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
             push(@items,$link->conditions); 
-        }    
-        if ( $self->gather() || $self->dynamic_gather()  ) {
-            push(
-                @items,
-                (
-                    @{ $self->gather->conditions }, @{ $self->gather->elements }, @{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }
-                )
-            );
-        }
+        } 
+        push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
+          if ( $self->gather());
+          
+        push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
+          if ( $self->dynamic_gather());
          
         foreach my $condition (@items) {
             if (ref($condition) eq 'ARRAY'){
-                map( $self->_check_view($_),@{$condition});
+                map( $self->_check_element($_),@{$condition});
                             }
             else {
-               $self->_check_view($condition);
+               $self->_check_element($condition);
            }
         }
 
@@ -744,7 +741,7 @@ package Database::Accessor;
         $self->check_options($action, $opt )
           if ($opt);
           
-        $self->_parentheses_check($action);
+        $self->_elements_check($action);
         my $gather = undef;
         if ($action eq Database::Accessor::Constants::RETRIEVE and ($self->gather() || $self->dynamic_gather()) ){
            my @elements;

@@ -187,7 +187,7 @@ my $in_hash4 = {
             name => 'user_id',
             view => 'People'
         }],
-        condtions=> [
+        conditions=> [
         {
             left => {
                 name => 'last_name',
@@ -216,14 +216,14 @@ my $in_hash4 = {
 };
 my $da     = Database::Accessor->new($in_hash);
 my $return = {};
-ok($da->retrieve( Data::Test->new(), $return ),"Balanced condition parentheses");
+ok($da->retrieve( Data::Test->new(), $return ),"Balanced parentheses");
 
 $da     = Database::Accessor->new($in_hash2);
 
 like(
     exception {$da->retrieve( Data::Test->new()) },
-    qr /Unbalanced parentheses in your conditions and dynamic_condition/,
-    "Caught unbalanced condition parentheses"
+    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    "Caught unbalanced parentheses"
 );
 
 
@@ -238,7 +238,7 @@ $da->add_condition( {
             close_parentheses => 1,
             condition       => 'AND',
         });
-ok($da->retrieve( Data::Test->new(), $return ),"Balanced condition parentheses");
+ok($da->retrieve( Data::Test->new(), $return ),"Balanced parentheses");
 
 $da->add_condition( {
             left => {
@@ -253,8 +253,8 @@ $da->add_condition( {
         });
 like(
     exception {$da->retrieve( Data::Test->new()) },
-    qr /Unbalanced parentheses in your conditions and dynamic_condition/,
-    "Caught unbalanced condition parentheses"
+    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    "Caught parentheses"
 );
 
 $da->add_condition( {
@@ -275,26 +275,17 @@ ok($da->result->error->conditions->[4]->predicates->condition() eq 'AND','And ad
 
 $da     = Database::Accessor->new($in_hash3);
 
-ok($da->retrieve( Data::Test->new(), $return ),"Balanced filter parentheses");
+ok($da->retrieve( Data::Test->new(), $return ),"Balanced parentheses");
 
 $da     = Database::Accessor->new($in_hash4);
 
 like(
     exception {$da->retrieve( Data::Test->new()) },
-    qr /Unbalanced parentheses in your filters and dynamic_filters/,
-    "Caught unbalanced filter parentheses"
+    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    "Caught unbalanced parentheses"
 );
  
-$da->add_filter({left => {
-                name => 'last_name',
-                view => 'People'
-            },
-            right           => { value => 'test-8' },
-            operator        => '=',
-            open_parentheses  => 0,
-            close_parentheses => 1,
-            condition       => 'AND',
-        });
+
 
 # ok($da->retrieve( Data::Test->new(), $return ),"Balanced filter parentheses");
 
