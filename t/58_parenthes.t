@@ -91,8 +91,7 @@ my $in_hash2 = {
             },
             right           => { value => 'test->4' },
             operator        => '=',
-            open_parentheses  => 0,
-            close_parentheses => 0
+            
         }
       ]
 
@@ -219,7 +218,6 @@ my $return = {};
 ok($da->retrieve( Data::Test->new(), $return ),"Balanced parentheses");
 
 $da     = Database::Accessor->new($in_hash2);
-
 like(
     exception {$da->retrieve( Data::Test->new()) },
     qr /Unbalanced parentheses in your static or dynamic attributes/,
@@ -267,9 +265,12 @@ $da->add_condition( {
             open_parentheses  => 0,
             close_parentheses => 1,
         });
-$da->retrieve( Data::Test->new(), $return );
 
-warn(Dumper($da->result->error->conditions->[4]->predicates));
+
+$da->retrieve( Data::Test->new(), $return );
+my $dad      = $da->result->error();
+#warn("JSP ".Dumper($dad));
+
 ok($da->result->error->conditions->[4]->predicates->condition() eq 'AND','And added to last condition predicate');
 
 

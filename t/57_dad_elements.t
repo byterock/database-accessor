@@ -111,8 +111,6 @@ my $in_hash = {
                     view => 'a_country'
                 },
                 operator          => '=',
-                open_parentheses  => 1,
-                close_parentheses => 0,
                 condition         => 'AND',
             },
             {
@@ -276,8 +274,6 @@ $da->add_link(
                     view => 'a_country'
                 },
                 operator          => '=',
-                open_parentheses  => 1,
-                close_parentheses => 0,
                 condition         => 'AND',
             },
             {
@@ -497,3 +493,4 @@ ok(
       'People',
     "Gather condition index 2 right inherits view"
 );
+

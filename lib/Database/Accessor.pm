@@ -396,26 +396,6 @@ package Database::Accessor;
          if $self->dynamic_gather();
     }
     
-    # has dynamic_filters => (
-        # isa      => 'ArrayRefofConditions',
-        # traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
-        # description => { not_in_DAD => 1 },
-        # is       => 'rw',
-        # default  => sub { [] },
-        # init_arg => undef,
-        # handles  => {
-            # reset_filters        => 'clear',
-            # add_filter           => 'push',
-            # dynamic_filter_count => 'count',
-        # },
-    # );
-    # has sorts => (
-        # is      => 'ro',
-        # isa     => 'ArrayRefofElements',
-        # default => sub { [] },
-
-    # );
-
     has dynamic_sorts => (
         isa         => 'ArrayRefofElements',
         traits      => [ 'Array', 'MooseX::MetaDescription::Meta::Trait' ],
@@ -443,6 +423,17 @@ package Database::Accessor;
     );
 
 
+    has _has_conditions => (
+        traits  => ['Counter'],
+        is      => 'rw',
+        default => 0,
+        isa     => 'Int',
+        handles => {
+            _inc_conditions   => 'inc',
+            _dec_conditions   => 'dec',
+            _reset_conditions => 'reset'
+        }
+    );
     sub _create_or_update {
         my $self = shift;
         my ( $action, $conn, $container, $opt ) = @_;
@@ -594,6 +585,13 @@ package Database::Accessor;
         }
     };
 
+    private_method _check_parentheses => sub {
+        my $self = shift;
+        my ($element) = @_;
+        $self->_inc_parens()
+             if ( $element->open_parentheses() );
+           $self->_dec_parens()
+             if ( $element->close_parentheses() );    };
     private_method _check_element => sub {
         my $self = shift;
         my ($element) = @_;
@@ -606,18 +604,17 @@ package Database::Accessor;
           }
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
-           
+           $element->predicates->condition(Database::Accessor::Constants::AND)
+             if ( $self->_has_conditions and !$element->predicates->condition() );
+           $self->_check_parentheses($element->predicates);
            $self->_check_element($element->predicates->right);
             $self->_check_element($element->predicates->left);
        }
         else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
-              
-           $self->_inc_parens()
-             if ( $element->open_parentheses() );
-           $self->_dec_parens()
-             if ( $element->close_parentheses() );            $self->_check_element($element->right);
+         
+            $self->_check_parentheses($element);            $self->_check_element($element->right);
             $self->_check_element($element->left);
         }
 
@@ -695,11 +692,15 @@ package Database::Accessor;
           
         push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
           if ( $self->dynamic_gather());
-         
-        foreach my $condition (@items) {
+        
+                foreach my $condition (@items) {            $self->_inc_conditions()
+              if (ref($condition) eq 'Database::Accessor::Condition');
             if (ref($condition) eq 'ARRAY'){
+               $self->_reset_conditions();                
+               $self->_inc_conditions()
+                  if (scalar(@{$condition}) >=2 and ref($condition->[0]) eq 'Database::Accessor::Condition');
                 map( $self->_check_element($_),@{$condition});
-                            }
+            }
             else {
                $self->_check_element($condition);
            }
@@ -707,7 +708,7 @@ package Database::Accessor;
 
         die " Database::Accessor->"
           . lc($action)
-          . " Unbalanced parentheses in your conditions and dynamic_conditions. Please check them!"
+          . " Unbalanced parentheses in your static or dynamic attributes. Please check them!"
           if ( $self->_parens_are_open() );
 
     };
