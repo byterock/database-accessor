@@ -13,7 +13,7 @@ use Data::Test;
 
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
-use Test::More tests => 46;
+use Test::More tests => 49;
 use Test::Fatal;
 
 my $in_hash = {
@@ -142,7 +142,7 @@ my $in_hash3 = {
                     view => 'People'
                 },
                 right             => { value => 'test' },
-                operator          => '=',
+                #operator          => '=',
                 open_parentheses  => 1,
                 close_parentheses => 0,
                 condition         => 'AND',
@@ -306,8 +306,6 @@ $da = Database::Accessor->new($in_hash3);
 ok($da->default_condition('OR'),'Change Defalut condition to OR');
  $da->retrieve( Data::Test->new());
  
- $da->default_condition(undef);
-
 ok(
     $da->result->error->gather->conditions->[1]->predicates->condition() eq
       'OR',
@@ -317,9 +315,19 @@ ok( !$da->result->error->gather->conditions->[0]->predicates->condition(),
     'OR not added to first gather condition predicate' );
 
 
-#$dad = $da->result->error();
+$da = Database::Accessor->new($in_hash3);
 
-# warn("JSP ".Dumper($dad));
+ok($da->default_operator('!='),'Change Default operator to !=');
+ $da->retrieve( Data::Test->new());
+ 
+ok(
+    $da->result->error->gather->conditions->[0]->predicates->operator() eq
+      '!=',
+    'First gather condition predicate operator is !='
+);
+ok( $da->result->error->gather->conditions->[1]->predicates->operator() eq '=',
+    'Second gather condition predicate is =' );
+
 
 $da = Database::Accessor->new($in_hash4);
 
@@ -521,6 +529,7 @@ ok( !$da->result->error->conditions->[0]->predicates->condition(),
 
 ok( $da->result->error->conditions->[1]->predicates->condition() eq 'AND',
     'AND present on second condition predicate' );
+
 
 $da->reset_conditions();
 delete( $expression->{left}->{open_parentheses} );
@@ -906,6 +915,11 @@ like(
 );
 
 $da->reset_gather();
+
+
+my $dad = $da->result->error();
+
+
 $expression->{right}->{left}->{open_parentheses} = 1;
 
 $da->add_sort($expression);

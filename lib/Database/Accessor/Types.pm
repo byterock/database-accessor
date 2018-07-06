@@ -35,8 +35,8 @@ subtype 'ArrayRefofElements'   => as
   'ArrayRef[Element|Param|Function|Expression]';
 subtype 'ArrayRefofExpressions' => as
   'ArrayRef[Element|Param|Function|Expression]';
-subtype 'ArrayRefofFunctions' => as
-  'ArrayRef[Element|Param|Function|Expression]';
+# subtype 'ArrayRefofFunctions' => as
+  # 'ArrayRef[Element|Param|Function|Expression]';
 
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks'      => as 'ArrayRef[Link]';
@@ -121,10 +121,10 @@ coerce 'ArrayRefofExpressions', from 'ArrayRef', via {
 
     _right_left_coerce($_);
 };
-coerce 'ArrayRefofFunctions', from 'ArrayRef', via {
+# coerce 'ArrayRefofFunctions', from 'ArrayRef', via {
 
-    _right_left_coerce($_);
-};
+    # _right_left_coerce($_);
+# };
 
 coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
 
