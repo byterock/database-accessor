@@ -340,6 +340,18 @@ package Database::Accessor;
 
     );
 
+
+
+    has default_operator => (
+        is          => 'rw',
+        isa         => 'Operator',
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        default     => '=',
+        description => { not_in_DAD => 1 }
+
+    );
+
+
     has [
         qw(update_requires_condition
           delete_requires_condition
@@ -613,7 +625,8 @@ package Database::Accessor;
           }
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
-
+           $element->predicates->operator($self->default_operator())
+             if ( !$element->predicates->operator() );
            $element->predicates->condition($self->default_condition())
              if ( $self->_add_condition>=2 and !$element->predicates->condition() );
            $element->predicates->condition(undef)
@@ -1016,7 +1029,6 @@ package Database::Accessor;
         has operator => (
             is      => 'rw',
             isa     => 'Operator',
-            default => '='
         );
         has condition => (
             is      => 'rw',
