@@ -13,7 +13,7 @@ use Data::Test;
 
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
-use Test::More tests => 32;
+use Test::More tests => 43;
 use Test::Fatal;
 
 my $in_hash = {
@@ -135,7 +135,7 @@ my $in_hash3 = {
                 view => 'People'
             }
         ],
-        condtions => [
+        conditions => [
             {
                 left => {
                     name => 'last_name',
@@ -148,8 +148,7 @@ my $in_hash3 = {
                 condition         => 'AND',
             },
             {
-                condition => 'AND',
-                left      => {
+                left => {
                     name => 'first_name',
                     view => 'People'
                 },
@@ -222,7 +221,8 @@ my $in_hash4 = {
     },
 };
 
-my $da     = Database::Accessor->new($in_hash);
+my $da = Database::Accessor->new($in_hash);
+
 my $return = {};
 
 ok( $da->retrieve( Data::Test->new(), $return ), "Balanced parentheses" );
@@ -282,16 +282,28 @@ $da->add_condition(
 );
 
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $da->result->error();
 
-#warn("JSP ".Dumper($dad));
+ok( !$da->result->error->conditions->[0]->predicates->condition(),
+    'AND not added to first condition predicate' );
 
 ok( $da->result->error->conditions->[4]->predicates->condition() eq 'AND',
-    'And added to last condition predicate' );
+    'AND added to last condition predicate' );
 
 $da = Database::Accessor->new($in_hash3);
 
 ok( $da->retrieve( Data::Test->new(), $return ), "Balanced parentheses" );
+ok( !$da->result->error->gather->conditions->[0]->predicates->condition(),
+    'AND not added to first gather condition predicate' );
+
+ok(
+    $da->result->error->gather->conditions->[1]->predicates->condition() eq
+      'AND',
+    'AND added to last gather condition predicate'
+);
+
+#$dad = $da->result->error();
+
+# warn("JSP ".Dumper($dad));
 
 $da = Database::Accessor->new($in_hash4);
 
@@ -443,10 +455,9 @@ $da = Database::Accessor->new($in_hash);
 
 $da->add_condition(
     {
-        left      => $expression,
-        right     => { value => '201' },
-        operator  => '=',
-        condition => 'AND',
+        left     => $expression,
+        right    => { value => '201' },
+        operator => '=',
     }
 );
 
@@ -454,6 +465,47 @@ ok(
     $da->retrieve( Data::Test->new(), $return ),
     "Balanced nested elements on condition"
 );
+
+#$dad = $da->result->error();
+ok(
+    !$da->result->error->conditions->[0]->predicates->condition(),
+    'AND condition not added when only 1 condition in conditions array'
+);
+$da->reset_conditions();
+$da->add_condition(
+    {
+        left      => $expression,
+        right     => { value => '201' },
+        operator  => '=',
+        condition => 'AND',
+    }
+);
+$da->retrieve( Data::Test->new(), $return );
+ok( !$da->result->error->conditions->[0]->predicates->condition(),
+'AND condition ignored when present and only 1 condition in conditions array'
+);
+$da->reset_conditions();
+$da->add_condition(
+    [
+        {
+            left     => $expression,
+            right    => { value => '201' },
+            operator => '=',
+        },
+        {
+            left     => $expression,
+            right    => { value => '201' },
+            operator => '=',
+        }
+    ]
+);
+$da->retrieve( Data::Test->new(), $return );
+ok( !$da->result->error->conditions->[0]->predicates->condition(),
+    'AND not present on first condition predicate' );
+
+ok( $da->result->error->conditions->[1]->predicates->condition() eq 'AND',
+    'AND present on second condition predicate' );
+
 $da->reset_conditions();
 delete( $expression->{left}->{open_parentheses} );
 
@@ -550,8 +602,48 @@ ok(
     "Balanced nested elements on link"
 );
 
-$da->reset_links();
+ok( !$da->result->error->links->[0]->conditions->[0]->predicates->condition(),
+    'AND not present on first link predicate' );
+$da->add_link(
+    {
+        to => {
+            name  => 'country',
+            alias => 'a_country'
+        },
+        type       => 'Left',
+        conditions => [
+            {
+                left     => $expression,
+                right    => { value => '201' },
+                operator => '=',
+            },
+            {
+                left     => $expression,
+                right    => { value => '201' },
+                operator => '=',
+            }
+        ]
+    }
+);
+$da->retrieve( Data::Test->new(), $return ),
+
+  #my $dad = $da->result->error();
+
+  ok( !$da->result->error->links->[0]->conditions->[0]->predicates->condition(),
+    'AND not present on first link predicate' );
+
+ok( !$da->result->error->links->[1]->conditions->[0]->predicates->condition(),
+    'AND not present on second link predicate' );
+
+ok(
+    $da->result->error->links->[1]->conditions->[1]->predicates->condition() eq
+      'AND',
+    'AND added to second link predicate'
+);
+
 delete( $expression->{left}->{open_parentheses} );
+
+$da->reset_links();
 
 $da->add_link(
     {

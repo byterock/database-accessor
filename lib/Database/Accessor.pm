@@ -308,6 +308,7 @@ package Database::Accessor;
         description => { not_in_DAD => 1 }
 
     );
+    
     # has [
         # qw(da_compose_only
            # da_no_effect
@@ -423,7 +424,7 @@ package Database::Accessor;
     );
 
 
-    has _has_conditions => (
+    has _add_condition => (
         traits  => ['Counter'],
         is      => 'rw',
         default => 0,
@@ -604,8 +605,11 @@ package Database::Accessor;
           }
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
+
            $element->predicates->condition(Database::Accessor::Constants::AND)
-             if ( $self->_has_conditions and !$element->predicates->condition() );
+             if ( $self->_add_condition>=2 and !$element->predicates->condition() );
+           $element->predicates->condition(undef)
+             if ( $self->_add_condition<=1  );
            $self->_check_parentheses($element->predicates);
            $self->_check_element($element->predicates->right);
             $self->_check_element($element->predicates->left);
@@ -675,12 +679,11 @@ package Database::Accessor;
         my $self = shift;
         my ($action) = @_;
         $self->_reset_parens();
+        $self->_reset_conditions(); 
         my @items;
         push( @items,
             @{ $self->conditions },
             @{ $self->dynamic_conditions },
-            # @{ $self->links },
-            # @{ $self->dynamic_links },
             @{ $self->sorts },
             @{ $self->dynamic_sorts },
             @{ $self->elements } );
@@ -692,17 +695,17 @@ package Database::Accessor;
           
         push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
           if ( $self->dynamic_gather());
-        
-                foreach my $condition (@items) {            $self->_inc_conditions()
-              if (ref($condition) eq 'Database::Accessor::Condition');
-            if (ref($condition) eq 'ARRAY'){
-               $self->_reset_conditions();                
-               $self->_inc_conditions()
-                  if (scalar(@{$condition}) >=2 and ref($condition->[0]) eq 'Database::Accessor::Condition');
-                map( $self->_check_element($_),@{$condition});
-            }
+       
+        foreach my $item (@items) {            $self->_inc_conditions()
+              if (ref($item) eq 'Database::Accessor::Condition');
+            if (ref($item) eq 'ARRAY'){                $self->_reset_conditions();
+                foreach my $condition (@{$item}){
+                  $self->_inc_conditions()
+                     if (ref($condition) eq 'Database::Accessor::Condition');
+                  $self->_check_element($condition);
+                }            }
             else {
-               $self->_check_element($condition);
+               $self->_check_element($item);
            }
         }
 
@@ -857,21 +860,6 @@ package Database::Accessor;
         with qw(Database::Accessor::Types);
         use namespace::autoclean;
 
-        # around BUILDARGS => sub {
-
-        # my $orig  = shift;
-        # my $class = shift;
-        # use Data::Dumper;
-        # warn(" args=".Dumper(\@_));
-        # my $ops   = @_;
-
-        # $ops->{to}= delete($ops->{view})
-        # if(ref($class) eq 'Database::Accessor::Link');
-        # warn("$orig $class args=".Dumper( $ops));
-
-        # return $class->$orig($ops);
-
-        # };
         has 'name' => (
             required => 0,
             is       => 'rw',
@@ -959,24 +947,6 @@ package Database::Accessor;
         1;
     }
 
-    # {
-
-        # package 
-           # Database::Accessor::Roles::PredicateArray;
-        # use Moose::Role;
-        # use MooseX::Aliases;
-        # use namespace::autoclean;
-
-        # has predicates => (
-            # traits  => ['Array'],
-            # is      => 'rw',
-            # isa     => 'ArrayRefofPredicates',
-            # coerce  => 1,
-            # alias   => 'conditions',
-            # handles => { predicates_count => 'count', },
-        # );
-        # 1;
-    # }
     {
 
         package 
@@ -1213,90 +1183,6 @@ package Database::Accessor;
            warn("$package->$sub(), line:$line, $message");
            
         }
-       # has [
-        # qw(da_compose_only
-           # da_no_effect
-           # da_warning
-          # )
-        # ] => (
-          # is          => 'ro',
-          # isa         => 'Bool',
-        # );
-        
-        # has view => (
-            # is  => 'ro',
-            # isa => 'View',
-        # );
-
-        # has elements => (
-            # isa => 'ArrayRefofElements',
-            # is  => 'ro',
-            # traits  => ['Array'],
-            # handles => { element_count => 'count', },
-        # );
-        # has conditions => (
-            # isa => 'ArrayRefofConditions',
-            # is  => 'ro',
-        # );
-
-        # has links => (
-            # is  => 'ro',
-            # isa => 'ArrayRefofLinks',
-        # );
-
-        # has gathers => (
-            # is  => 'ro',
-            # isa => 'ArrayRefofElements',
-
-        # );
-        # has filters => (
-            # is  => 'ro',
-            # isa => 'ArrayRefofConditions',
-        # );
-
-        # has sorts => (
-            # is  => 'ro',
-            # isa => 'ArrayRefofElements',
-
-        # );
-        # # has dynamic_elements => (
-            # # isa     => 'ArrayRefofElements',
-            # # is      => 'ro',
-            # # default => sub { [] },
-        # # );
-
-        # has dynamic_conditions => (
-            # is      => 'ro',
-            # isa     => 'ArrayRefofConditions',
-            # default => sub { [] },
-
-        # );
-
-        # has dynamic_links => (
-            # is      => 'ro',
-            # isa     => 'ArrayRefofLinks',
-            # default => sub { [] },
-
-        # );
-
-        # has dynamic_gathers => (
-            # is      => 'ro',
-            # isa     => 'ArrayRefofElements',
-            # default => sub { [] },
-
-        # );
-        # has dynamic_filters => (
-            # is      => 'ro',
-            # isa     => 'ArrayRefofConditions',
-            # default => sub { [] },
-
-        # );
-        # has dynamic_sorts => (
-            # is      => 'ro',
-            # isa     => 'ArrayRefofElements',
-            # default => sub { [] },
-
-        # );
         1;
 
     }
