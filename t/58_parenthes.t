@@ -13,7 +13,7 @@ use Data::Test;
 
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
-use Test::More tests => 43;
+use Test::More tests => 46;
 use Test::Fatal;
 
 my $in_hash = {
@@ -300,6 +300,22 @@ ok(
       'AND',
     'AND added to last gather condition predicate'
 );
+
+$da = Database::Accessor->new($in_hash3);
+
+ok($da->default_condition('OR'),'Change Defalut condition to OR');
+ $da->retrieve( Data::Test->new());
+ 
+ $da->default_condition(undef);
+
+ok(
+    $da->result->error->gather->conditions->[1]->predicates->condition() eq
+      'OR',
+    'OR added to last gather condition predicate'
+);
+ok( !$da->result->error->gather->conditions->[0]->predicates->condition(),
+    'OR not added to first gather condition predicate' );
+
 
 #$dad = $da->result->error();
 
@@ -945,3 +961,5 @@ like(
     qr /Unbalanced parentheses in your static or dynamic attributes/,
     "Sort caught  right left open parentheses missing"
 );
+
+

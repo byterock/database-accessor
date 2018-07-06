@@ -331,6 +331,14 @@ package Database::Accessor;
         description => { not_in_DAD => 1 }
       );
 
+    has default_condition => (
+        is          => 'rw',
+        isa         => 'Operator',
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        default     => Database::Accessor::Constants::AND(),
+        description => { not_in_DAD => 1 }
+
+    );
 
     has [
         qw(update_requires_condition
@@ -606,7 +614,7 @@ package Database::Accessor;
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
 
-           $element->predicates->condition(Database::Accessor::Constants::AND)
+           $element->predicates->condition($self->default_condition())
              if ( $self->_add_condition>=2 and !$element->predicates->condition() );
            $element->predicates->condition(undef)
              if ( $self->_add_condition<=1  );
