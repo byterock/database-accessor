@@ -8,7 +8,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 28;
+use Test::More tests => 16;
 
 my $da = Database::Accessor->new( { view => { name => 'People' } } );
 
@@ -51,7 +51,7 @@ my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},     $da->dynamic_conditions(),
-    $dad->conditions(), 'dynamic conditions'
+    $dad->conditions(), 'dynamic conditions',1
 );
 
 $return = {};
@@ -65,7 +65,7 @@ ok(
 
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->conditions, 'Array Dynamic condition'
+    $dad->conditions, 'Array Dynamic condition',1
 );
 
 $return = {};
@@ -77,8 +77,12 @@ ok(
     "can add an array Ref of Dynamic conditions"
 );
 
+$return = {};
+$da->retrieve( Data::Test->new(), $return );
+$dad = $da->result->error(); #note to othe
+
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->conditions, 'Array Ref Dynamic condition'
+    $dad->conditions, 'Array Ref Dynamic condition',1
 );
 1;

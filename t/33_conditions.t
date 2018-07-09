@@ -41,7 +41,7 @@ my $in_hash = {
             operator        => '=',
             open_parentheses  => 1,
             close_parentheses => 0,
-            condition       => 'AND',
+            #condition       => 'AND',
         },
         {
             condition => 'AND',
@@ -63,7 +63,7 @@ my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
 
-warn(Dumper($da));
+#warn(Dumper($da));
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions}, $da->conditions(),
     $dad->conditions(),     'conditions'

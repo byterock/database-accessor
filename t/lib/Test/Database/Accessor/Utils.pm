@@ -27,9 +27,12 @@ sub deep_element {
 }
 
 sub deep_predicate {
-    my ( $in, $da, $dad, $type ) = @_;
+    my ( $in, $da, $dad, $type,$skip_one ) = @_;
 
-    foreach my $index ( 0 .. ( scalar( @{$in} - 1 ) ) ) {
+    my $start = 0;
+    $start = 1
+      if ($skip_one);
+    foreach my $index ( $start .. ( scalar( @{$in} - 1 ) ) ) {
         my $predicate = $in->[$index];
         bless( $predicate, "Database::Accessor::Predicate" );
         bless_element( $predicate->{left} );

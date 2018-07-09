@@ -36,7 +36,6 @@ my $in_hash = {
                     operator        => '=',
                     open_parentheses  => 1,
                     close_parentheses => 0,
-                    condition       => 'AND',
                 }
             ]
         },
@@ -57,9 +56,8 @@ my $in_hash = {
                         view => 'a_country'
                     },
                     operator        => '=',
-                    open_parentheses  => 1,
-                    close_parentheses => 0,
-                    condition       => 'AND',
+                    open_parentheses  => 0,
+                    close_parentheses => 1,
                 }
             ]
         }

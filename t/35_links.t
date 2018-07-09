@@ -52,7 +52,6 @@ my $in_hash = {
                     operator        => '=',
                     open_parentheses  => 0,
                     close_parentheses => 0,
-                    condition       => 'AND',
                 }
             ]
         },
