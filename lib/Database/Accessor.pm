@@ -616,7 +616,7 @@ package Database::Accessor;
     private_method _check_element => sub {
         my $self = shift;
         my ($element) = @_;
- 
+
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
               $element->view( $self->view->name() );
@@ -635,13 +635,18 @@ package Database::Accessor;
            $self->_check_element($element->predicates->right);
             $self->_check_element($element->predicates->left);
        }
-        else {
+       elsif (ref($element) eq 'ARRAY'){
+           
+           foreach my $sub_element (@{$element}){
+               $self->_check_element($sub_element);
+            }       }
+       else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
             $self->_check_parentheses($element);            $self->_check_element($element->right);
             $self->_check_element($element->left);
-        }
+       }
 
     };
 

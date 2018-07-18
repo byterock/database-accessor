@@ -12,7 +12,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 53;
+use Test::More tests => 54;
 my $in_hash = {
     view     => { name => 'People' },
     elements => [
@@ -323,6 +323,8 @@ $da->add_sort(
 $da->retrieve( Data::Test->new() );
 my $dad      = $da->result->error();
 my $elements = $dad->elements;
+
+
 ok( $elements->[0]->view() eq 'People', 'First element inherits view' );
 ok( $elements->[1]->view() eq 'other', 'Second element does not inherit view' );
 ok(
@@ -494,3 +496,34 @@ ok(
     "Gather condition index 2 right inherits view"
 );
 
+ $in_hash = {
+    da_compose_only           => 1,
+    update_requires_condition => 0,
+    delete_requires_condition => 0,
+    view                      => { name => 'People' },
+    elements => [
+            {
+                function => 'substr',
+                left     => { name => 'username' },
+                right    => [
+                    { param => 3 },
+                    {
+                        function => 'left',
+                        left     => { name => 'address' },
+                        right    => { param => 4 }
+                    }
+                ]
+            }
+        ],
+    };
+
+ $da = Database::Accessor->new($in_hash);
+ $da->retrieve( Data::Test->new() );
+ $dad      = $da->result->error();
+ $elements = $dad->elements;
+;
+
+ ok(
+    $elements->[0]->right->[1]->left->view() eq 'People',
+    "function in function inherits view"
+)
