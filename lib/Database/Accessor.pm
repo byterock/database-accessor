@@ -912,6 +912,7 @@ package Database::Accessor;
         package 
            Database::Accessor::Roles::Element;
         use Moose::Role;
+        with (qw(Database::Accessor::Roles::Alias));
         use namespace::autoclean;
 
 
@@ -984,7 +985,7 @@ package Database::Accessor;
            Database::Accessor::Element;
         use Moose;
         extends 'Database::Accessor::Base';
-        with qw(Database::Accessor::Roles::Alias
+        with qw(
                 Database::Accessor::Roles::Element );
 
         has '+name' => ( required => 1 );
@@ -1044,7 +1045,7 @@ package Database::Accessor;
            Database::Accessor::Param;
         use Moose;
         extends 'Database::Accessor::Base';
-
+        with qw(Database::Accessor::Roles::Element);
         has value => (
             is    => 'rw',
             isa   => 'Str|Undef|ArrayRef|Database::Accessor',
@@ -1061,7 +1062,8 @@ package Database::Accessor;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators
-                Database::Accessor::Roles::Element);
+                Database::Accessor::Roles::Element
+                );
 
         has 'function' => (
             isa      => 'Str',
@@ -1080,7 +1082,7 @@ package Database::Accessor;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Comparators
                 Database::Accessor::Roles::Element
-                );
+                 );
 
         has 'expression' => (
             isa      => 'NumericOperator',
