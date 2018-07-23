@@ -615,14 +615,16 @@ package Database::Accessor;
              if ( $element->close_parentheses() );    };
     private_method _check_element => sub {
         my $self = shift;
-        my ($element) = @_;
+        my ($element,$alias) = @_;
 
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
-              $element->view( $self->view->name() );
-              $element->view( $self->view()->alias() )
-                if ( $self->view()->alias() );
-          }
+            $element->view( $self->view->name() );
+            $element->view( $self->view()->alias() )
+              if ( $self->view()->alias() );
+            $element->view($alias )
+              if ($alias);          }
+        
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
            $element->predicates->operator($self->default_operator())
@@ -632,19 +634,19 @@ package Database::Accessor;
            $element->predicates->condition(undef)
              if ( $self->_add_condition<=1  );
            $self->_check_parentheses($element->predicates);
-           $self->_check_element($element->predicates->right);
-            $self->_check_element($element->predicates->left);
+           $self->_check_element($element->predicates->right,$alias);
+           $self->_check_element($element->predicates->left);
        }
        elsif (ref($element) eq 'ARRAY'){
            
            foreach my $sub_element (@{$element}){
-               $self->_check_element($sub_element);
+               $self->_check_element($sub_element,$alias);
             }       }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
-            $self->_check_parentheses($element);            $self->_check_element($element->right);
+            $self->_check_parentheses($element);            $self->_check_element($element->right,$alias);
             $self->_check_element($element->left);
        }
 
@@ -713,9 +715,11 @@ package Database::Accessor;
             @{ $self->sorts },
             @{ $self->dynamic_sorts },
             @{ $self->elements } );
-        foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
-            push(@items,$link->conditions); 
-        } 
+
+         foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
+            my $view = $link->to;
+            my $alias = !$view->alias ? $view->name : $view->alias;
+            $self->_check_element($link->conditions,$alias);        } 
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
           if ( $self->gather());
           
@@ -747,7 +751,8 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $conn,$container , $opt ) = @_;
         
-        
+       
+      
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
           if ( $action eq Database::Accessor::Constants::CREATE 

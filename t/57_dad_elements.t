@@ -392,6 +392,7 @@ ok( $elements->[3]->predicates->left->right->left->right->view() eq 'People',
     'Fourth condition left->right->left->right inherit view' );
 
 $elements = $dad->links;
+# warn(Dumper($elements));
 foreach my $i ( 0 .. 1 ) {
     ok(
         $elements->[$i]->conditions->[0]->predicates->left->view() eq 'People',
@@ -418,10 +419,17 @@ foreach my $i ( 0 .. 1 ) {
 "Link index $i  condition 2 left->right->left->right->left inherits view"
     );
     ok(
-        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'People',
+        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
+        "Link index $i  condition 2 right- inherits view"
+    );
+    warn( Dumper($elements->[$i]));
+      ok(
+        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
         "Link index $i  condition 2 right- inherits view"
     );
 }
+
+
 $elements = $dad->sorts;
 
 ok( $elements->[0]->view() eq 'People', 'First sort element inherits view' );
