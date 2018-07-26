@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 use lib ('t/lib');
-
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 # {
 # package Database::Accessor::DAD::Test;
 # BEGIN {

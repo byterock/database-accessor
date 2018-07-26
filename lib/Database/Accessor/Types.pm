@@ -32,7 +32,11 @@ class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
-  'ArrayRef[Element|Param|Function|Expression]';
+  'ArrayRef[Element|Param|Function|Expression]',
+   where { scalar(@{$_})<=0 ? 0 : 1; },
+  message {
+    "ArrayRefofElements can not be empty array ref";
+  };
 subtype 'ArrayRefofExpressions' => as
   'ArrayRef[Element|Param|Function|Expression]';
 # subtype 'ArrayRefofFunctions' => as
@@ -80,7 +84,9 @@ subtype 'Order',
       . _try_one_of( Database::Accessor::Constants::ORDERS() );
   };
 
+#
 coerce 'Gather', from 'HashRef', via { 
+    die "Attribute (elements) does not pass the type constraint because: Validation failed for 'ArrayRefofElements' with []"  if (exists($_->{elements}) and ref($_->{elements}) eq 'ARRAY' and scalar(@{$_->{elements}} ==0)); 
     Database::Accessor::Gather->new( %{$_} ) };
 
 

@@ -3,16 +3,16 @@
 use strict;
 use warnings;
 use lib ('t/lib');
-
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
 use Test::More tests => 50;
-
+use Test::Fatal;
 
 my $da =
-  Database::Accessor->new( { retrieve_only => 1, view => { name => 'test' } } );
+  Database::Accessor->new( { retrieve_only => 1, view => { name => 'test' }, elements=>[{ name => 'street', view => 'person', }] } );
 
 
 my %read_write = (da_compose_only=>1,
@@ -68,7 +68,8 @@ ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 my $da_new = Database::Accessor->new( { delete_requires_condition=>0,
                                         update_requires_condition=>0,
-                                        view => { name => 'test' } } );
+                                        view => { name => 'test' },
+                                        elements=>[{ name => 'street', view => 'person', }] } );
 
 ok( $da_new->no_create() == 0,   "Can Create" );
 ok( $da_new->no_retrieve() == 0, "Can Retrieve" );
@@ -89,3 +90,25 @@ foreach my $type (qw(create retrieve update delete)){
        ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class")
      }
 }
+
+
+
+
+
+like(
+    exception {my $da = Database::Accessor->new( {view => { name => 'test' }} ) },
+    qr /Attribute \(elements\) is required at/,
+    "Elements is a required Field "
+);
+
+like(
+    exception { Database::Accessor->new( {elements=>[{ name => 'street', view => 'person', }]} ) },
+    qr /Attribute \(view\) is required at /,
+    "View is a required Field"
+);
+like(
+    exception {my $da = Database::Accessor->new( {view => { name => 'test' },elements=>[]} ) },
+    qr /ArrayRefofElements can not be an empty array ref/,
+    "Elements cannot be empty array ref"
+);
+# $da = Database::Accessor->new();

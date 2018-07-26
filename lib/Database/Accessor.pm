@@ -41,7 +41,7 @@
             handles => { element_count => 'count',
                          _get_element_by_name  => 'first',
                        },
-            default => sub { [] },
+            required=>1,
         );
         has conditions => (
             isa => 'ArrayRefofConditions',
@@ -75,7 +75,6 @@
             isa => 'ArrayRefofElements',
             traits  => ['Array'],
             handles => { sort_count => 'count', },
-            default => sub { [] },
         );
        
        sub get_element_by_name {
@@ -422,7 +421,6 @@ package Database::Accessor;
         traits      => [ 'Array', 'MooseX::MetaDescription::Meta::Trait' ],
         description => { not_in_DAD => 1 },
         is          => 'rw',
-        default     => sub { [] },
         init_arg    => undef,
         handles     => {
             reset_sorts        => 'clear',
