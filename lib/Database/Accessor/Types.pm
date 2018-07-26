@@ -80,7 +80,10 @@ subtype 'Order',
       . _try_one_of( Database::Accessor::Constants::ORDERS() );
   };
 
-coerce 'Gather', from 'HashRef', via { Database::Accessor::Gather->new( %{$_} ) };
+coerce 'Gather', from 'HashRef', via { 
+    Database::Accessor::Gather->new( %{$_} ) };
+
+
 coerce 'Predicate', from 'HashRef', via { Database::Accessor::Predicate->new( %{$_} ) };
 coerce 'Element', from 'HashRef', via {
     return _element_coerce($_);
@@ -134,10 +137,11 @@ coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
 sub _right_left_coerce {
     my ($in) = @_;
     
-   
+  
     my $objects = [];
     foreach my $object ( @{$in} ) {
         if ( ref($object) eq "ARRAY" ) {
+           
             push( @{$objects}, @{$object} );
         }
         else {

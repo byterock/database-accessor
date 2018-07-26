@@ -615,7 +615,7 @@ package Database::Accessor;
              if ( $element->close_parentheses() );    };
     private_method _check_element => sub {
         my $self = shift;
-        my ($element,$alias) = @_;
+        my ($element,$right,$alias) = @_;
 
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
@@ -623,7 +623,7 @@ package Database::Accessor;
             $element->view( $self->view()->alias() )
               if ( $self->view()->alias() );
             $element->view($alias )
-              if ($alias);          }
+              if ($alias and $right);          }
         
        }
        elsif (ref($element) eq 'Database::Accessor::Condition'){
@@ -634,20 +634,20 @@ package Database::Accessor;
            $element->predicates->condition(undef)
              if ( $self->_add_condition<=1  );
            $self->_check_parentheses($element->predicates);
-           $self->_check_element($element->predicates->right,$alias);
-           $self->_check_element($element->predicates->left);
+           $self->_check_element($element->predicates->right,1,$alias);
+           $self->_check_element($element->predicates->left,0,$alias);
        }
        elsif (ref($element) eq 'ARRAY'){
            
            foreach my $sub_element (@{$element}){
-               $self->_check_element($sub_element,$alias);
+               $self->_check_element($sub_element,0,$alias);
             }       }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
-            $self->_check_parentheses($element);            $self->_check_element($element->right,$alias);
-            $self->_check_element($element->left);
+            $self->_check_parentheses($element);            $self->_check_element($element->right,1,$alias);
+            $self->_check_element($element->left,0,$alias);
        }
 
     };
@@ -719,7 +719,9 @@ package Database::Accessor;
          foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
             my $view = $link->to;
             my $alias = !$view->alias ? $view->name : $view->alias;
-            $self->_check_element($link->conditions,$alias);        } 
+            $self->_check_element($link->conditions,0,$alias);
+           push(@items,$link->conditions);        } 
+         
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
           if ( $self->gather());
           
@@ -732,10 +734,10 @@ package Database::Accessor;
                 foreach my $condition (@{$item}){
                   $self->_inc_conditions()
                      if (ref($condition) eq 'Database::Accessor::Condition');
-                  $self->_check_element($condition);
+                  $self->_check_element($condition,0);
                 }            }
             else {
-               $self->_check_element($item);
+               $self->_check_element($item,0);
            }
         }
 

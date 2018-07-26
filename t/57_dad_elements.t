@@ -12,7 +12,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 54;
+use Test::More tests => 58;
 my $in_hash = {
     view     => { name => 'People' },
     elements => [
@@ -271,7 +271,7 @@ $da->add_link(
                 left  => { name => 'country_id', },
                 right => {
                     name => 'id',
-                    view => 'a_country'
+                    #view => 'a_country'
                 },
                 operator          => '=',
                 condition         => 'AND',
@@ -413,17 +413,22 @@ foreach my $i ( 0 .. 1 ) {
           ->predicates->left->right->left->left->view() eq 'Other',
 "Link index $i  condition 2 left->right->left->left does not inherit view"
     );
-    ok(
+    
+   ok(
         $elements->[$i]->conditions->[1]
-          ->predicates->left->right->left->right->view() eq 'People',
+          ->predicates->left->right->left->right->view() eq 'a_country',
 "Link index $i  condition 2 left->right->left->right->left inherits view"
     );
+          
     ok(
-        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
+        $elements->[$i]->conditions->[1]->predicates->condition  eq 'AND',
+"Link index $i  condition 2 has AND Contdition"
+    );
+    ok(
+        $elements->[$i]->conditions->[0]->predicates->right->view() eq 'a_country',
         "Link index $i  condition 2 right- inherits view"
     );
-    warn( Dumper($elements->[$i]));
-      ok(
+    ok(
         $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
         "Link index $i  condition 2 right- inherits view"
     );
