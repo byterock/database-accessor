@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 
 use Data::Dumper;
 use Data::Test;
@@ -10,7 +11,7 @@ use Test::Database::Accessor::Utils;
 
 use Test::More tests => 16;
 
-my $da = Database::Accessor->new( { view => { name => 'People' } } );
+my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ], } );
 
 my $in_hash = {
     conditions => [

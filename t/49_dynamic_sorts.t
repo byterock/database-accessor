@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib (
+    't/lib',
+    'D:\GitHub\database-accessor\t\lib',
+    'D:\GitHub\database-accessor\lib'
+);;
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -27,7 +32,7 @@ my $in_hash = {
     ],
 };
 
-my $da = Database::Accessor->new( { view => { name => 'People' } } );
+my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ] } );
 
 foreach my $sort ( @{ $in_hash->{sorts} } ) {
     ok( $da->add_sort($sort), "can add an single Dynamic sort" );

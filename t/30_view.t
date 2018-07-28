@@ -43,7 +43,7 @@ my $in_hash = {
         name  => 'name',
         alias => 'alias'
     },
-
+    elements => [ { name => 'first_name', }, { name => 'last_name', }, ],
 };
 
 

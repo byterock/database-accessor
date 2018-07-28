@@ -13,7 +13,7 @@ use Test::More tests => 40;
 
 
 
-my $da = Database::Accessor->new( { view => { name => 'People' } } );
+my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ],  } );
 
 my $in_hash = {
     links => [
@@ -88,7 +88,7 @@ $dad = $da->result->error(); #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 
-$da = Database::Accessor->new( { view => { name => 'People' } } );
+$da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ],  } );
 
 ok(
     $da->add_link( $in_hash->{links} ),

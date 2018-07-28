@@ -15,7 +15,7 @@ use Test::Database::Accessor::Utils;
 use Test::More tests => 19;
 
 
-my $da = Database::Accessor->new( { view => { name => 'People' } } );
+my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ] } );
 
 
 my $gather = {        
