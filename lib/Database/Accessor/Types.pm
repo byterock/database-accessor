@@ -35,7 +35,7 @@ subtype 'ArrayRefofElements'   => as
   'ArrayRef[Element|Param|Function|Expression]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
   message {
-    "ArrayRefofElements can not be empty array ref";
+    "ArrayRefofElements can not be an empty array ref";
   };
 subtype 'ArrayRefofExpressions' => as
   'ArrayRef[Element|Param|Function|Expression]';

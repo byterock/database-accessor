@@ -72,9 +72,10 @@
 
         has sorts => (
             is  => 'ro',
-            isa => 'ArrayRefofElements',
+            isa => 'ArrayRefofParams',
             traits  => ['Array'],
             handles => { sort_count => 'count', },
+            default => sub { [] },
         );
        
        sub get_element_by_name {
@@ -417,7 +418,8 @@ package Database::Accessor;
     }
     
     has dynamic_sorts => (
-        isa         => 'ArrayRefofElements',
+        isa         => 'ArrayRefofParams',
+        default  => sub { [] },
         traits      => [ 'Array', 'MooseX::MetaDescription::Meta::Trait' ],
         description => { not_in_DAD => 1 },
         is          => 'rw',
@@ -789,7 +791,6 @@ package Database::Accessor;
               push(@elements, @{$self->dynamic_gather()->elements()});
               push(@conditions,@{$self->dynamic_gather()->conditions});
            }
-                     
            $gather = Database::Accessor::Gather->new({elements=>\@elements,
                                                       conditions=>\@conditions});
         }
@@ -797,11 +798,11 @@ package Database::Accessor;
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => ($action ne Database::Accessor::Constants::DELETE) ? $self->get_dad_elements($action,$opt):[],
+                elements           => $self->get_dad_elements($action,$opt),
                 conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gather             => $gather,
-                sorts              => ($action eq Database::Accessor::Constants::RETRIEVE) ? [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }] : [],
+                sorts              => [@{ $self->sorts }  ,@{ $self->dynamic_sorts   }],
                 da_compose_only    => $self->da_compose_only,
                 da_no_effect       => $self->da_no_effect,
                 da_warning         => $self->da_warning,

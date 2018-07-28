@@ -8,7 +8,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 50;
+use Test::More tests => 52;
 use Test::Fatal;
 
 my $da =
@@ -78,7 +78,7 @@ ok( $da_new->no_delete() == 0,   "Can Delete" );
 
 ok( ref($da_new) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
-foreach my $type (qw(create retrieve update delete)){
+foreach my $type (qw(create retrieve update )){
     my $container = {key=>1};
      ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
      if ($type eq 'create') {
