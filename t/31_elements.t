@@ -88,7 +88,7 @@ push(@{$in_hash->{elements}},{value =>'static data'});
  ok($dad->element_count == 1,"only 1 on update");
  $da->delete( Data::Test->new() );
  $dad = $da->result->error();
- ok($dad->element_count == 0,"none on delete");
+ ok($dad->element_count == 3,"three on delete");
  
  
  $in_hash->{elements} = [{ function => 'left',

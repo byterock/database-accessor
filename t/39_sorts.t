@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib (
+    't/lib',
+    'D:\GitHub\database-accessor\t\lib',
+    'D:\GitHub\database-accessor\lib'
+);
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -71,6 +76,6 @@ else {
 foreach my $type (qw(create update delete)){
    $da->$type( Data::Test->new(), {test=>1} );
    $dad = $da->result->error(); #note to others this is a kludge for testing
-   ok($dad->sort_count ==0, "No Sorts on $type");
+   ok($dad->sort_count ==3, "correct Sort count on $type");
 }
 1;
