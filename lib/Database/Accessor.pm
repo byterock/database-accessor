@@ -13,6 +13,7 @@
         qw(da_compose_only
            da_no_effect
            da_raise_error_off
+           da_suppress_view_name
          )
         ] => (
           is          => 'rw',
@@ -807,6 +808,7 @@ package Database::Accessor;
                 da_no_effect       => $self->da_no_effect,
                 da_warning         => $self->da_warning,
                 da_raise_error_off => $self->da_raise_error_off,
+                da_suppress_view_name=> $self->da_suppress_view_name
                 
             }
         );

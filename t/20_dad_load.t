@@ -8,7 +8,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 52;
+use Test::More tests => 55;
 use Test::Fatal;
 
 my $da =
@@ -18,7 +18,8 @@ my $da =
 my %read_write = (da_compose_only=>1,
                   da_no_effect=>1,
                   da_raise_error_off=>1,
-                  da_warning=>1);
+                  da_warning=>1,
+                  da_suppress_view_name=>1);
 my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
 foreach my $attribute ( $da->meta->get_all_attributes ) {
