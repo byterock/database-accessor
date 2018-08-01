@@ -940,6 +940,11 @@ package Database::Accessor;
             isa     => 'Bool',
           );
 
+    has order => (
+        is      => 'rw',
+        isa     => 'SQLOrder',
+        default => Database::Accessor::Constants::ASC,
+    );
  }
  
     {

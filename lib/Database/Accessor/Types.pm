@@ -45,6 +45,16 @@ subtype 'ArrayRefofExpressions' => as
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks'      => as 'ArrayRef[Link]';
 subtype 'ArrayRefofParams' => as 'ArrayRef[Element|Param|Function|Expression]';
+
+
+subtype 'SQLOrder',
+  as 'Str',
+  where { exists( Database::Accessor::Constants::ORDERS->{ uc($_) } ) },
+  message { "The Order '$_', is not a valid Order!"
+            ._try_one_of(Database::Accessor::Constants::ORDERS()) 
+          };
+
+
 subtype 'NumericOperator', as 'Str', where {
     exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } );
 }, message {
