@@ -630,10 +630,13 @@ package Database::Accessor;
        elsif (ref($element) eq 'Database::Accessor::Condition'){
            $element->predicates->operator($self->default_operator())
              if ( !$element->predicates->operator() );
+           $element->predicates->operator(uc( $element->predicates->operator));
            $element->predicates->condition($self->default_condition())
              if ( $self->_add_condition>=2 and !$element->predicates->condition() );
            $element->predicates->condition(undef)
              if ( $self->_add_condition<=1  );
+           $element->predicates->condition(uc( $element->predicates->condition))
+             if ($element->predicates->condition() );
            $self->_check_parentheses($element->predicates);
            $self->_check_element($element->predicates->right,1,$alias);
            $self->_check_element($element->predicates->left,0,$alias);
@@ -934,17 +937,13 @@ package Database::Accessor;
               no_retrieve
               no_update
               only_retrieve
+              descending
               )
           ] => (
             is      => 'rw',
             isa     => 'Bool',
           );
 
-    has order => (
-        is      => 'rw',
-        isa     => 'SQLOrder',
-        default => Database::Accessor::Constants::ASC,
-    );
  }
  
     {
@@ -1179,22 +1178,22 @@ package Database::Accessor;
         1;
     }
 
-    {
+    # {
 
-        package 
-           Database::Accessor::Sort;
-        use Moose;
-        extends 'Database::Accessor::Element';
-        use namespace::autoclean;
+        # package 
+           # Database::Accessor::Sort;
+        # use Moose;
+        # extends 'Database::Accessor::Element';
+        # use namespace::autoclean;
 
-        has order => (
-            is      => 'rw',
-            isa     => 'Order',
-            default => Database::Accessor::Constants::ASC
-        );
+        # has order => (
+            # is      => 'rw',
+            # isa     => 'Order',
+            # default => Database::Accessor::Constants::ASC
+        # );
 
-        1;
-    }
+        # 1;
+    # }
     {
 
         package 

@@ -6,7 +6,7 @@ package Database::Accessor::Types;
 use Moose::Role;
 
 # Dist::Zilla: +PkgVersion
-#use lib 'D:\GitHub\database-accessor\lib';
+use lib 'D:\GitHub\database-accessor\lib';
 use Data::Dumper;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
@@ -32,6 +32,8 @@ class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
+subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
+subtype 'ArrayRefofElements'   => as
   'ArrayRef[Element|Param|Function|Expression]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
   message {
@@ -45,15 +47,6 @@ subtype 'ArrayRefofExpressions' => as
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks'      => as 'ArrayRef[Link]';
 subtype 'ArrayRefofParams' => as 'ArrayRef[Element|Param|Function|Expression]';
-
-
-subtype 'SQLOrder',
-  as 'Str',
-  where { exists( Database::Accessor::Constants::ORDERS->{ uc($_) } ) },
-  message { "The Order '$_', is not a valid Order!"
-            ._try_one_of(Database::Accessor::Constants::ORDERS()) 
-          };
-
 
 subtype 'NumericOperator', as 'Str', where {
     exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } );
@@ -86,15 +79,7 @@ subtype 'Link',
       . _try_one_of( Database::Accessor::Constants::LINKS() );
   };
 
-subtype 'Order',
-  as 'Str',
-  where { exists( Database::Accessor::Constants::ORDERS->{ uc($_) } ) },
-  message {
-    "The Order '$_', is not a valid Accessor Order!"
-      . _try_one_of( Database::Accessor::Constants::ORDERS() );
-  };
 
-#
 coerce 'Gather', from 'HashRef', via { 
     die "Attribute (elements) does not pass the type constraint because: Validation failed for 'ArrayRefofElements' with []"  if (exists($_->{elements}) and ref($_->{elements}) eq 'ARRAY' and scalar(@{$_->{elements}} ==0)); 
     Database::Accessor::Gather->new( %{$_} ) };

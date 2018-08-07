@@ -1,7 +1,7 @@
 #!perl
 use Test::More 0.82;
 use Test::Fatal;
-
+use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Test::More tests => 6;
 use Moose::Util qw(does_role);
 

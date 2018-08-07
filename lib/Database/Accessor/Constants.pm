@@ -85,10 +85,5 @@ use constant NUMERIC_OPERATORS => {
     '/'  => 1,
     '+'  => 1,
 };
-use constant ASC    => 'ASC';
-use constant DESC   => 'DESC';
-use constant ORDERS => {
-    Database::Accessor::Constants::ASC  => 1,
-    Database::Accessor::Constants::DESC => 1,
-};
+
 1;
