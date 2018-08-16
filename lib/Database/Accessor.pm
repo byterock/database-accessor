@@ -1024,10 +1024,10 @@ package Database::Accessor;
 #            default => 0,
           );
 
-        has 'aggregate' => (
-            is  => 'rw',
-            isa => 'Aggregate',
-        );
+        # has 'aggregate' => (
+            # is  => 'rw',
+            # isa => 'Aggregate',
+        # );
 
         has 'predicate' => (
             is  => 'rw',
@@ -1091,6 +1091,36 @@ package Database::Accessor;
         1;
     }
 
+    {
+        package 
+           Database::Accessor::Case;
+        use Moose;
+        extends 'Database::Accessor::Base';
+        with qw( Database::Accessor::Roles::Element
+                );
+
+         has 'case' => (
+            isa         => 'ArrayRefofWhens',
+            is           => 'ro',
+            required => 1,
+        );
+
+        1;
+    }
+    {
+
+        package 
+           Database::Accessor::Case::When;
+        use Moose;
+        extends 'Database::Accessor::Predicate';
+
+        has 'message' => (
+            isa      => 'Str',
+            is       => 'rw',
+        );
+
+        1;
+    }
     {
 
         package 

@@ -7,16 +7,16 @@ package Database::Accessor::Constants;
 # ABSTRACT: Constants for  DaCRUD Interface for any DB
 use warnings;
 use namespace::autoclean;
-use constant AVG         => 'AVG';
-use constant COUNT       => 'COUNT';
-use constant MEDIAN      => 'MEDIAN';
-use constant MAX         => 'MAX';
-use constant MIN         => 'MIN';
-use constant SUM         => 'SUM';
+
 use constant IN          => 'IN';
+use constant ALL         => 'ALL';
+use constant ANY         => 'ANY';
 use constant NOT_IN      => 'NOT IN';
 use constant BETWEEN     => 'BETWEEN';
+use constant EXISTS      => 'EXISTS';
+use constant NOT_EXISTS  => 'NOT EXISTS';
 use constant LIKE        => 'LIKE';
+use constant NOT_LIKE    => 'NOT LIKE';
 use constant IS_NULL     => 'IS NULL';
 use constant NULL        => 'NULL';
 use constant IS_NOT_NULL => 'IS NOT NULL';
@@ -44,17 +44,27 @@ use constant LINKS => {
     Database::Accessor::Constants::LEFT  => 1,
     Database::Accessor::Constants::RIGHT => 1,
 };
-
-use constant AGGREGATES => {
-    Database::Accessor::Constants::AVG    => 1,
-    Database::Accessor::Constants::COUNT  => 1,
-    Database::Accessor::Constants::MEDIAN => 1,
-    Database::Accessor::Constants::MAX    => 1,
-    Database::Accessor::Constants::MIN    => 1,
-    Database::Accessor::Constants::SUM    => 1,
-};
+# use constant AVG         => 'AVG';
+# use constant COUNT       => 'COUNT';
+# use constant MEDIAN      => 'MEDIAN';
+# use constant MAX         => 'MAX';
+# use constant MIN         => 'MIN';
+# use constant SUM         => 'SUM';
+# use constant AGGREGATES => {
+    # Database::Accessor::Constants::AVG    => 1,
+    # Database::Accessor::Constants::COUNT  => 1,
+    # Database::Accessor::Constants::MEDIAN => 1,
+    # Database::Accessor::Constants::MAX    => 1,
+    # Database::Accessor::Constants::MIN    => 1,
+    # Database::Accessor::Constants::SUM    => 1,
+# };
 
 use constant OPERATORS => {
+    Database::Accessor::Constants::ALL         => 1,
+    Database::Accessor::Constants::ANY         => 1,
+    Database::Accessor::Constants::EXISTS      => 1,
+    Database::Accessor::Constants::NOT_EXISTS  => 1,
+    Database::Accessor::Constants::NOT_LIKE    => 1,
     Database::Accessor::Constants::IN          => 1,
     Database::Accessor::Constants::NOT_IN      => 1,
     Database::Accessor::Constants::BETWEEN     => 1,

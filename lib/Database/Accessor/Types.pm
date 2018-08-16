@@ -31,8 +31,8 @@ class_type 'Expression', { class => 'Database::Accessor::Expression' };
 class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
-subtype 'ArrayRefofElements'   => as
-subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
+# subtype 'ArrayRefofElements'   => as
+# subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
   'ArrayRef[Element|Param|Function|Expression]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
@@ -55,13 +55,13 @@ subtype 'NumericOperator', as 'Str', where {
       . _try_one_of( Database::Accessor::Constants::NUMERIC_OPERATORS() );
 };
 
-subtype 'Aggregate',
-  as 'Str',
-  where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
-  message {
-    "The Aggrerate '$_', is not a valid Accessor Aggregate!"
-      . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
-  };
+# subtype 'Aggregate',
+  # as 'Str',
+  # where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
+  # message {
+    # "The Aggrerate '$_', is not a valid Accessor Aggregate!"
+      # . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
+  # };
 
 subtype 'Operator',
   as 'Str',
@@ -156,9 +156,11 @@ sub _element_coerce {
     my ($hash) = @_;
     my $object;
     if ( exists( $hash->{expression} ) ) {
+        $hash->{expression} = uc($hash->{expression});
         $object = Database::Accessor::Expression->new( %{$hash} );
     }
     elsif ( exists( $hash->{function} ) ) {
+        $hash->{function} = uc($hash->{function});
         $object = Database::Accessor::Function->new( %{$hash} );
     }
     elsif ( exists( $hash->{value} ) || exists( $hash->{param} ) ) {

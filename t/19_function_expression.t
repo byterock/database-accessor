@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 
-use Test::More tests => 10;
+use Test::More tests => 8;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -53,16 +53,16 @@ ok( does_role( $street, "Database::Accessor::Roles::Comparators" ) eq 1,
 
 ok( $street->expression('/'), 'can do an /' );
 
-like(
-   exception {$street->aggregate('Avgx');},
-   qr/Can't locate object method "aggregate"/,
- "the code died as expected with Avgx",
-);
+# like(
+   # exception {$street->aggregate('Avgx');},
+   # qr/Can't locate object method "aggregate"/,
+ # "the code died as expected with Avgx",
+# );
 
-eval { ok( $street->aggregate('Avgx'), 'can do an Avgx' ); };
-if ($@) {
-    pass("Element aggregate can not be Avgx");
-}
-else {
-    fail("Element aggregate can not be Avgx");
-}
+# eval { ok( $street->aggregate('Avgx'), 'can do an Avgx' ); };
+# if ($@) {
+    # pass("Element aggregate can not be Avgx");
+# }
+# else {
+    # fail("Element aggregate can not be Avgx");
+# }
