@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
-use Test::More tests => 2;
+use Test::More tests => 6;
 use Moose::Util qw(does_role);
 use lib ('t/lib');
 use lib (
@@ -76,8 +76,11 @@ my $case = Database::Accessor::Case->new(
 );
 
 
-warn("case=".Dumper($case));
+# warn("case=".Dumper($case));
 ok( ref($case) eq 'Database::Accessor::Case', "case is a case" );
+
+ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
+    "Cases[0]  is a when" );
 
 ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
     "Cases[0]  is a when" );
