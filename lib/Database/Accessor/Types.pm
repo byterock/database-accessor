@@ -4,10 +4,9 @@ package Database::Accessor::Types;
 
 # ABSTRACT: A Types Role for Database::Accessor:
 use Moose::Role;
-
+use Data::Dumper;
 # Dist::Zilla: +PkgVersion
 use lib 'D:\GitHub\database-accessor\lib';
-use Data::Dumper;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
 use Database::Accessor::Constants;
@@ -19,7 +18,11 @@ use Database::Accessor::Param;
 use Database::Accessor::Link;
 use Database::Accessor::Function;
 use Database::Accessor::Expression;
+use Database::Accessor::Case;
+use Database::Accessor::Case::When;
 
+class_type 'Case',       { class => 'Database::Accessor::Case' };
+class_type 'When',       { class => 'Database::Accessor::Case::When' };
 class_type 'View',       { class => 'Database::Accessor::View' };
 class_type 'Element',    { class => 'Database::Accessor::Element' };
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
@@ -30,6 +33,7 @@ class_type 'Function',   { class => 'Database::Accessor::Function' };
 class_type 'Expression', { class => 'Database::Accessor::Expression' };
 class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
+subtype 'ArrayRefofWhens'      => as 'ArrayRef[When]'; 
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 # subtype 'ArrayRefofElements'   => as
 # subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
@@ -110,7 +114,11 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
 
 };
 
-
+coerce 'ArrayRefofWhens', from 'ArrayRef', via {
+    
+ # warn("ArrayRefofWhens=".Dumper($_));
+    return _when_array_or_object($_ );
+};
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
    _right_left_coerce($_);
@@ -195,6 +203,30 @@ sub _predicate_array_or_object {
         }
         else {
             push( @{$objects}, $class->new( { predicates => $object } ) );
+        }
+    }
+    return $objects;
+
+}
+
+
+sub _when_array_or_object {
+
+    my ($in ) = @_;
+    my $objects = [];
+  
+    foreach my $object ( @{$in} ) {
+        if ( ref($object) eq 'Database::Accessor::Case::When' ) {
+            push( @{$objects}, $object );
+        }
+        elsif ( ref($object) eq "ARRAY" ) {
+            push(
+                @{$objects},
+                @{ _when_array_or_object( $object ) }
+            );
+        }
+        else {
+            push( @{$objects}, Database::Accessor::Case::When->new($object));
         }
     }
     return $objects;

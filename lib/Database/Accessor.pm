@@ -1098,8 +1098,8 @@ package Database::Accessor;
         extends 'Database::Accessor::Base';
         with qw( Database::Accessor::Roles::Element
                 );
-
-         has 'case' => (
+        has '+name' => ( required => 0 );
+        has 'whens' => (
             isa         => 'ArrayRefofWhens',
             is           => 'ro',
             required => 1,
@@ -1113,10 +1113,12 @@ package Database::Accessor;
            Database::Accessor::Case::When;
         use Moose;
         extends 'Database::Accessor::Predicate';
-
+        has '+left' => ( required => 0 );
+        has '+name' => ( required => 0 );
         has 'message' => (
-            isa      => 'Str',
+            isa      => 'Param',
             is       => 'rw',
+            # required => 1,
         );
 
         1;

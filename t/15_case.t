@@ -22,10 +22,11 @@ my $when = Database::Accessor::Case::When->new(
         left       => { name  => 'Price', },
         right      => { value => '10' },
         operator   => '<',
-        expression => { value => 'under 10$' }
+        message => { value => 'under 10$' }
     }
 );
-
+# warn("when=".Dumper($when));
+# exit;
 ok( ref($when) eq 'Database::Accessor::Case::When', "when is a when" );
 ok(
     does_role( $when, "Database::Accessor::Roles::Comparators" ) eq 1,
@@ -34,16 +35,16 @@ ok(
 
 my $case = Database::Accessor::Case->new(
     {
-        case => [
+        whens => [
             {
                 left       => { name  => 'Price', },
                 right      => { value => '10' },
                 operator   => '<',
-                expression => { value => 'under 10$' }
+                message => { value => 'under 10$' }
             },
             [
                 {
-                    left     => {'Price'},
+                    left     => { name  =>'Price'},
                     right    => { value => '10' },
                     operator => '>=',
                 },
@@ -52,12 +53,12 @@ my $case = Database::Accessor::Case->new(
                     left       => { name => 'Price' },
                     right      => { value => '30' },
                     operator   => '<=',
-                    expression => { value => '10~30$' }
+                    message => { value => '10~30$' }
                 },
             ],
             [
                 {
-                    left     => {'Price'},
+                    left     => { name  => 'Price'},
                     right    => { value => '30' },
                     operator => '>',
                 },
@@ -66,15 +67,17 @@ my $case = Database::Accessor::Case->new(
                     left       => { name => 'Price' },
                     right      => { value => '100' },
                     operator   => '<=',
-                    expression => { value => '30~100$' }
+                    message => { value => '30~100$' }
                 },
             ],
-            { expression => { value => 'Over 100$' } },
+            { message => { value => 'Over 100$' } },
         ]
     }
 );
 
-ok( ref($case) eq ' Database::Accessor::Case', "when is a when" );
 
-ok( ref( $case->cases->[0] ) eq ' Database::Accessor::Case::When',
+warn("case=".Dumper($case));
+ok( ref($case) eq 'Database::Accessor::Case', "case is a case" );
+
+ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
     "Cases[0]  is a when" );
