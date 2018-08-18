@@ -1100,7 +1100,7 @@ package Database::Accessor;
                 );
         has '+name' => ( required => 0 );
         has 'whens' => (
-            isa         => 'ArrayRefofWhens',
+            isa         => 'ArrayRefofWhens',#|ArrayRefofArrayRefofWhens',
             is           => 'ro',
             required => 1,
         );
@@ -1115,8 +1115,9 @@ package Database::Accessor;
         extends 'Database::Accessor::Predicate';
         has '+left' => ( required => 0 );
         has '+name' => ( required => 0 );
-        has 'message' => (
-            isa      => 'Param',
+        
+                has 'statement' => (
+            isa      => 'Expression|Param|Element|Function|Case',
             is       => 'rw',
             # required => 1,
         );

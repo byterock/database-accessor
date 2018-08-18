@@ -33,12 +33,14 @@ class_type 'Function',   { class => 'Database::Accessor::Function' };
 class_type 'Expression', { class => 'Database::Accessor::Expression' };
 class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
-subtype 'ArrayRefofWhens'      => as 'ArrayRef[When]'; 
+subtype 'ArrayRefofWhens'           => as 'ArrayRef[When|ArrayRef]'; 
+# subtype 'ArrayRefofArrayRefofWhens' => as 'ArrayRef[When]'; 
+
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 # subtype 'ArrayRefofElements'   => as
 # subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
-  'ArrayRef[Element|Param|Function|Expression]',
+  'ArrayRef[Element|Param|Function|Expression|Case]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
   message {
     "ArrayRefofElements can not be an empty array ref";
@@ -174,6 +176,9 @@ sub _element_coerce {
     elsif ( exists( $hash->{value} ) || exists( $hash->{param} ) ) {
         $object = Database::Accessor::Param->new( %{$hash} );
     }
+    elsif ( exists( $hash->{whens} ))  {
+        $object = Database::Accessor::Case->new( %{$hash} );
+    }
     else {
         $object = Database::Accessor::Element->new( %{$hash} );
 
@@ -214,16 +219,21 @@ sub _when_array_or_object {
 
     my ($in ) = @_;
     my $objects = [];
-  
+ 
     foreach my $object ( @{$in} ) {
         if ( ref($object) eq 'Database::Accessor::Case::When' ) {
             push( @{$objects}, $object );
         }
-        elsif ( ref($object) eq "ARRAY" ) {
+         elsif ( ref($object) eq "ARRAY" ) {
+            my $sub_objects = [];
+            foreach my $sub_object (@{$object}){
+                push(
+                @{$sub_objects},
+                @{ _when_array_or_object([ $sub_object] ) });
+            }
             push(
                 @{$objects},
-                @{ _when_array_or_object( $object ) }
-            );
+                $sub_objects);
         }
         else {
             push( @{$objects}, Database::Accessor::Case::When->new($object));

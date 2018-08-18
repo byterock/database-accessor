@@ -19,12 +19,13 @@ BEGIN {
 
 my $when = Database::Accessor::Case::When->new(
     {
-        left       => { name  => 'Price', },
-        right      => { value => '10' },
-        operator   => '<',
-        message => { value => 'under 10$' }
+        left      => { name  => 'Price', },
+        right     => { value => '10' },
+        operator  => '<',
+        statement => { value => 'under 10$' }
     }
 );
+
 # warn("when=".Dumper($when));
 # exit;
 ok( ref($when) eq 'Database::Accessor::Case::When', "when is a when" );
@@ -37,50 +38,251 @@ my $case = Database::Accessor::Case->new(
     {
         whens => [
             {
-                left       => { name  => 'Price', },
-                right      => { value => '10' },
-                operator   => '<',
-                message => { value => 'under 10$' }
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { value => 'under 10$' }
             },
             [
                 {
-                    left     => { name  =>'Price'},
+                    left     => { name  => 'Price' },
                     right    => { value => '10' },
                     operator => '>=',
                 },
                 {
-                    condition  => 'and',
-                    left       => { name => 'Price' },
-                    right      => { value => '30' },
-                    operator   => '<=',
-                    message => { value => '10~30$' }
+                    condition => 'and',
+                    left      => { name => 'Price' },
+                    right     => { value => '30' },
+                    operator  => '<=',
+                    statement => { value => '10~30$' }
                 },
             ],
             [
                 {
-                    left     => { name  => 'Price'},
+                    left     => { name  => 'Price' },
                     right    => { value => '30' },
                     operator => '>',
                 },
                 {
-                    condition  => 'and',
-                    left       => { name => 'Price' },
-                    right      => { value => '100' },
-                    operator   => '<=',
-                    message => { value => '30~100$' }
+                    condition => 'and',
+                    left      => { name => 'Price' },
+                    right     => { value => '100' },
+                    operator  => '<=',
+                    statement => { value => '30~100$' }
                 },
             ],
-            { message => { value => 'Over 100$' } },
+            { statement => { value => 'Over 100$' } },
         ]
     }
 );
 
+ # warn("case=".Dumper($case));
 
-# warn("case=".Dumper($case));
 ok( ref($case) eq 'Database::Accessor::Case', "case is a case" );
 
 ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
-    "Cases[0]  is a when" );
+    "Cases->whens->[0]  is a when" );
 
-ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
-    "Cases[0]  is a when" );
+ok( ref( $case->whens->[1] ) eq 'ARRAY',
+    "Cases->whens->[1]  is an array-ref" );
+
+ok( ref( $case->whens->[1]->[0] ) eq 'Database::Accessor::Case::When',
+    "Cases->whens->[1]->[0]   is a when" );
+
+exit;
+my $last = pop( @{ $case->whens } );
+ok( ref( $last->statement ) eq 'Database::Accessor::Param',
+    "last statment is a Param" );
+
+$case = Database::Accessor::Case->new(
+    {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => {
+                    expression => '-',
+                    left       => { name => 'price' },
+                    right      => { value => 10 }
+                }
+            },
+            {
+                statement => {
+                    expression => '-',
+                    left       => { name => 'price' },
+                    right      => { value => 10 }
+                }
+            },
+        ]
+    }
+);
+my $first = shift( @{ $case->whens } );
+ok( ref( $first->statement ) eq 'Database::Accessor::Expression',
+    "last statment is an Expression" );
+
+$last = pop( @{ $case->whens } );
+ok( ref( $last->statement ) eq 'Database::Accessor::Expression',
+    "last statment is an Expression" );
+
+$case = Database::Accessor::Case->new(
+    {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => {
+                    function => 'left',
+                    left     => { name => 'price' },
+                    right    => [ { value => 2 } ]
+                }
+            },
+            {
+                statement => {
+                    function => 'left',
+                    left     => { name => 'price' },
+                    right    => [ { value => 2 } ]
+                },
+            }
+        ]
+    }
+);
+$first = shift( @{ $case->whens } );
+ok( ref( $first->statement ) eq 'Database::Accessor::Function',
+    "last statment is an Function" );
+
+$last = pop( @{ $case->whens } );
+ok( ref( $last->statement ) eq 'Database::Accessor::Function',
+    "last statment is an Function" );
+$case = Database::Accessor::Case->new(
+    {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { name  => 'price' }
+            },
+            { statement => { name => 'price' } }
+        ]
+    }
+);
+$first = shift( @{ $case->whens } );
+ok( ref( $first->statement ) eq 'Database::Accessor::Element',
+    "last statment is an Element" );
+
+$last = pop( @{ $case->whens } );
+ok( ref( $last->statement ) eq 'Database::Accessor::Element',
+    "last statment is an Element" );
+
+$case = Database::Accessor::Case->new(
+    {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { name  => 'price' }
+            },
+            {
+                statement => {
+                    whens => [
+                        {
+                            left      => { name  => 'Price', },
+                            right     => { value => '10' },
+                            operator  => '<',
+                            statement => { name  => 'price' }
+                        },
+                        { statement => { name => 'price' } }
+                    ]
+                }
+            }
+        ]
+    }
+);
+
+$last = pop( @{ $case->whens } );
+ok( ref( $last->statement ) eq 'Database::Accessor::Case',
+    "last statment is an Case" );
+
+$case = Database::Accessor::Case->new(
+    {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => {  whens => [
+                        {
+                            left      => { name  => 'Price', },
+                            right     => { value => '10' },
+                            operator  => '<',
+                            statement => { name  => 'price' }
+                        },
+                        { statement => { name => 'price' } }
+                    ] }
+            },
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { value => 'under 10$' }
+            },
+            [
+                {
+                    left     => { name  => 'Price' },
+                    right    => { value => '10' },
+                    operator => '>=',
+                },
+                {
+                    condition => 'and',
+                    left      => { name => 'Price' },
+                    right     => { value => '30' },
+                    operator  => '<=',
+                    statement => { name => 'price' }
+                },
+            ],
+            [
+                {
+                    left     => { name  => 'Price' },
+                    right    => { value => '30' },
+                    operator => '>',
+                },
+                {
+                    condition => 'and',
+                    left      => { name => 'Price' },
+                    right     => { value => '100' },
+                    operator  => '<=',
+                    statement => {
+                        function => 'left',
+                        left     => { name => 'price' },
+                        right    => [ { value => 2 } ]
+                    }
+                },
+            ],
+            {
+                statement => {
+                    expression => '-',
+                    left       => { name => 'price' },
+                    right      => { value => 10 }
+                }
+            },
+        ]
+    }
+);
+
+ok( ref( $case->whens->[0]->statement ) eq 'Database::Accessor::Case',
+    "big when [0] statment is a Case" );
+    
+ok( ref( $case->whens->[1]->statement ) eq 'Database::Accessor::Param',
+    "big when [1] statment is a Param" );
+    
+ok( ref( $case->whens->[3]->statement ) eq 'Database::Accessor::Element',
+    "big when [3] statment is a Element" );
+
+ok( ref( $case->whens->[5]->statement ) eq 'Database::Accessor::Function',
+    "big when [5] statment is a Function" );
+    
+ok( ref( $case->whens->[6]->statement ) eq 'Database::Accessor::Expression',
+    "big when [6] statment is a Expression" );
