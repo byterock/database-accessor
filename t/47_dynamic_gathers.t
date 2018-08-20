@@ -12,7 +12,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 19;
+use Test::More tests => 20;
 
 
 my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ] } );
@@ -112,5 +112,25 @@ Test::Database::Accessor::Utils::deep_element(
     $dad->gather->elements(), 'Dynamic Gather 2 elements correct'
 );
 
-
+$da->reset_gather();
+$gather2 = {        
+       elements => [
+            {
+    whens => [
+        {
+            left      => { name  => 'Price', },
+            right     => { value => '10' },
+            operator  => '<',
+            statement => { name  => 'price' }
+        },
+        { statement => { name => 'prices' } }
+      ]
+  }           
+        ],
+    };
+ $da->add_gather($gather2);
+ $da->retrieve( Data::Test->new(), $return );
+ ok( ref( $da->dynamic_gather()->elements->[0] ) eq "Database::Accessor::Case",
+    'dynamic_gather()->elements->[0] is a Case' );
+ 
 1;

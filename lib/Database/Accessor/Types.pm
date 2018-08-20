@@ -52,7 +52,7 @@ subtype 'ArrayRefofExpressions' => as
 
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks'      => as 'ArrayRef[Link]';
-subtype 'ArrayRefofParams' => as 'ArrayRef[Element|Param|Function|Expression]';
+subtype 'ArrayRefofParams' => as 'ArrayRef[Case|Element|Param|Function|Expression]';
 
 subtype 'NumericOperator', as 'Str', where {
     exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } );
@@ -89,7 +89,6 @@ subtype 'Link',
 coerce 'Gather', from 'HashRef', via { 
     die "Attribute (elements) does not pass the type constraint because: Validation failed for 'ArrayRefofElements' with []"  if (exists($_->{elements}) and ref($_->{elements}) eq 'ARRAY' and scalar(@{$_->{elements}} ==0)); 
     Database::Accessor::Gather->new( %{$_} ) };
-
 
 coerce 'Predicate', from 'HashRef', via { Database::Accessor::Predicate->new( %{$_} ) };
 coerce 'Element', from 'HashRef', via {
@@ -177,6 +176,10 @@ sub _element_coerce {
         $object = Database::Accessor::Param->new( %{$hash} );
     }
     elsif ( exists( $hash->{whens} ))  {
+        die "Attribute (whens) does not pass the type constraint because: 
+            Validation failed for 'ArrayRefofWhens' with less than 2 whens"  
+            if (exists($hash->{whens}) and ref($hash->{whens}) eq 'ARRAY' and scalar(@{$hash->{whens}} <2)); 
+  
         $object = Database::Accessor::Case->new( %{$hash} );
     }
     else {

@@ -955,14 +955,14 @@ package Database::Accessor;
         use namespace::autoclean;
         has left => (
             is       => 'rw',
-            isa      => 'Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
+            isa      => 'Case|Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             required => 1,
             coerce   => 1,
         );
         has right => (
             is => 'rw',
             isa =>
-'Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
+'Case|Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             coerce   => 1,
         );
 

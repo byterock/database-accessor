@@ -9,7 +9,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 BEGIN {
     use_ok('Database::Accessor') || print "Bail out!";
@@ -110,4 +110,28 @@ ok(
       "Database::Accessor::Predicate",
     'DA has a condition predicate is a predicate'
 );
+
+$in_hash3->{conditions} = 
+    {
+        left => {
+            name => 'second_1',
+            view => 'People'
+        },
+        right =>{
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { name  => 'price' }
+            },
+            { statement => { name => 'prices' } }
+        ]},
+        operator        => '=',
+    };
+$da2 = Database::Accessor->new($in_hash3); 
+
+
+ok( ref( $da2->conditions()->[0]->predicates->right ) eq "Database::Accessor::Case",
+    'condition->[0]->right is a Case' );
 1;

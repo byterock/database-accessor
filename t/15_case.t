@@ -2,7 +2,7 @@
 use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
-use Test::More tests => 6;
+use Test::More tests => 26;
 use Moose::Util qw(does_role);
 use lib ('t/lib');
 use lib (
@@ -26,7 +26,7 @@ my $when = Database::Accessor::Case::When->new(
     }
 );
 
-# warn("when=".Dumper($when));
+
 # exit;
 ok( ref($when) eq 'Database::Accessor::Case::When', "when is a when" );
 ok(
@@ -89,10 +89,10 @@ ok( ref( $case->whens->[1] ) eq 'ARRAY',
 ok( ref( $case->whens->[1]->[0] ) eq 'Database::Accessor::Case::When',
     "Cases->whens->[1]->[0]   is a when" );
 
-exit;
+
 my $last = pop( @{ $case->whens } );
 ok( ref( $last->statement ) eq 'Database::Accessor::Param',
-    "last statment is a Param" );
+    "last statement is a Param" );
 
 $case = Database::Accessor::Case->new(
     {
@@ -119,11 +119,11 @@ $case = Database::Accessor::Case->new(
 );
 my $first = shift( @{ $case->whens } );
 ok( ref( $first->statement ) eq 'Database::Accessor::Expression',
-    "last statment is an Expression" );
+    "last statement is an Expression" );
 
 $last = pop( @{ $case->whens } );
 ok( ref( $last->statement ) eq 'Database::Accessor::Expression',
-    "last statment is an Expression" );
+    "last statement is an Expression" );
 
 $case = Database::Accessor::Case->new(
     {
@@ -150,11 +150,11 @@ $case = Database::Accessor::Case->new(
 );
 $first = shift( @{ $case->whens } );
 ok( ref( $first->statement ) eq 'Database::Accessor::Function',
-    "last statment is an Function" );
+    "last statement is an Function" );
 
 $last = pop( @{ $case->whens } );
 ok( ref( $last->statement ) eq 'Database::Accessor::Function',
-    "last statment is an Function" );
+    "last statement is an Function" );
 $case = Database::Accessor::Case->new(
     {
         whens => [
@@ -170,11 +170,11 @@ $case = Database::Accessor::Case->new(
 );
 $first = shift( @{ $case->whens } );
 ok( ref( $first->statement ) eq 'Database::Accessor::Element',
-    "last statment is an Element" );
+    "last statement is an Element" );
 
 $last = pop( @{ $case->whens } );
 ok( ref( $last->statement ) eq 'Database::Accessor::Element',
-    "last statment is an Element" );
+    "last statement is an Element" );
 
 $case = Database::Accessor::Case->new(
     {
@@ -204,7 +204,7 @@ $case = Database::Accessor::Case->new(
 
 $last = pop( @{ $case->whens } );
 ok( ref( $last->statement ) eq 'Database::Accessor::Case',
-    "last statment is an Case" );
+    "last statement is an Case" );
 
 $case = Database::Accessor::Case->new(
     {
@@ -271,18 +271,50 @@ $case = Database::Accessor::Case->new(
         ]
     }
 );
-
+ # warn("when=".Dumper($case));
 ok( ref( $case->whens->[0]->statement ) eq 'Database::Accessor::Case',
-    "big when [0] statment is a Case" );
+    "big when [0] statement is a Case" );
     
 ok( ref( $case->whens->[1]->statement ) eq 'Database::Accessor::Param',
-    "big when [1] statment is a Param" );
+    "big when [1] statement is a Param" );
     
-ok( ref( $case->whens->[3]->statement ) eq 'Database::Accessor::Element',
-    "big when [3] statment is a Element" );
+ok( ref( $case->whens->[2])  eq 'ARRAY',
+    "big when [2] is an array ref" );
 
-ok( ref( $case->whens->[5]->statement ) eq 'Database::Accessor::Function',
-    "big when [5] statment is a Function" );
-    
-ok( ref( $case->whens->[6]->statement ) eq 'Database::Accessor::Expression',
-    "big when [6] statment is a Expression" );
+ok( ref( $case->whens->[2]->[1])  eq 'Database::Accessor::Case::When',
+    "big when [2]->[1] is a when" );
+
+ok( ref( $case->whens->[2]->[1]->statement)  eq 'Database::Accessor::Element',
+    "big when [2]->[1]->statement is an Element" );
+
+ok( ref( $case->whens->[3])  eq 'ARRAY',
+    "big when [3] is an array ref" );
+
+ok( ref( $case->whens->[3]->[1])  eq 'Database::Accessor::Case::When',
+    "big when [3]->[1] is a when" );
+
+ok( ref( $case->whens->[3]->[1]->statement)  eq 'Database::Accessor::Function',
+    "big when [3]->[1]->statement is an Fucntion" );
+
+ok( ref( $case->whens->[4]->statement ) eq 'Database::Accessor::Expression',
+    "big when [4] statement is a Expression" );
+   
+
+like(exception {Database::Accessor::Case->new( {
+        whens => [
+            {
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => {  whens => [
+                        {
+                            left      => { name  => 'Price', },
+                            right     => { value => '10' },
+                            operator  => '<',
+                            statement => { name  => 'price' }
+                        },
+                    ] }
+            }]})},
+                    qr /Validation failed for \'ArrayRefofWhens\'/,
+                    "Case Fails with less than 2 whens"
+                );
