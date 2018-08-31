@@ -617,7 +617,7 @@ package Database::Accessor;
     private_method _check_element => sub {
         my $self = shift;
         my ($element,$right,$alias) = @_;
-
+# warn("DA _check_element ".Dumper($element));
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
@@ -625,9 +625,23 @@ package Database::Accessor;
               if ( $self->view()->alias() );
             $element->view($alias )
               if ($alias and $right);          }
-        
-       }
-       elsif (ref($element) eq 'Database::Accessor::Condition'){
+        }
+        elsif (ref($element) eq 'Database::Accessor::Case'){
+            foreach my $sub_element (@{$element->whens()}){
+                $self->_check_element($sub_element,0,$alias);
+            }
+        }
+        elsif (ref($element) eq 'Database::Accessor::Case::When'){
+            $self->_check_element($element->right,1,$alias);
+            $self->_check_element($element->left,0,$alias);
+            $self->_check_element($element->statement,0,$alias);
+            $element->condition(uc($element->condition))
+              if ($element->condition() );
+            $element->operator(uc($element->operator))
+              if ($element->operator() );
+
+        }
+        elsif (ref($element) eq 'Database::Accessor::Condition'){
            $element->predicates->operator($self->default_operator())
              if ( !$element->predicates->operator() );
            $element->predicates->operator(uc( $element->predicates->operator));
@@ -1103,6 +1117,9 @@ package Database::Accessor;
             isa         => 'ArrayRefofWhens',#|ArrayRefofArrayRefofWhens',
             is           => 'ro',
             required => 1,
+            traits  => ['Array'],
+            handles => { get_when => 'get',
+                         when_count=> 'count' },
         );
 
         1;
