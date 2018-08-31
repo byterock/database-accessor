@@ -13,7 +13,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 39;
+use Test::More tests => 45;
 
 my $in_hash = {
 
@@ -146,6 +146,21 @@ $in_hash->{elements} = [
                 operator  => '<',
                 statement => { name  => 'price' }
             },
+            [{
+                left      => { name  => 'Price', },
+                right     => { value => '10' },
+                operator  => '<',
+                statement => { name  => 'price' }
+            },
+            {
+                condition => 'and',
+                left      => { name  => 'Price', },
+                right     => [{ value => '10' },
+                              { value => '10' }],
+                operator  => 'in',
+                statement => { name  => 'price' }
+            }
+            ],
             { statement => { name => 'prices' } }
         ]
     }
@@ -207,9 +222,23 @@ ok( ref( $dad->elements->[3]->whens->[0]->statement ) eq 'Database::Accessor::El
     'Element 3 whens->[0]->statement is an element' );
 ok(  $dad->elements->[3]->whens->[0]->statement->name  eq 'price',
     'Element 3 whens->[0]->statement->name is price' );
-ok( ref( $dad->elements->[3]->whens->[1]->statement ) eq 'Database::Accessor::Element',
-    'Element 3 whens->[1]->statement is an element' );
-ok(  $dad->elements->[3]->whens->[1]->statement->name  eq 'prices',
-    'Element 3 whens->[1]->statement->name is prices' );
+
+ok( ref( $dad->elements->[3]->whens->[1] ) eq 'ARRAY',
+    'Element 3 whens->[1] Is an Array' );
+ok( ref($dad->elements->[3]->whens->[1]->[0]->left ) eq 'Database::Accessor::Element',
+    'Element 3 whens->[1]->[0]->left Is an Database::Accessor::Element' );
+ok( $dad->elements->[3]->whens->[1]->[0]->left->view eq 'People',
+    'Element 3 whens->[1]->[0]->left->view is  People' );
+ok( $dad->elements->[3]->whens->[1]->[1]->condition eq 'AND',
+    'Element 3 whens->[1]->[1]->condition Is an UC AND' );
+ok( $dad->elements->[3]->whens->[1]->[1]->operator eq 'IN',
+    'Element 3 whens->[1]->[1]->operator Is an UC IN' );
+
+ok( ref( $dad->elements->[3]->whens->[2]->statement ) eq 'Database::Accessor::Element',
+    'Element 3 whens->[2]->statement is an element' );
+ok(  $dad->elements->[3]->whens->[2]->statement->name  eq 'prices',
+    'Element 3 whens->[2]->statement->name is prices' );
+ok(  $dad->elements->[3]->whens->[2]->statement->view  eq 'People',
+    'Element 3 whens->[2]->statement->view is People' );
 
 1;
