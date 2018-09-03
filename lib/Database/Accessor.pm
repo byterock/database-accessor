@@ -1297,14 +1297,14 @@ __END__
 Database::Accessor::Manual
 Database::Accessor::Tutorial
 Database::Accessor::Driver::WritersGuide
-Database::Accessor::Driver::SQL
+Database::Accessor::Driver::DBI
 
 =head1 SYNOPSIS
 
  my $da = Database::Accssor->new({
         view     => { name  => 'People'},
         elements => [{ name => 'first_name',
-                                 view=>'People' },
+                       view =>'People' },
                      { name => 'last_name',
                        view => 'People' },
                      { name => 'user_id',
@@ -1312,14 +1312,14 @@ Database::Accessor::Driver::SQL
         conditions=>[{ left  => { name => 'First',
                                  view => 'People'},
                        right => { value    => 'Jane'},
-                                 operator => '=',
-                                 open_parentheses =>1,},
-                     { condition      =>'AND',
-                       left           =>{ name  =>'Last_name',
-                                          view  =>'People'},
-                       right          =>{ value =>'Doe'},
-                       operator       => '=',
-                       close_parentheses=> 1
+                       operator => '=',
+                       open_parentheses =>1,},
+                     { left  =>{ name  =>'Last_name',
+                                 view  =>'People'},
+                       right =>{ value =>'Doe'},
+                       operator  => '=',
+                       condition =>'AND',
+                       close_parentheses => 1
                       }]
     });
   $da->add_condition({left      =>{name =>'country_id',
@@ -1340,18 +1340,27 @@ The synopsis above only lists few ways you can use Database::Accessor.
  
 =head1 DESCRIPTION
 
-Database::Accessor, or DA for short, is a CRUD (Create, Retrieve, Update Delete) database interface for any type of database be it SQL, NON-SQL or even a flat file.
+Database::Accessor, or DA for short, is a CRUD (Create, Retrieve, Update Delete)
+ database interface for any type of database be it SQL, NON-SQL or even a flat 
+ file.
 
-The heart of Accessor is an simple abstraction language that breaks down data structures into simple sets of hash-refs that are passed into a Database::Accessor::Driver that will process the action.
+The heart of Accessor is an simple abstraction language that breaks down data 
+structures into simple sets of hash-refs that are passed into a 
+Database::Accessor::Driver that will process the action.
 
-It is important to remember that Accessor is just an interface layer, a way to pass down your abstracted queries down to a Data Accessor Driver or DAD for short.
+It is important to remember that Accessor is just an interface layer, a way to 
+pass down your abstracted queries to a Data Accessor Driver or DAD for short.
 
-It is the DAD driver modules that do all of the work. Accessor just provides an interface and common API. All you the progammer provides is the abstracted version of you data.  In in theory you should be able to run the same DA against any type of DB and come back with the same results.  Assuming the same structure and data are in each.
+It is the DAD driver modules that do all of the work. Accessor just provides an 
+interface and common API. All you the progammer provides is the abstracted 
+version of you data.  In in theory you should be able to run the same DA 
+against any type of DB and come back with the same results.  Assuming the same 
+structure and data are in each.
 
 Architecture of a Accessor Application
 
                       +-+   +------- -+     +-----+    +-----------+
-+-------------+       | |---| DAD SQL |-----| DBI |----| Oracle DB |
++-------------+       | |---| DAD DBI |-----| DBI |----| Oracle DB |
 | Perl        |  +-+  | |   `---------+     +-----+    +-----------+
 | script      |  |A|  |D|   +-----------+   +-------------+
 | using       |--|P|--|A|---| DAD Mongo |---| Mongo Engine|
@@ -1360,15 +1369,20 @@ Architecture of a Accessor Application
 +-------------+       | |---| Other drivers |-->>
                       +-+   +---------------+
 
-The API, or Application Programming Interface, are the four CRUD functions provided by DA, and a Hash-ref, supplied by the programmer, that defines the data structure with DA's abstration language. 
+The API, or Application Programming Interface, are the four CRUD functions 
+provided by DA, and a Hash-ref, supplied by the programmer, that defines the 
+data structure with DA's abstration language. 
 
-The DA simply passes down a set of attributes that are then re-assembles and then dispatched by the DAD layer down to the DB layer whatever that may be. 
+The DA simply passes down a set of attributes that are then re-assembles and 
+then dispatched by the DAD layer down to the DB layer whatever that may be. 
 
 Usage Outline 
-First DA is not an ORM, it knows nothing about the Data Base you are atempting to interact with. By itself it does nothing.  All it does it provides a set of attribures that are 
-passed down to a DAD which will do the work.
+First DA is not an ORM, it knows nothing about the Data Base you are atempting 
+to interact with. By itself it does nothing.  All it does it provides a set of 
+attribures that are  passed down to a DAD which will do the work.
 
-Though it can be used directly it is best used within another abstracted class, as in below;
+Though it can be used directly it is best used within another abstracted class, 
+as in below;
 
 package SomeDB::Address;
 use parent qw(Database::Accessor);
@@ -1429,10 +1443,12 @@ All four of the CRUD methods use the same API pattern
   $da->retrieve($db, $container, $opt);
 
   $db 
-  An instanated database object of some form, say a DBI handle ($dbh) or a MongoDB client ($client). 
-  Whatever is pass in must be compatiable with an installed DAD.
+  An instanated database object of some form, say a DBI handle ($dbh) or a 
+  MongoDB client ($client).  Whatever is pass in must be compatiable with an
+  installed DAD.
   $container
-  A HASH or ARRAY referance or a blessed class that is used to pass data into and out of the DAD. It is always returned from the underlying DAD.
+  A HASH or ARRAY referance or a blessed class that is used to pass data into 
+  and out of the DAD. It is always returned from the underlying DAD.
   $ops
   A HASH referance of options that can be passed down to the DAD.  Varies by DAD.
   
@@ -1445,13 +1461,16 @@ create
                         postal_code=> $pc,
                         region_id  => $province}, $opt);
                      
-This method will create a new record on the underlying DAD database.  It will attempt to match the 'KEYS' of the passed in hash ref with the 'elements' found on the DA.
-The underlying DAD will return the original HASH or ARRAY ref with creation info the undelying DAD may add in.
+This method will create a new record on the underlying DAD database.  
+It will attempt to match the 'KEYS' of the passed in hash ref with the 
+'elements' found on the DA.  The underlying DAD will return the original HASH or
+ARRAY ref with creation info the undelying DAD may add in.
 
 retrieve
 
    $address_da->add_condition({left=>{name=>id},
-                             right=>{value=>123}});
+                               right=>{value=>123}
+                              });
    my $address = $da->retrieve($dbh, {}, $opt);
 
 This method will return the requested records from the underlying DAD.
