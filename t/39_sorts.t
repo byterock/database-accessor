@@ -77,18 +77,18 @@ foreach my $type (qw(create update delete)) {
 }
 
 $in_hash->{sorts} = [{
-    whens => [
+    ifs => [
         {
             left      => { name  => 'Price', },
             right     => { value => '10' },
             operator  => '<',
-            statement => { name  => 'price' }
+            then => { name  => 'price' }
         },
-        { statement => { name => 'prices' } }
+        { then => { name => 'prices' } }
       ]
   }];
   
   $da = Database::Accessor->new($in_hash);
-  ok( ref( $da->sorts()->[0] ) eq "Database::Accessor::Case",
-    'sort->[0]->right is a Case' );
+  ok( ref( $da->sorts()->[0] ) eq "Database::Accessor::If",
+    'sort->[0]->right is a If' );
 1;

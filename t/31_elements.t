@@ -139,18 +139,18 @@ $in_hash->{elements} = [
         }
     },
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             },
             [{
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             },
             {
                 condition => 'and',
@@ -158,10 +158,10 @@ $in_hash->{elements} = [
                 right     => [{ value => '10' },
                               { value => '10' }],
                 operator  => 'in',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             }
             ],
-            { statement => { name => 'prices' } }
+            { then => { name => 'prices' } }
         ]
     }
 ];
@@ -210,35 +210,35 @@ ok(
     'Element 2 right->right->left->right is an Element'
 );
 
-ok( ref( $dad->elements->[3] ) eq 'Database::Accessor::Case',
+ok( ref( $dad->elements->[3] ) eq 'Database::Accessor::If',
     'Element 3 is an case' );    
-ok( ref( $dad->elements->[3]->whens->[0]->left ) eq 'Database::Accessor::Element',
-    'Element 3 whens->[0]->left is an element' );
-ok( ref( $dad->elements->[3]->whens->[0]->right ) eq 'Database::Accessor::Param',
-    'Element 3 whens->[0]->right is an param' );
-ok( $dad->elements->[3]->whens->[0]->operator eq '<',
-    'Element 3 whens->[0]->operator is an <' );
-ok( ref( $dad->elements->[3]->whens->[0]->statement ) eq 'Database::Accessor::Element',
-    'Element 3 whens->[0]->statement is an element' );
-ok(  $dad->elements->[3]->whens->[0]->statement->name  eq 'price',
-    'Element 3 whens->[0]->statement->name is price' );
+ok( ref( $dad->elements->[3]->ifs->[0]->left ) eq 'Database::Accessor::Element',
+    'Element 3 ifs->[0]->left is an element' );
+ok( ref( $dad->elements->[3]->ifs->[0]->right ) eq 'Database::Accessor::Param',
+    'Element 3 ifs->[0]->right is an param' );
+ok( $dad->elements->[3]->ifs->[0]->operator eq '<',
+    'Element 3 ifs->[0]->operator is an <' );
+ok( ref( $dad->elements->[3]->ifs->[0]->then ) eq 'Database::Accessor::Element',
+    'Element 3 ifs->[0]->then is an element' );
+ok(  $dad->elements->[3]->ifs->[0]->then->name  eq 'price',
+    'Element 3 ifs->[0]->then->name is price' );
 
-ok( ref( $dad->elements->[3]->whens->[1] ) eq 'ARRAY',
-    'Element 3 whens->[1] Is an Array' );
-ok( ref($dad->elements->[3]->whens->[1]->[0]->left ) eq 'Database::Accessor::Element',
-    'Element 3 whens->[1]->[0]->left Is an Database::Accessor::Element' );
-ok( $dad->elements->[3]->whens->[1]->[0]->left->view eq 'People',
-    'Element 3 whens->[1]->[0]->left->view is  People' );
-ok( $dad->elements->[3]->whens->[1]->[1]->condition eq 'AND',
-    'Element 3 whens->[1]->[1]->condition Is an UC AND' );
-ok( $dad->elements->[3]->whens->[1]->[1]->operator eq 'IN',
-    'Element 3 whens->[1]->[1]->operator Is an UC IN' );
+ok( ref( $dad->elements->[3]->ifs->[1] ) eq 'ARRAY',
+    'Element 3 ifs->[1] Is an Array' );
+ok( ref($dad->elements->[3]->ifs->[1]->[0]->left ) eq 'Database::Accessor::Element',
+    'Element 3 ifs->[1]->[0]->left Is an Database::Accessor::Element' );
+ok( $dad->elements->[3]->ifs->[1]->[0]->left->view eq 'People',
+    'Element 3 ifs->[1]->[0]->left->view is  People' );
+ok( $dad->elements->[3]->ifs->[1]->[1]->condition eq 'AND',
+    'Element 3 ifs->[1]->[1]->condition Is an UC AND' );
+ok( $dad->elements->[3]->ifs->[1]->[1]->operator eq 'IN',
+    'Element 3 ifs->[1]->[1]->operator Is an UC IN' );
 
-ok( ref( $dad->elements->[3]->whens->[2]->statement ) eq 'Database::Accessor::Element',
-    'Element 3 whens->[2]->statement is an element' );
-ok(  $dad->elements->[3]->whens->[2]->statement->name  eq 'prices',
-    'Element 3 whens->[2]->statement->name is prices' );
-ok(  $dad->elements->[3]->whens->[2]->statement->view  eq 'People',
-    'Element 3 whens->[2]->statement->view is People' );
+ok( ref( $dad->elements->[3]->ifs->[2]->then ) eq 'Database::Accessor::Element',
+    'Element 3 ifs->[2]->then is an element' );
+ok(  $dad->elements->[3]->ifs->[2]->then->name  eq 'prices',
+    'Element 3 ifs->[2]->then->name is prices' );
+ok(  $dad->elements->[3]->ifs->[2]->then->view  eq 'People',
+    'Element 3 ifs->[2]->then->view is People' );
 
 1;

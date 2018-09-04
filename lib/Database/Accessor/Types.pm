@@ -18,11 +18,11 @@ use Database::Accessor::Param;
 use Database::Accessor::Link;
 use Database::Accessor::Function;
 use Database::Accessor::Expression;
-use Database::Accessor::Case;
-use Database::Accessor::Case::When;
+use Database::Accessor::If;
+use Database::Accessor::If::Then;
 
-class_type 'Case',       { class => 'Database::Accessor::Case' };
-class_type 'When',       { class => 'Database::Accessor::Case::When' };
+class_type 'If',       { class => 'Database::Accessor::If' };
+class_type 'Then',       { class => 'Database::Accessor::If::Then' };
 class_type 'View',       { class => 'Database::Accessor::View' };
 class_type 'Element',    { class => 'Database::Accessor::Element' };
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
@@ -33,14 +33,14 @@ class_type 'Function',   { class => 'Database::Accessor::Function' };
 class_type 'Expression', { class => 'Database::Accessor::Expression' };
 class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 
-subtype 'ArrayRefofWhens'           => as 'ArrayRef[When|ArrayRef]'; 
-# subtype 'ArrayRefofArrayRefofWhens' => as 'ArrayRef[When]'; 
+subtype 'ArrayRefofThens'           => as 'ArrayRef[Then|ArrayRef]'; 
+# subtype 'ArrayRefofArrayRefofThens' => as 'ArrayRef[If]'; 
 
 subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 # subtype 'ArrayRefofElements'   => as
 # subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
-  'ArrayRef[Element|Param|Function|Expression|Case]',
+  'ArrayRef[Element|Param|Function|Expression|If]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
   message {
     "ArrayRefofElements can not be an empty array ref";
@@ -52,7 +52,7 @@ subtype 'ArrayRefofExpressions' => as
 
 subtype 'ArrayRefofPredicates' => as 'ArrayRef[Predicate]';
 subtype 'ArrayRefofLinks'      => as 'ArrayRef[Link]';
-subtype 'ArrayRefofParams' => as 'ArrayRef[Case|Element|Param|Function|Expression]';
+subtype 'ArrayRefofParams' => as 'ArrayRef[If|Element|Param|Function|Expression]';
 
 subtype 'NumericOperator', as 'Str', where {
     exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } );
@@ -115,10 +115,10 @@ coerce 'ArrayRefofConditions', from 'ArrayRef', via {
 
 };
 
-coerce 'ArrayRefofWhens', from 'ArrayRef', via {
+coerce 'ArrayRefofThens', from 'ArrayRef', via {
     
- # warn("ArrayRefofWhens=".Dumper($_));
-    return _when_array_or_object($_ );
+ # warn("ArrayRefofThens=".Dumper($_));
+    return _then_array_or_object($_ );
 };
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
@@ -175,12 +175,12 @@ sub _element_coerce {
     elsif ( exists( $hash->{value} ) || exists( $hash->{param} ) ) {
         $object = Database::Accessor::Param->new( %{$hash} );
     }
-    elsif ( exists( $hash->{whens} ))  {
-        die "Attribute (whens) does not pass the type constraint because: 
-            Validation failed for 'ArrayRefofWhens' with less than 2 whens"  
-            if (exists($hash->{whens}) and ref($hash->{whens}) eq 'ARRAY' and scalar(@{$hash->{whens}} <2)); 
+    elsif ( exists( $hash->{ifs} ))  {
+        die "Attribute (ifs) does not pass the type constraint because: 
+            Validation failed for 'ArrayRefofThens' with less than 2 ifs"  
+            if (exists($hash->{ifs}) and ref($hash->{ifs}) eq 'ARRAY' and scalar(@{$hash->{ifs}} <2)); 
   
-        $object = Database::Accessor::Case->new( %{$hash} );
+        $object = Database::Accessor::If->new( %{$hash} );
     }
     else {
         $object = Database::Accessor::Element->new( %{$hash} );
@@ -218,13 +218,13 @@ sub _predicate_array_or_object {
 }
 
 
-sub _when_array_or_object {
+sub _then_array_or_object {
 
     my ($in ) = @_;
     my $objects = [];
  
     foreach my $object ( @{$in} ) {
-        if ( ref($object) eq 'Database::Accessor::Case::When' ) {
+        if ( ref($object) eq 'Database::Accessor::If::Then' ) {
             push( @{$objects}, $object );
         }
          elsif ( ref($object) eq "ARRAY" ) {
@@ -232,14 +232,14 @@ sub _when_array_or_object {
             foreach my $sub_object (@{$object}){
                 push(
                 @{$sub_objects},
-                @{ _when_array_or_object([ $sub_object] ) });
+                @{ _then_array_or_object([ $sub_object] ) });
             }
             push(
                 @{$objects},
                 $sub_objects);
         }
         else {
-            push( @{$objects}, Database::Accessor::Case::When->new($object));
+            push( @{$objects}, Database::Accessor::If::Then->new($object));
         }
     }
     return $objects;

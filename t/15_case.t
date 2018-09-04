@@ -13,35 +13,35 @@ use lib (
 use Database::Accessor;
 
 BEGIN {
-    use_ok('Database::Accessor::Case');
-    use_ok('Database::Accessor::Case::When');
+    use_ok('Database::Accessor::If');
+    use_ok('Database::Accessor::If::Then');
 }
 
-my $when = Database::Accessor::Case::When->new(
+my $when = Database::Accessor::If::Then->new(
     {
         left      => { name  => 'Price', },
         right     => { value => '10' },
         operator  => '<',
-        statement => { value => 'under 10$' }
+        then => { value => 'under 10$' }
     }
 );
 
 
 # exit;
-ok( ref($when) eq 'Database::Accessor::Case::When', "when is a when" );
+ok( ref($when) eq 'Database::Accessor::If::Then', "when is a when" );
 ok(
     does_role( $when, "Database::Accessor::Roles::Comparators" ) eq 1,
     "when does role Database::Accessor::Roles::Comparators"
 );
 
-my $case = Database::Accessor::Case->new(
+my $case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { value => 'under 10$' }
+                then => { value => 'under 10$' }
             },
             [
                 {
@@ -54,7 +54,7 @@ my $case = Database::Accessor::Case->new(
                     left      => { name => 'Price' },
                     right     => { value => '30' },
                     operator  => '<=',
-                    statement => { value => '10~30$' }
+                    then => { value => '10~30$' }
                 },
             ],
             [
@@ -68,47 +68,47 @@ my $case = Database::Accessor::Case->new(
                     left      => { name => 'Price' },
                     right     => { value => '100' },
                     operator  => '<=',
-                    statement => { value => '30~100$' }
+                    then => { value => '30~100$' }
                 },
             ],
-            { statement => { value => 'Over 100$' } },
+            { then => { value => 'Over 100$' } },
         ]
     }
 );
 
  # warn("case=".Dumper($case));
 
-ok( ref($case) eq 'Database::Accessor::Case', "case is a case" );
+ok( ref($case) eq 'Database::Accessor::If', "case is a case" );
 
-ok( ref( $case->whens->[0] ) eq 'Database::Accessor::Case::When',
-    "Cases->whens->[0]  is a when" );
+ok( ref( $case->ifs->[0] ) eq 'Database::Accessor::If::Then',
+    "Ifs->ifs->[0]  is a when" );
 
-ok( ref( $case->whens->[1] ) eq 'ARRAY',
-    "Cases->whens->[1]  is an array-ref" );
+ok( ref( $case->ifs->[1] ) eq 'ARRAY',
+    "Ifs->ifs->[1]  is an array-ref" );
 
-ok( ref( $case->whens->[1]->[0] ) eq 'Database::Accessor::Case::When',
-    "Cases->whens->[1]->[0]   is a when" );
+ok( ref( $case->ifs->[1]->[0] ) eq 'Database::Accessor::If::Then',
+    "Ifs->ifs->[1]->[0]   is a when" );
 
 
-my $last = pop( @{ $case->whens } );
-ok( ref( $last->statement ) eq 'Database::Accessor::Param',
-    "last statement is a Param" );
+my $last = pop( @{ $case->ifs } );
+ok( ref( $last->then ) eq 'Database::Accessor::Param',
+    "last then is a Param" );
 
-$case = Database::Accessor::Case->new(
+$case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => {
+                then => {
                     expression => '-',
                     left       => { name => 'price' },
                     right      => { value => 10 }
                 }
             },
             {
-                statement => {
+                then => {
                     expression => '-',
                     left       => { name => 'price' },
                     right      => { value => 10 }
@@ -117,29 +117,29 @@ $case = Database::Accessor::Case->new(
         ]
     }
 );
-my $first = shift( @{ $case->whens } );
-ok( ref( $first->statement ) eq 'Database::Accessor::Expression',
-    "last statement is an Expression" );
+my $first = shift( @{ $case->ifs } );
+ok( ref( $first->then ) eq 'Database::Accessor::Expression',
+    "last then is an Expression" );
 
-$last = pop( @{ $case->whens } );
-ok( ref( $last->statement ) eq 'Database::Accessor::Expression',
-    "last statement is an Expression" );
+$last = pop( @{ $case->ifs } );
+ok( ref( $last->then ) eq 'Database::Accessor::Expression',
+    "last then is an Expression" );
 
-$case = Database::Accessor::Case->new(
+$case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => {
+                then => {
                     function => 'left',
                     left     => { name => 'price' },
                     right    => [ { value => 2 } ]
                 }
             },
             {
-                statement => {
+                then => {
                     function => 'left',
                     left     => { name => 'price' },
                     right    => [ { value => 2 } ]
@@ -148,53 +148,53 @@ $case = Database::Accessor::Case->new(
         ]
     }
 );
-$first = shift( @{ $case->whens } );
-ok( ref( $first->statement ) eq 'Database::Accessor::Function',
-    "last statement is an Function" );
+$first = shift( @{ $case->ifs } );
+ok( ref( $first->then ) eq 'Database::Accessor::Function',
+    "last then is an Function" );
 
-$last = pop( @{ $case->whens } );
-ok( ref( $last->statement ) eq 'Database::Accessor::Function',
-    "last statement is an Function" );
-$case = Database::Accessor::Case->new(
+$last = pop( @{ $case->ifs } );
+ok( ref( $last->then ) eq 'Database::Accessor::Function',
+    "last then is an Function" );
+$case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             },
-            { statement => { name => 'price' } }
+            { then => { name => 'price' } }
         ]
     }
 );
-$first = shift( @{ $case->whens } );
-ok( ref( $first->statement ) eq 'Database::Accessor::Element',
-    "last statement is an Element" );
+$first = shift( @{ $case->ifs } );
+ok( ref( $first->then ) eq 'Database::Accessor::Element',
+    "last then is an Element" );
 
-$last = pop( @{ $case->whens } );
-ok( ref( $last->statement ) eq 'Database::Accessor::Element',
-    "last statement is an Element" );
+$last = pop( @{ $case->ifs } );
+ok( ref( $last->then ) eq 'Database::Accessor::Element',
+    "last then is an Element" );
 
-$case = Database::Accessor::Case->new(
+$case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             },
             {
-                statement => {
-                    whens => [
+                then => {
+                    ifs => [
                         {
                             left      => { name  => 'Price', },
                             right     => { value => '10' },
                             operator  => '<',
-                            statement => { name  => 'price' }
+                            then => { name  => 'price' }
                         },
-                        { statement => { name => 'price' } }
+                        { then => { name => 'price' } }
                     ]
                 }
             }
@@ -202,32 +202,32 @@ $case = Database::Accessor::Case->new(
     }
 );
 
-$last = pop( @{ $case->whens } );
-ok( ref( $last->statement ) eq 'Database::Accessor::Case',
-    "last statement is an Case" );
+$last = pop( @{ $case->ifs } );
+ok( ref( $last->then ) eq 'Database::Accessor::If',
+    "last then is an If" );
 
-$case = Database::Accessor::Case->new(
+$case = Database::Accessor::If->new(
     {
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => {  whens => [
+                then => {  ifs => [
                         {
                             left      => { name  => 'Price', },
                             right     => { value => '10' },
                             operator  => '<',
-                            statement => { name  => 'price' }
+                            then => { name  => 'price' }
                         },
-                        { statement => { name => 'price' } }
+                        { then => { name => 'price' } }
                     ] }
             },
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { value => 'under 10$' }
+                then => { value => 'under 10$' }
             },
             [
                 {
@@ -240,7 +240,7 @@ $case = Database::Accessor::Case->new(
                     left      => { name => 'Price' },
                     right     => { value => '30' },
                     operator  => '<=',
-                    statement => { name => 'price' }
+                    then => { name => 'price' }
                 },
             ],
             [
@@ -254,7 +254,7 @@ $case = Database::Accessor::Case->new(
                     left      => { name => 'Price' },
                     right     => { value => '100' },
                     operator  => '<=',
-                    statement => {
+                    then => {
                         function => 'left',
                         left     => { name => 'price' },
                         right    => [ { value => 2 } ]
@@ -262,7 +262,7 @@ $case = Database::Accessor::Case->new(
                 },
             ],
             {
-                statement => {
+                then => {
                     expression => '-',
                     left       => { name => 'price' },
                     right      => { value => 10 }
@@ -272,49 +272,49 @@ $case = Database::Accessor::Case->new(
     }
 );
  # warn("when=".Dumper($case));
-ok( ref( $case->whens->[0]->statement ) eq 'Database::Accessor::Case',
-    "big when [0] statement is a Case" );
+ok( ref( $case->ifs->[0]->then ) eq 'Database::Accessor::If',
+    "big when [0] then is a If" );
     
-ok( ref( $case->whens->[1]->statement ) eq 'Database::Accessor::Param',
-    "big when [1] statement is a Param" );
+ok( ref( $case->ifs->[1]->then ) eq 'Database::Accessor::Param',
+    "big when [1] then is a Param" );
     
-ok( ref( $case->whens->[2])  eq 'ARRAY',
+ok( ref( $case->ifs->[2])  eq 'ARRAY',
     "big when [2] is an array ref" );
 
-ok( ref( $case->whens->[2]->[1])  eq 'Database::Accessor::Case::When',
+ok( ref( $case->ifs->[2]->[1])  eq 'Database::Accessor::If::Then',
     "big when [2]->[1] is a when" );
 
-ok( ref( $case->whens->[2]->[1]->statement)  eq 'Database::Accessor::Element',
-    "big when [2]->[1]->statement is an Element" );
+ok( ref( $case->ifs->[2]->[1]->then)  eq 'Database::Accessor::Element',
+    "big when [2]->[1]->then is an Element" );
 
-ok( ref( $case->whens->[3])  eq 'ARRAY',
+ok( ref( $case->ifs->[3])  eq 'ARRAY',
     "big when [3] is an array ref" );
 
-ok( ref( $case->whens->[3]->[1])  eq 'Database::Accessor::Case::When',
+ok( ref( $case->ifs->[3]->[1])  eq 'Database::Accessor::If::Then',
     "big when [3]->[1] is a when" );
 
-ok( ref( $case->whens->[3]->[1]->statement)  eq 'Database::Accessor::Function',
-    "big when [3]->[1]->statement is an Fucntion" );
+ok( ref( $case->ifs->[3]->[1]->then)  eq 'Database::Accessor::Function',
+    "big when [3]->[1]->then is an Fucntion" );
 
-ok( ref( $case->whens->[4]->statement ) eq 'Database::Accessor::Expression',
-    "big when [4] statement is a Expression" );
+ok( ref( $case->ifs->[4]->then ) eq 'Database::Accessor::Expression',
+    "big when [4] then is a Expression" );
    
 
-like(exception {Database::Accessor::Case->new( {
-        whens => [
+like(exception {Database::Accessor::If->new( {
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => {  whens => [
+                then => {  ifs => [
                         {
                             left      => { name  => 'Price', },
                             right     => { value => '10' },
                             operator  => '<',
-                            statement => { name  => 'price' }
+                            then => { name  => 'price' }
                         },
                     ] }
             }]})},
-                    qr /Validation failed for \'ArrayRefofWhens\'/,
-                    "Case Fails with less than 2 whens"
+                    qr /Validation failed for \'ArrayRefofThens\'/,
+                    "If Fails with less than 2 ifs"
                 );

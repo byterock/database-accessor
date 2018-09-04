@@ -118,20 +118,20 @@ $in_hash3->{conditions} =
             view => 'People'
         },
         right =>{
-        whens => [
+        ifs => [
             {
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                statement => { name  => 'price' }
+                then => { name  => 'price' }
             },
-            { statement => { name => 'prices' } }
+            { then => { name => 'prices' } }
         ]},
         operator        => '=',
     };
 $da2 = Database::Accessor->new($in_hash3); 
 
 
-ok( ref( $da2->conditions()->[0]->predicates->right ) eq "Database::Accessor::Case",
-    'condition->[0]->right is a Case' );
+ok( ref( $da2->conditions()->[0]->predicates->right ) eq "Database::Accessor::If",
+    'condition->[0]->right is a If' );
 1;

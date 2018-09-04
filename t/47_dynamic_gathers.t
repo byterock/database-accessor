@@ -116,21 +116,21 @@ $da->reset_gather();
 $gather2 = {        
        elements => [
             {
-    whens => [
+    ifs => [
         {
             left      => { name  => 'Price', },
             right     => { value => '10' },
             operator  => '<',
-            statement => { name  => 'price' }
+            then => { name  => 'price' }
         },
-        { statement => { name => 'prices' } }
+        { then => { name => 'prices' } }
       ]
   }           
         ],
     };
  $da->add_gather($gather2);
  $da->retrieve( Data::Test->new(), $return );
- ok( ref( $da->dynamic_gather()->elements->[0] ) eq "Database::Accessor::Case",
-    'dynamic_gather()->elements->[0] is a Case' );
+ ok( ref( $da->dynamic_gather()->elements->[0] ) eq "Database::Accessor::If",
+    'dynamic_gather()->elements->[0] is a If' );
  
 1;

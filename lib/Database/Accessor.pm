@@ -626,15 +626,15 @@ package Database::Accessor;
             $element->view($alias )
               if ($alias and $right);          }
         }
-        elsif (ref($element) eq 'Database::Accessor::Case'){
-            foreach my $sub_element (@{$element->whens()}){
+        elsif (ref($element) eq 'Database::Accessor::If'){
+            foreach my $sub_element (@{$element->ifs()}){
                 $self->_check_element($sub_element,0,$alias);
             }
         }
-        elsif (ref($element) eq 'Database::Accessor::Case::When'){
+        elsif (ref($element) eq 'Database::Accessor::If::Then'){
             $self->_check_element($element->right,1,$alias);
             $self->_check_element($element->left,0,$alias);
-            $self->_check_element($element->statement,0,$alias);
+            $self->_check_element($element->then,0,$alias);
             $element->condition(uc($element->condition))
               if ($element->condition() );
             $element->operator(uc($element->operator))
@@ -969,14 +969,14 @@ package Database::Accessor;
         use namespace::autoclean;
         has left => (
             is       => 'rw',
-            isa      => 'Case|Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
+            isa      => 'If|Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             required => 1,
             coerce   => 1,
         );
         has right => (
             is => 'rw',
             isa =>
-'Case|Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
+'If|Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             coerce   => 1,
         );
 
@@ -1107,19 +1107,19 @@ package Database::Accessor;
 
     {
         package 
-           Database::Accessor::Case;
+           Database::Accessor::If;
         use Moose;
         extends 'Database::Accessor::Base';
         with qw( Database::Accessor::Roles::Element
                 );
         has '+name' => ( required => 0 );
-        has 'whens' => (
-            isa         => 'ArrayRefofWhens',#|ArrayRefofArrayRefofWhens',
+        has 'ifs' => (
+            isa         => 'ArrayRefofThens',
             is           => 'ro',
             required => 1,
             traits  => ['Array'],
-            handles => { get_when => 'get',
-                         when_count=> 'count' },
+            handles => { get_if => 'get',
+                         if_count=> 'count' },
         );
 
         1;
@@ -1127,16 +1127,16 @@ package Database::Accessor;
     {
 
         package 
-           Database::Accessor::Case::When;
+           Database::Accessor::If::Then;
         use Moose;
         extends 'Database::Accessor::Predicate';
         has '+left' => ( required => 0 );
         has '+name' => ( required => 0 );
         
-                has 'statement' => (
-            isa      => 'Expression|Param|Element|Function|Case',
+                has 'then' => (
+            isa      => 'Expression|Param|Element|Function|If',
             is       => 'rw',
-            # required => 1,
+            alias => 'else'
         );
 
         1;

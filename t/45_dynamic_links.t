@@ -125,14 +125,14 @@ $in_hash = {
             type       => 'left',
             conditions => [
                 {
-                    left => {whens => [
+                    left => {ifs => [
                         {
                             left      => { name  => 'Price', },
                             right     => { value => '10' },
                             operator  => '<',
-                            statement => { name  => 'price' }
+                            then => { name  => 'price' }
                         },
-                        { statement => { name => 'prices' } }
+                        { then => { name => 'prices' } }
                     ]}
                 }
               ]
@@ -143,8 +143,8 @@ $in_hash = {
 $da->add_link($in_hash->{links});
 $da->retrieve( Data::Test->new(), $return );
 
-ok( ref( $da->dynamic_links()->[0]->conditions->[0]->predicates->left ) eq "Database::Accessor::Case",
-    'dynamic_links()->[0]->conditions->[0]->predicates->left is a Case' );
+ok( ref( $da->dynamic_links()->[0]->conditions->[0]->predicates->left ) eq "Database::Accessor::If",
+    'dynamic_links()->[0]->conditions->[0]->predicates->left is a If' );
 
 1;
 1;
