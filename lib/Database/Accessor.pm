@@ -1029,14 +1029,10 @@ package Database::Accessor;
 
         );
 
-        has [
-            qw(is_identity
-              )
-          ] => (
-            is      => 'rw',
-            isa     => 'Bool',
-#            default => 0,
-          );
+        has 'identity' => (
+            is    => 'rw',
+            isa   => 'HashRef',
+        );
 
         # has 'aggregate' => (
             # is  => 'rw',
