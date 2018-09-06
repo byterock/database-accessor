@@ -302,6 +302,13 @@ package Database::Accessor;
 
     );
 
+    has _identity_index => (
+        is          => 'rw',
+        isa         => 'Int|Undef',
+        default     => undef,
+        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        description => { not_in_DAD => 1 }
+    );
     has result => (
         is          => 'rw',
         isa         => 'Database::Accessor::Result|Undef',
@@ -673,8 +680,11 @@ package Database::Accessor;
     private_method get_dad_elements => sub {
         my $self = shift;
         my ($action,$opt) = @_;
+       
+        $self->_identity_index(undef);
         my @allowed;
-        foreach my $element (@{$self->elements()} ) {
+        for (my $index=0; $index < scalar(@{$self->elements()} ); $index++) {
+            my $element = $self->elements()->[$index];
             if (ref($element) eq 'Database::Accessor::Param'){
                 push(@allowed,$element)
                   if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
@@ -716,8 +726,20 @@ package Database::Accessor;
                 and (  $action eq Database::Accessor::Constants::CREATE
                     or $action eq Database::Accessor::Constants::UPDATE )
               );
+            
             push( @allowed, $element );
+            
+            if ( ref($element) eq 'Database::Accessor::Element' and $element->identity()){
+                if ($self->_identity_index()){
+                    die " Database::Accessor->"
+                        . lc($action)
+                        . " More than one element has the 'identity' attribute set. Please check your elements!";
+                }
+                else {                    
+                    $self->_identity_index($index);                }
+                            }
         }
+        
         return \@allowed;
     };
     
@@ -825,8 +847,8 @@ package Database::Accessor;
                 da_no_effect       => $self->da_no_effect,
                 da_warning         => $self->da_warning,
                 da_raise_error_off => $self->da_raise_error_off,
-                da_suppress_view_name=> $self->da_suppress_view_name
-                
+                da_suppress_view_name=> $self->da_suppress_view_name,
+                identity_index      => $self->_identity_index
             }
         );
         
@@ -1261,6 +1283,11 @@ package Database::Accessor;
             default => sub { [] },
         );
         
+        has identity_index => (
+            is      => 'ro',
+            isa     => 'Int|Undef',
+            default => undef,
+        );        
         sub da_warn {
            my $self       = shift;
            my ($package, $filename, $line) = caller();
