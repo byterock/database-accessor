@@ -1286,7 +1286,7 @@ package Database::Accessor;
         has identity_index => (
             is      => 'ro',
             isa     => 'Int|Undef',
-            default => undef,
+            # default => undef,
         );        
         sub da_warn {
            my $self       = shift;
