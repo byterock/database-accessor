@@ -681,7 +681,7 @@ package Database::Accessor;
         my $self = shift;
         my ($action,$opt) = @_;
        
-        $self->_identity_index(undef);
+        $self->_identity_index(-1);
         my @allowed;
         for (my $index=0; $index < scalar(@{$self->elements()} ); $index++) {
             my $element = $self->elements()->[$index];
@@ -1285,8 +1285,8 @@ package Database::Accessor;
         
         has identity_index => (
             is      => 'ro',
-            isa     => 'Int|Undef',
-            # default => undef,
+            isa     => 'Int',
+            default => -1,
         );        
         sub da_warn {
            my $self       = shift;
