@@ -729,8 +729,8 @@ package Database::Accessor;
             
             push( @allowed, $element );
             
-            if ( ref($element) eq 'Database::Accessor::Element' and $element->identity()){
-                if ($self->_identity_index()){
+            if ( ref($element) eq 'Database::Accessor::Element' and $element->identity() ){
+                if ($self->_identity_index() >=0 ){
                     die " Database::Accessor->"
                         . lc($action)
                         . " More than one element has the 'identity' attribute set. Please check your elements!";
