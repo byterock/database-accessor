@@ -2,6 +2,11 @@
 use strict;
 use warnings;
 use lib ('t/lib');
+use lib (
+    't/lib',
+    'D:\GitHub\database-accessor\t\lib',
+    'D:\GitHub\database-accessor\lib'
+);
 use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
@@ -9,6 +14,7 @@ use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
 use Test::More tests => 8;
+use Test::Deep;
 
 
 my $in_hash = {
@@ -97,4 +103,20 @@ eval {
 };
 
 ok( $@, 'No Update with empty hash-ref container ' );
+
+my $container = {first_name=>'Bob',
+              last_name=>'Barker',
+              street    =>'1313 Mocking bird lane',
+              phone     =>'555mrplow'};
+
+ $da->create( $data, $container );;
+
+my $in_container =   $da->result->params->[0];
+
+  cmp_deeply(
+            $in_container,
+            {first_name=>'Bob',
+             last_name=>'Barker'},
+            "Container drops street and phone on update"
+        );
 

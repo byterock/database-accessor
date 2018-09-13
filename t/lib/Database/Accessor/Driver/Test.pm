@@ -9,6 +9,7 @@ with(qw( Database::Accessor::Roles::Driver));
 sub execute {
     my $self = shift;
     my ($result, $type, $conn, $container, $opt ) = @_;
+    $result->add_param($container);
     $result->effected(10);
     $result->query($type.' Query');
     $result->set([9,8,7,6,5,4,3,2,1,0]);

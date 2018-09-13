@@ -1,16 +1,17 @@
 #!perl
 
 package Data::Test;
-use strict;
+use Moose;
 
-sub new {
-    my $class = shift;
-
-    my $self = {};
-    bless( $self, ( ref($class) || $class ) );
-
-    return ($self);
-
-}
+has [
+        qw(first_name
+           last_name
+         )
+        ] => (
+          is          => 'rw',
+          isa         => 'Str',
+          default     => 'test'
+        ); 
 
 1;
+ 

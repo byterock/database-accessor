@@ -463,10 +463,32 @@ package Database::Accessor;
             _reset_conditions => 'reset'
         }
     );
+    sub _clean_up_container {
+        my $self = shift;
+        my ($message,$container) = @_;
+        my @new_container = ();
+        foreach my $row (@{$container}){
+            my $new_row = {};
+            foreach my $key (keys(%{$row})){
+                my $field = $self->get_element_by_name($key);
+                next
+                  if ( !$field );
+                next
+                   if ( ($field->view) and ($field->view ne $self->view()->name()));
+                $new_row->{$key} = $row->{$key};
+            }
+            push(@new_container,$new_row);        }
+        die $message .= "The \$container must have at least 1 element with the view="
+                     .$self->view()->name()
+                     ."!"
+              if ( !scalar( @new_container ) );
+        return \@new_container;
+    }
+    
     sub _create_or_update {
         my $self = shift;
         my ( $action, $conn, $container, $opt ) = @_;
-
+        my $new_container;
         my $message =
             "Usage: Database::Accessor->"
           . lc($action)
@@ -482,7 +504,7 @@ package Database::Accessor;
             die $message
               . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
               if ( scalar(@bad) );
-
+            $new_container = $self->_clean_up_container($message,$container);
         }
         else {
 
@@ -492,13 +514,15 @@ package Database::Accessor;
 
             die $message .= "The \$container Hash-Ref cannot be empty"
               if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
-
+              
+            $new_container = shift(@{$self->_clean_up_container($message,[$container])});
         }
-
-        $self->_all_elements_present( $message, $container )
+        
+       
+        $self->_all_elements_present( $message, $new_container )
           if ( $self->all_elements_present );
 
-        return $self->_execute( $action, $conn, $container, $opt );
+        return $self->_execute( $action, $conn, $new_container, $opt );
     }
     sub create {
         my $self = shift;
