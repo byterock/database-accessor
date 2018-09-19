@@ -13,7 +13,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Database::Accessor::Constants;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Test::Deep;
 
 
@@ -111,7 +111,7 @@ my $container = {first_name=>'Bob',
 
  $da->create( $data, $container );;
 
-my $in_container =   $da->in_container();
+  my $in_container = $da->result()->in_container();
 
   cmp_deeply(
             $in_container,

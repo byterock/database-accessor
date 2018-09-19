@@ -82,7 +82,7 @@
        sub get_element_by_name {
            my $self = shift;
            my ($name) = @_;
-           my $found = $self->_get_element_by_name(sub {$_->name eq $name});
+           my $found = $self->_get_element_by_name(sub { if (!defined($_->name)) {return 0} $_->name eq $name});
            return $found;
        }
        
