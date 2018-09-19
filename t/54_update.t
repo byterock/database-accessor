@@ -111,7 +111,7 @@ my $container = {first_name=>'Bob',
 
  $da->create( $data, $container );;
 
-my $in_container =   $da->result->params->[0];
+my $in_container =   $da->in_container();
 
   cmp_deeply(
             $in_container,

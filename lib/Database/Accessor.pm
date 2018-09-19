@@ -521,7 +521,6 @@ package Database::Accessor;
        
         $self->_all_elements_present( $message, $new_container )
           if ( $self->all_elements_present );
-
         return $self->_execute( $action, $conn, $new_container, $opt );
     }
     sub create {
@@ -815,7 +814,7 @@ package Database::Accessor;
 
     private_method _execute => sub {
         my $self = shift;
-        my ( $action, $conn,$container , $opt ) = @_;
+        my ( $action, $conn,$new_container, $opt ) = @_;
         
        
       
@@ -877,8 +876,8 @@ package Database::Accessor;
         );
         
         my $result = Database::Accessor::Result->new(
-            { DAD => $driver, operation => $action } );
-        $dad->execute( $result, $action, $conn, $container, $opt );
+            { DAD => $driver, operation => $action, in_container=>$new_container } );
+        $dad->execute( $result, $action, $conn, $new_container, $opt );
         $self->result($result);
         return 0
           if ( $result->is_error() );
@@ -896,6 +895,13 @@ package Database::Accessor;
            Database::Accessor::Result;
         use Moose;
        
+               has [ qw(in_container
+                 processed_container)
+            ] => (
+            isa    => 'ArrayRef|HashRef|Undef',
+            is          => 'rw'
+        );
+        
         has is_error => (
             is          => 'rw',
             isa         => 'Bool',
@@ -945,7 +951,11 @@ package Database::Accessor;
                           isa      => 'Str',
         )
         
+   
     }
+    
+    
+        
     {
 
         package 

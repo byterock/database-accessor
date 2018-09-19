@@ -82,7 +82,8 @@ $container = {first_name=>'Bob',
 
  $da->create( $data, $container );;
 
- my $in_container =   $da->result->params->[0];
+ my $in_container =   $da->result->in_container();
+ 
   cmp_deeply(
             $in_container,
             {first_name=>'Bob'},
@@ -96,7 +97,7 @@ $container = {first_name=>'Bob',
 
  $da->create( $data, $container );;
 
-$in_container =   $da->result->params->[0];
+$in_container =   $da->result->in_container();
 
   cmp_deeply(
             $in_container,

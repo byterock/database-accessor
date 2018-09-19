@@ -8,11 +8,12 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 55;
+use Test::More tests => 67;
 use Test::Fatal;
+use Test::Deep;
 
 my $da =
-  Database::Accessor->new( { retrieve_only => 1, view => { name => 'test' }, elements=>[{ name => 'street', view => 'person', }] } );
+  Database::Accessor->new( { retrieve_only => 1, view => { name => 'person' }, elements=>[{ name => 'street', view => 'person', }] } );
 
 
 my %read_write = (da_compose_only=>1,
@@ -69,7 +70,7 @@ ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 my $da_new = Database::Accessor->new( { delete_requires_condition=>0,
                                         update_requires_condition=>0,
-                                        view => { name => 'test' },
+                                        view => { name => 'person' },
                                         elements=>[{ name => 'street', view => 'person', }] } );
 
 ok( $da_new->no_create() == 0,   "Can Create" );
@@ -80,15 +81,34 @@ ok( $da_new->no_delete() == 0,   "Can Delete" );
 ok( ref($da_new) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 foreach my $type (qw(create retrieve update )){
-    my $container = {key=>1};
+     my $container = {key=>1,
+                     street=>'131 Madison Ave.' };
+     my $in_container = {street=>'131 Madison Ave.' };
+     my $processed_container = {street     =>'131 Madison Ave.',
+                                dad_fiddle => 1 };
      ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
-     if ($type eq 'create') {
+     if ($type eq 'create' or $type eq 'update') {
        ok($da_new->result()->is_error == 0,"$type->No Error");
        ok($da_new->result()->effected() == 10,"$type->10 rows effected");
        ok($da_new->result()->query() eq uc($type).' Query','correct '.uc($type)." query returned");
        ok($da_new->result()->DAD() eq 'Database::Accessor::Driver::Test',"$type->correct raw DAD class");
        ok($da_new->result()->DB() eq 'Data::Test',"$type->correct DB");
-       ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class")
+       ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class");
+       
+       cmp_deeply(
+            $container,
+            {key=>1, street=>'131 Madison Ave.' },
+            "Container stays the same!"
+        );        cmp_deeply(
+            $in_container,
+            $da_new->result()->in_container(),
+            "In Container stays the same!"
+        );
+        cmp_deeply(
+            $processed_container,
+            $da_new->result()->processed_container(),
+            "Processed Container drops key!"
+        );
      }
 }
 
@@ -97,7 +117,7 @@ foreach my $type (qw(create retrieve update )){
 
 
 like(
-    exception {my $da = Database::Accessor->new( {view => { name => 'test' }} ) },
+    exception {my $da = Database::Accessor->new( {view => { name => 'person' }} ) },
     qr /Attribute \(elements\) is required at/,
     "Elements is a required Field "
 );
@@ -108,7 +128,7 @@ like(
     "View is a required Field"
 );
 like(
-    exception {my $da = Database::Accessor->new( {view => { name => 'test' },elements=>[]} ) },
+    exception {my $da = Database::Accessor->new( {view => { name => 'person' },elements=>[]} ) },
     qr /ArrayRefofElements can not be an empty array ref/,
     "Elements cannot be empty array ref"
 );
