@@ -474,9 +474,9 @@ package Database::Accessor;
                 next
                   if ( !$field );
                 next
-                   if (($field->view) 
-                    and ($field->view ne $self->view()->name() 
-                         and ($self->view()->alias() and ($field->view ne $self->view()->alias()))));
+                   if ((($field->view) 
+                    and ($field->view ne $self->view()->name()) 
+                         or ($self->view()->alias() and ($field->view ne $self->view()->alias()))));
                 $new_row->{$key} = $row->{$key};
             }
             push(@new_container,$new_row);        }
@@ -877,7 +877,6 @@ package Database::Accessor;
                 identity_index      => $self->_identity_index
             }
         );
-         # warn("da new_container=".Dumper($new_container));
         my $result = Database::Accessor::Result->new(
             { DAD => $driver, operation => $action, in_container=>$new_container } );
         $dad->execute( $result, $action, $conn, $new_container, $opt );

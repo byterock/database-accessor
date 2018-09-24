@@ -95,7 +95,6 @@ foreach my $type (qw(create retrieve update )){
        ok($da_new->result()->DAD() eq 'Database::Accessor::Driver::Test',"$type->correct raw DAD class");
        ok($da_new->result()->DB() eq 'Data::Test',"$type->correct DB");
        ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class");
-       warn("da result=".Dumper($da_new->result()->processed_container()));
        cmp_deeply(
             $container,
             {key=>1, street=>'131 Madison Ave.' },
