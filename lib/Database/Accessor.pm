@@ -476,7 +476,7 @@ package Database::Accessor;
                 next
                    if (($field->view) 
                     and ($field->view ne $self->view()->name() 
-                         and $field->view ne $self->view()->alias()));
+                         and ($self->view()->alias() and ($field->view ne $self->view()->alias()))));
                 $new_row->{$key} = $row->{$key};
             }
             push(@new_container,$new_row);        }
