@@ -83,9 +83,10 @@ ok( ref($da_new) eq 'Database::Accessor', "DA is a Database::Accessor" );
 foreach my $type (qw(create retrieve update )){
      my $container = {key=>1,
                      street=>'131 Madison Ave.' };
-     my $in_container = {street=>'131 Madison Ave.' };
+     my $in_container = {street=>'131 Madison Ave.',
+                        };
      my $processed_container = {street     =>'131 Madison Ave.',
-                                dad_fiddle => 1 };
+                                dad_fiddle =>1};
      ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
      if ($type eq 'create' or $type eq 'update') {
        ok($da_new->result()->is_error == 0,"$type->No Error");
@@ -94,7 +95,7 @@ foreach my $type (qw(create retrieve update )){
        ok($da_new->result()->DAD() eq 'Database::Accessor::Driver::Test',"$type->correct raw DAD class");
        ok($da_new->result()->DB() eq 'Data::Test',"$type->correct DB");
        ok(ref($da_new->result()->error) eq 'Database::Accessor::Driver::Test', "Got an object in the error class");
-       
+       warn("da result=".Dumper($da_new->result()->processed_container()));
        cmp_deeply(
             $container,
             {key=>1, street=>'131 Madison Ave.' },

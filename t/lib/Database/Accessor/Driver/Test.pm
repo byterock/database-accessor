@@ -33,7 +33,6 @@ sub _get_processed_container {
     else {
          push(@process_array,@{$in_container});
     }
-    
     foreach my $record (@process_array){
       my $processed_record = {dad_fiddle=>1};
       foreach my $key (keys(%{$record})){
@@ -42,10 +41,10 @@ sub _get_processed_container {
       push(@return_container,$processed_record);
     }
     if ($in_hash_class){
-      return shift(@process_array);
+      return shift(@return_container);
     }
     else{
-      return \@process_array;
+      return \@return_container;
     }
 }
 

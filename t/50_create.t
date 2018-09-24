@@ -57,7 +57,6 @@ ok( $@, 'No Create with empty hash-ref container ' );
 $container->{last_name}=1;
 ok($da->create( $data, $container ),"Container can be a non empty Hash-ref");
 ok($da->create( $data, $data ),"Container can be a Class");
-
 eval {
  $da->create( $data, $container_array );
 };
@@ -81,6 +80,7 @@ $container = {first_name=>'Bob',
               };
 
  $da->create( $data, $container );;
+
 
  my $in_container =   $da->result->in_container();
  
