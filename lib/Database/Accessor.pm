@@ -657,6 +657,8 @@ package Database::Accessor;
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
           
+                      $element->view($alias )
+              if ($alias and $right);
                         }
         }
         elsif (ref($element) eq 'Database::Accessor::If'){
