@@ -474,9 +474,11 @@ package Database::Accessor;
                 next
                   if ( !$field );
                 next
-                   if ((($field->view) 
-                    and ($field->view ne $self->view()->name()) 
-                         or ($self->view()->alias() and ($field->view ne $self->view()->alias()))));
+                  if (($field->view) 
+                       and ($field->view ne $self->view()->name())); 
+                   # if ((($field->view) 
+                    # and ($field->view ne $self->view()->name()) 
+                         # or ($self->view()->alias() and ($field->view ne $self->view()->alias()))));
                 $new_row->{$key} = $row->{$key};
             }
             push(@new_container,$new_row);        }
@@ -654,10 +656,8 @@ package Database::Accessor;
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
-            $element->view( $self->view()->alias() )
-              if ( $self->view()->alias() );
-            $element->view($alias )
-              if ($alias and $right);          }
+          
+                        }
         }
         elsif (ref($element) eq 'Database::Accessor::If'){
             foreach my $sub_element (@{$element->ifs()}){
