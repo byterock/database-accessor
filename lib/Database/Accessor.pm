@@ -786,8 +786,7 @@ package Database::Accessor;
 
          foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
             my $view = $link->to;
-            my $alias = !$view->alias ? $view->name : $view->alias;
-            $self->_check_element($link->conditions,0,$alias);
+            $self->_check_element($link->conditions,0,$view->name);
            push(@items,$link->conditions);        } 
          
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))

@@ -108,7 +108,6 @@ my $in_hash = {
                 left  => { name => 'country_id', },
                 right => {
                     name => 'id',
-                    view => 'a_country'
                 },
                 operator          => '=',
                 condition         => 'AND',
@@ -392,7 +391,7 @@ ok( $elements->[3]->predicates->left->right->left->right->view() eq 'People',
     'Fourth condition left->right->left->right inherit view' );
 
 $elements = $dad->links;
-# warn(Dumper($elements));
+
 foreach my $i ( 0 .. 1 ) {
     ok(
         $elements->[$i]->conditions->[0]->predicates->left->view() eq 'People',
@@ -400,7 +399,7 @@ foreach my $i ( 0 .. 1 ) {
     );
     ok(
         $elements->[$i]->conditions->[0]->predicates->right->view() eq
-          'a_country',
+          'country_hash2_link',
         "Link index $i  condition right does not inherit view"
     );
     ok(
@@ -416,7 +415,7 @@ foreach my $i ( 0 .. 1 ) {
     
    ok(
         $elements->[$i]->conditions->[1]
-          ->predicates->left->right->left->right->view() eq 'a_country',
+          ->predicates->left->right->left->right->view() eq 'country_hash2_link',
 "Link index $i  condition 2 left->right->left->right->left inherits view"
     );
           
@@ -425,11 +424,11 @@ foreach my $i ( 0 .. 1 ) {
 "Link index $i  condition 2 has AND Contdition"
     );
     ok(
-        $elements->[$i]->conditions->[0]->predicates->right->view() eq 'a_country',
+        $elements->[$i]->conditions->[0]->predicates->right->view() eq 'country_hash2_link',
         "Link index $i  condition 2 right- inherits view"
     );
     ok(
-        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
+        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'country_hash2_link',
         "Link index $i  condition 2 right- inherits view"
     );
 }
