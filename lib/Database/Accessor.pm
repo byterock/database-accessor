@@ -7,8 +7,23 @@
         use Moose::Role;
         with qw(Database::Accessor::Types);
         use MooseX::AlwaysCoerce;
+        use MooseX::Enumeration;
         use namespace::autoclean;
-     
+   
+        has da_result_set => (
+            traits    => ["Enumeration"],
+            is        => "rw",
+            enum      => [qw/ ArrayRef HashRef Class JSON /],
+            handles   => 1,
+            default   => 'ArrayRef'
+        );
+               has da_key_case => (
+            traits    => ["Enumeration"],
+            is        => "rw",
+            enum      => [qw/ Native Lower Upper /],
+            handles   => 1,
+            default   => 'Lower'
+        );  
        has [
         qw(da_compose_only
            da_no_effect
@@ -21,7 +36,8 @@
           default     => 0,
           traits => ['ENV'],
         );
-        
+         
+                 
         has da_warning => (
             is  => 'rw',
             isa => 'Int',
@@ -875,7 +891,9 @@ package Database::Accessor;
                 da_warning         => $self->da_warning,
                 da_raise_error_off => $self->da_raise_error_off,
                 da_suppress_view_name=> $self->da_suppress_view_name,
-                identity_index      => $self->_identity_index
+                da_result_set        => $self->da_result_set,
+                da_key_case          => $self->da_key_case,
+                identity_index       => $self->_identity_index
             }
         );
         my $result = Database::Accessor::Result->new(

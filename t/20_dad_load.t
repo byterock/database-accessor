@@ -8,7 +8,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 67;
+use Test::More tests => 84;
 use Test::Fatal;
 use Test::Deep;
 
@@ -20,7 +20,9 @@ my %read_write = (da_compose_only=>1,
                   da_no_effect=>1,
                   da_raise_error_off=>1,
                   da_warning=>1,
-                  da_suppress_view_name=>1);
+                  da_suppress_view_name=>1,
+                  da_result_set=>1,
+                  da_key_case=>1,);
 my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
 foreach my $attribute ( $da->meta->get_all_attributes ) {
@@ -65,11 +67,21 @@ ok( $da->no_create() == 1,   "Cannot Create" );
 ok( $da->no_retrieve() == 0, "Can Retrieve" );
 ok( $da->no_update() == 1,   "Cannot Update" );
 ok( $da->no_delete() == 1,   "Cannot Delete" );
-
+ok( $da->da_result_set() eq 'ArrayRef',   "Result set is an ArrayRef" );
+ok( $da->is_ArrayRef() == 1,   "is_ArrayRef is true" );
+ok( $da->is_HashRef() == 0,   "is_HashRef is false" );
+ok( $da->is_Class() == 0,   "is_Class is false" );
+ok( $da->is_JSON() == 0,   "is_JSON is false" );
+ok( $da->da_key_case() eq 'Lower', "Key Case is Lower" );
+ok( $da->is_Lower() == 1,   "is_Lower is true" );
+ok( $da->is_Native() == 0,   "is_Native is false" );
+ok( $da->is_Upper() == 0,   "is_Upper is false" );
 ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 my $da_new = Database::Accessor->new( { delete_requires_condition=>0,
                                         update_requires_condition=>0,
+                                        da_result_set=>'HashRef',
+                                        da_key_case=>'Upper',
                                         view => { name => 'person' },
                                         elements=>[{ name => 'street', view => 'person', }] } );
 
@@ -109,6 +121,11 @@ foreach my $type (qw(create retrieve update )){
             $da_new->result()->processed_container(),
             "Processed Container drops key!"
         );
+     }
+     else {
+        my $dad = $da_new->result()->error;
+        ok($dad->is_HashRef ==1,"DAD is_HashRef is true");
+        ok($dad->is_Upper ==1,"DAD is_is_Upper is true");
      }
 }
 
