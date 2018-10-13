@@ -105,7 +105,8 @@ my $in_hash = {
         type       => 'Left',
         conditions => [
             {
-                left  => { name => 'country_id', },
+                left  => { name => 'country_id',
+                           view => 'People' },
                 right => {
                     name => 'id',
                 },
@@ -116,7 +117,8 @@ my $in_hash = {
                 condition => 'AND',
                 left      => {
                     expression => '*',
-                    left       => { name => 'bonus', },
+                    left       => { name => 'bonus',
+                                    view => 'People' },
                     right      => {
                         function => 'abs',
                         left     => {
@@ -241,7 +243,8 @@ $da->add_condition(
         condition => 'AND',
         left      => {
             expression => '*',
-            left       => { name => 'bonus', },
+            left       => { name => 'bonus',
+                            view => 'People' },
             right      => {
                 function => 'abs',
                 left     => {
@@ -267,10 +270,11 @@ $da->add_link(
         type       => 'Left',
         conditions => [
             {
-                left  => { name => 'country_id', },
+                left  => { name => 'country_id', 
+                           view => 'People'},
                 right => {
                     name => 'id',
-                    #view => 'a_country'
+                   
                 },
                 operator          => '=',
                 condition         => 'AND',
@@ -279,7 +283,8 @@ $da->add_link(
                 condition => 'AND',
                 left      => {
                     expression => '*',
-                    left       => { name => 'bonus', },
+                    left       => { name => 'bonus',
+                                    view => 'People' },
                     right      => {
                         function => 'abs',
                         left     => {
@@ -392,6 +397,7 @@ ok( $elements->[3]->predicates->left->right->left->right->view() eq 'People',
 
 $elements = $dad->links;
 
+
 foreach my $i ( 0 .. 1 ) {
     ok(
         $elements->[$i]->conditions->[0]->predicates->left->view() eq 'People',
@@ -399,7 +405,7 @@ foreach my $i ( 0 .. 1 ) {
     );
     ok(
         $elements->[$i]->conditions->[0]->predicates->right->view() eq
-          'country_hash2_link',
+          'a_country',
         "Link index $i  condition right does not inherit view"
     );
     ok(
@@ -415,7 +421,7 @@ foreach my $i ( 0 .. 1 ) {
     
    ok(
         $elements->[$i]->conditions->[1]
-          ->predicates->left->right->left->right->view() eq 'country_hash2_link',
+          ->predicates->left->right->left->right->view() eq 'a_country',
 "Link index $i  condition 2 left->right->left->right->left inherits view"
     );
           
@@ -424,11 +430,11 @@ foreach my $i ( 0 .. 1 ) {
 "Link index $i  condition 2 has AND Contdition"
     );
     ok(
-        $elements->[$i]->conditions->[0]->predicates->right->view() eq 'country_hash2_link',
+        $elements->[$i]->conditions->[0]->predicates->right->view() eq 'a_country',
         "Link index $i  condition 2 right- inherits view"
     );
     ok(
-        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'country_hash2_link',
+        $elements->[$i]->conditions->[1]->predicates->right->view() eq 'a_country',
         "Link index $i  condition 2 right- inherits view"
     );
 }

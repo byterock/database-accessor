@@ -3,7 +3,7 @@ use Test::More 0.82;
 use Test::Fatal;
 use Data::Dumper;
 use lib ('D:\GitHub\database-accessor\lib');
-use Test::More tests => 8;
+use Test::More tests => 11;
 use Moose::Util qw(does_role);
 
 BEGIN {
@@ -70,7 +70,7 @@ $link = Database::Accessor::Link->new(
 );
 
 
-warn("this=".Dumper($link));
+
 ok( $link->conditions()->[0]->predicates()->left()->view eq 'table-1',
     "Left view is table-1" );
 
