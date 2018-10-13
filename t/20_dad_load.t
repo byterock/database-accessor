@@ -8,7 +8,7 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 84;
+use Test::More tests => 91;
 use Test::Fatal;
 use Test::Deep;
 
@@ -22,7 +22,8 @@ my %read_write = (da_compose_only=>1,
                   da_warning=>1,
                   da_suppress_view_name=>1,
                   da_result_set=>1,
-                  da_key_case=>1,);
+                  da_key_case=>1,
+                  da_result_class=>1);
 my $dad_role = consuming_class("Database::Accessor::Roles::Driver");
 
 foreach my $attribute ( $da->meta->get_all_attributes ) {
@@ -76,6 +77,8 @@ ok( $da->da_key_case() eq 'Lower', "Key Case is Lower" );
 ok( $da->is_Lower() == 1,   "is_Lower is true" );
 ok( $da->is_Native() == 0,   "is_Native is false" );
 ok( $da->is_Upper() == 0,   "is_Upper is false" );
+ok( !$da->da_result_class() , "result Class is undef" );
+
 ok( ref($da) eq 'Database::Accessor', "DA is a Database::Accessor" );
 
 my $da_new = Database::Accessor->new( { delete_requires_condition=>0,
@@ -149,4 +152,22 @@ like(
     qr /ArrayRefofElements can not be an empty array ref/,
     "Elements cannot be empty array ref"
 );
+
+$da_new->da_result_set("Class");
+
+like(
+    exception {$da_new->retrieve(Data::Test->new()) },
+    qr /You must supply a da_result_class when da_result_set is Class/,
+    "da_result_class required when set is Class"
+);
+$da_new->da_result_class("Test");
+ok($da_new->retrieve(Data::Test->new()),"Works when da_result_class is set");
+$da_new->da_result_class("xxxx");
+like(
+    exception {$da_new->retrieve(Data::Test->new()) },
+    qr /Can't locate the da_result_class file/,
+    "da_result_class has to be a valid Class in the path"
+);
+
+
 # $da = Database::Accessor->new();

@@ -17,7 +17,12 @@
             handles   => 1,
             default   => 'ArrayRef'
         );
-               has da_key_case => (
+      
+        has da_result_class => (
+            is  => 'rw',
+            isa => 'Str|Undef',
+            default     => undef,
+        );         has da_key_case => (
             traits    => ["Enumeration"],
             is        => "rw",
             enum      => [qw/ Native Lower Upper /],
@@ -572,8 +577,20 @@ package Database::Accessor;
     sub retrieve {
         my $self = shift;
         my ( $conn, $opt ) = @_;
-        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
+
+        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
+          
+        die( "You must supply a da_result_class when da_result_set is Class!" )
+          if ( $self->da_result_set() eq 'Class' and !$self->da_result_class() );
+          
+        if ($self->da_result_class()){
+            eval "require ".$self->da_result_class();
+            if ($@) {
+                $@ =~ s /locate/locate the da_result_class file /;
+                die( $@ );
+                            }        }
+
         my $container = {};
         return $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
@@ -667,25 +684,25 @@ package Database::Accessor;
              if ( $element->close_parentheses() );    };
     private_method _check_element => sub {
         my $self = shift;
-        my ($element,$right,$alias) = @_;
+        my ($element,$right) = @_;
 # warn("DA _check_element ".Dumper($element));
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
           
-                      $element->view($alias )
-              if ($alias and $right);
+                      # $element->view($alias )
+              # if ($alias and $right);
                         }
         }
         elsif (ref($element) eq 'Database::Accessor::If'){
             foreach my $sub_element (@{$element->ifs()}){
-                $self->_check_element($sub_element,0,$alias);
+                $self->_check_element($sub_element,0);
             }
         }
         elsif (ref($element) eq 'Database::Accessor::If::Then'){
-            $self->_check_element($element->right,1,$alias);
-            $self->_check_element($element->left,0,$alias);
-            $self->_check_element($element->then,0,$alias);
+            $self->_check_element($element->right,1);
+            $self->_check_element($element->left,0);
+            $self->_check_element($element->then,0);
             $element->condition(uc($element->condition))
               if ($element->condition() );
             $element->operator(uc($element->operator))
@@ -703,20 +720,20 @@ package Database::Accessor;
            $element->predicates->condition(uc( $element->predicates->condition))
              if ($element->predicates->condition() );
            $self->_check_parentheses($element->predicates);
-           $self->_check_element($element->predicates->right,1,$alias);
-           $self->_check_element($element->predicates->left,0,$alias);
+           $self->_check_element($element->predicates->right,1);
+           $self->_check_element($element->predicates->left,0);
        }
        elsif (ref($element) eq 'ARRAY'){
            
            foreach my $sub_element (@{$element}){
-               $self->_check_element($sub_element,0,$alias);
+               $self->_check_element($sub_element,0);
             }       }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
-            $self->_check_parentheses($element);            $self->_check_element($element->right,1,$alias);
-            $self->_check_element($element->left,0,$alias);
+            $self->_check_parentheses($element);            $self->_check_element($element->right,1);
+            $self->_check_element($element->left,0);
        }
 
     };
@@ -801,8 +818,8 @@ package Database::Accessor;
             @{ $self->elements } );
 
          foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
-            my $view = $link->to;
-            $self->_check_element($link->conditions,0,$view->name);
+            # my $view = $link->to;
+            # $self->_check_element($link->conditions,0,$view->name);
            push(@items,$link->conditions);        } 
          
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
@@ -893,6 +910,7 @@ package Database::Accessor;
                 da_suppress_view_name=> $self->da_suppress_view_name,
                 da_result_set        => $self->da_result_set,
                 da_key_case          => $self->da_key_case,
+                da_result_class      => $self->da_result_class,
                 identity_index       => $self->_identity_index
             }
         );
@@ -1270,36 +1288,66 @@ package Database::Accessor;
         );
         1;
     }
-    {
+   
+    {
 
-        package 
-           Database::Accessor::Link;
-        use Moose;
-        extends 'Database::Accessor::Base';
-       
-               has conditions => (
-            isa => 'ArrayRefofConditions',
-            is  => 'ro',
-            traits  => ['Array'],
-            handles => { condition_count => 'count', },
-            default => sub { [] },
-        );
+    package 
+        Database::Accessor::Link;
+    use Moose;
+    extends 'Database::Accessor::Base';
 
-        1;
-        has to => (
-            is       => 'rw',
-            isa      => 'View',
-            required => 1,
-            alias    => [qw( view to_view )],
-        );
-
-        has type => (
-            is       => 'rw',
-            isa      => 'Link',
-            required => 1,
-        );
-        1;
+    sub _check_elements {
+        my $self = shift;
+        my ( $ops, $view_name ) = @_;
+        if ( exists( $ops->{name} ) ) {
+            $ops->{view} = $view_name
+               unless($ops->{view});
+        }
+        else {
+            $self->_check_elements( $ops->{right}, $view_name )
+              if exists( $ops->{right} );
+            $self->_check_elements( $ops->{left}, $view_name )
+              if exists( $ops->{left} );
+        }
     }
+    around BUILDARGS => sub {
+        my $orig  = shift;
+        my $class = shift;
+        my $ops   = shift(@_);
+        use Data::Dumper;
+        # warn( "JSP  Link BUILDARGS " . Dumper($ops) );
+        my $view_name = $ops->{to}->{name};
+        $view_name = $ops->{to}->{alias}
+          if ( exists( $ops->{to}->{alias} ) );
+        foreach my $condition ( @{ $ops->{conditions} } ) {
+            $class->_check_elements( $condition->{left},  $view_name );
+            $class->_check_elements( $condition->{right}, $view_name );
+        }
+        return $class->$orig($ops);
+    };
+    has conditions => (
+        isa     => 'ArrayRefofConditions',
+        is      => 'ro',
+        traits  => ['Array'],
+        handles => { condition_count => 'count', },
+        default => sub { [] },
+    );
+
+    1;
+    has to => (
+        is       => 'rw',
+        isa      => 'View',
+        required => 1,
+        alias    => [qw( view to_view )],
+    );
+
+    has type => (
+        is       => 'rw',
+        isa      => 'Link',
+        required => 1,
+    );
+    1;
+}
 
     # {
 
