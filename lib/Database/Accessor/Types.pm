@@ -10,16 +10,16 @@ use lib 'D:\GitHub\database-accessor\lib';
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
 use Database::Accessor::Constants;
-use Database::Accessor::View;
-use Database::Accessor::Element;
-use Database::Accessor::Predicate;
-use Database::Accessor::Condition;
-use Database::Accessor::Param;
-use Database::Accessor::Link;
-use Database::Accessor::Function;
-use Database::Accessor::Expression;
-use Database::Accessor::If;
-use Database::Accessor::If::Then;
+# # use Database::Accessor::View;
+# use Database::Accessor::Element;
+# use Database::Accessor::Predicate;
+# use Database::Accessor::Condition;
+# use Database::Accessor::Param;
+# use Database::Accessor::Link;
+# use Database::Accessor::Function;
+# use Database::Accessor::Expression;
+# use Database::Accessor::If;
+# use Database::Accessor::If::Then;
 
 class_type 'If',       { class => 'Database::Accessor::If' };
 class_type 'Then',       { class => 'Database::Accessor::If::Then' };
@@ -45,6 +45,13 @@ subtype 'ArrayRefofElements'   => as
   message {
     "ArrayRefofElements can not be an empty array ref";
   };
+  
+subtype 'ArrayRefofGroupElements'   => as
+  'ArrayRef[Element|Function]',
+   where { scalar(@{$_})<=0 ? 0 : 1; },
+  message {
+    "ArrayRefofGroupElements can not be an empty array ref";
+  };
 subtype 'ArrayRefofExpressions' => as
   'ArrayRef[Element|Param|Function|Expression]';
 # subtype 'ArrayRefofFunctions' => as
@@ -61,13 +68,7 @@ subtype 'NumericOperator', as 'Str', where {
       . _try_one_of( Database::Accessor::Constants::NUMERIC_OPERATORS() );
 };
 
-# subtype 'Aggregate',
-  # as 'Str',
-  # where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
-  # message {
-    # "The Aggrerate '$_', is not a valid Accessor Aggregate!"
-      # . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
-  # };
+
 
 subtype 'Operator',
   as 'Str',
@@ -143,6 +144,46 @@ coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
 
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
+
+
+coerce 'ArrayRefofGroupElements', from 'ArrayRef', via {
+    
+    my ($in) = $_;
+    my $objects = [];
+    foreach my $object ( @{$in} ) {
+        if ( ref($object) eq "ARRAY" ) {
+           
+            push( @{$objects}, @{$object} );
+        }
+        else {
+            if ( exists( $object->{function} ) ) {
+                die "Attribute (view_elements) does not pass the type constraint because: 
+                     Validation failed for 'ArrayRefofGroupElements'. 
+                     The Aggrerate '$object->{function}', is not a valid Accessor Aggregate! "
+                     ._try_one_of( Database::Accessor::Constants::AGGREGATES())
+                  unless (exists( Database::Accessor::Constants::AGGREGATES->{ uc($object->{function}) } ));
+                    
+                $object->{function} = uc($object->{function});
+                $object = Database::Accessor::Function->new( %{$object} );
+            }
+            else {
+                $object = Database::Accessor::Element->new( %{$object} );
+
+            }
+            push( @{$objects}, _element_coerce($object) );
+        }
+    }
+    return $objects;
+     
+};
+
+# subtype 'Aggregate',
+  # as 'Str',
+  # where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
+  # message {
+    # "The Aggrerate '$_', is not a valid Accessor Aggregate!"
+      # . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
+  # };
 
 sub _right_left_coerce {
     my ($in) = @_;

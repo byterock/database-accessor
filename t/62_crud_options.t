@@ -54,8 +54,10 @@ foreach my $key (keys(%options)){
     "Caught $key must be correct type "
   );
 }
-$da->retrieve($data,{only_elements=>{first_name=>1,last_name=>1}});
+$da->only_elements({first_name=>1,user_id=>1});
+$da->retrieve($data);
 my $dad = $da->result->error(); #note to others this is a kludge for testing
+
 ok($dad->element_count == 2,"Only two elements");
 ok($dad->elements->[0]->name() eq 'first_name',"First name in correct place");
-ok($dad->elements->[1]->name() eq 'last_name',"Last name in correct place");
+ok($dad->elements->[1]->name() eq 'user_id',"user_id in correct place");

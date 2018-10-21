@@ -324,6 +324,8 @@ $da->add_sort(
         }
     }
 );
+
+# warn("da=".Dumper($da));
 $da->retrieve( Data::Test->new() );
 my $dad      = $da->result->error();
 my $elements = $dad->elements;
