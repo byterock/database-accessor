@@ -180,7 +180,6 @@ $in_hash->{elements} = [
 ];
 
 $da = Database::Accessor->new($in_hash);
-
 $da->retrieve( Data::Test->new() );
 $dad = $da->result->error();
 

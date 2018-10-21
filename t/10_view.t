@@ -1,6 +1,7 @@
 #!perl
 use Test::More 0.82;
 use lib ('..\t\lib');
+use lib ('..\lib');
 use Test::More tests => 8;
 use Test::Fatal;
 use Moose::Util qw(does_role);

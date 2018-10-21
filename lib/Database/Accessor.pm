@@ -273,6 +273,17 @@ package Database::Accessor;
 "Returns an ArrayRef of HasRefs the DADs that are installed. The keys in the HashRef are 'DAD=>DAD name,class=>the DB class,ver=>the DAD Version'"
     );
 
+    has only_elements => (
+        isa         => 'HashRef',
+        traits      => ['Hash','MooseX::MetaDescription::Meta::Trait'],
+        is          => 'rw',
+        description => { not_in_DAD => 1 },
+        default => sub { {} },
+        handles   => {
+            only_elements_is_empty => 'is_empty',
+            only_elements_exists   => 'exists'
+        },
+    );
     has no_create => (
         is          => 'ro',
         isa         => 'Bool',
@@ -740,25 +751,36 @@ package Database::Accessor;
 
     private_method get_dad_elements => sub {
         my $self = shift;
-        my ($action,$opt) = @_;
-       
+        my ($action,$gather) = @_;
         $self->_identity_index(-1);
         my @allowed;
-        for (my $index=0; $index < scalar(@{$self->elements()} ); $index++) {
+        my @elements = @{$self->elements()};
+        
+        @elements = @{$gather->view_elements()}
+          if (ref($gather) and $gather->view_elements() and $gather->view_count());
+
+        for (my $index=0; $index < scalar(@elements); $index++) {
             my $element = $self->elements()->[$index];
+            $element = $gather->view_elements()->[$index]
+               if (ref($gather) and $gather->view_elements() and $gather->view_count());
+               
             if (ref($element) eq 'Database::Accessor::Param'){
                 push(@allowed,$element)
-                  if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
+                  if (  $action eq Database::Accessor::Constants::RETRIEVE);
                 next;
             }
             if (ref($element) eq 'Database::Accessor::Param'){
                 push(@allowed,$element)
-                  if (  $action eq Database::Accessor::Constants::RETRIEVE);                 
+                  if (  $action eq Database::Accessor::Constants::RETRIEVE);
                 next;
             }
-            next 
-              if (exists($opt->{only_elements})
-                  and !exists($opt->{only_elements}->{$element->name}));
+
+            next 
+              if (!$self->only_elements_is_empty() 
+                  and (!$self->only_elements_exists($element->name) 
+                  and !($element->alias() 
+                  and $self->only_elements_exists($element->alias) )));
+               
              next
               if (
                 $action eq Database::Accessor::Constants::CREATE
@@ -821,13 +843,16 @@ package Database::Accessor;
             # my $view = $link->to;
             # $self->_check_element($link->conditions,0,$view->name);
            push(@items,$link->conditions);        } 
-         
+       
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
           if ( $self->gather());
-          
+        push(@items,@{ $self->gather->view_elements })
+           if ($self->gather() and $self->gather->view_elements);
         push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
           if ( $self->dynamic_gather());
-       
+        push(@items,@{ $self->dynamic_gather->view_elements })
+           if ($self->dynamic_gather() and $self->dynamic_gather->view_elements);
+        
         foreach my $item (@items) {            $self->_inc_conditions()
               if (ref($item) eq 'Database::Accessor::Condition');
             if (ref($item) eq 'ARRAY'){                $self->_reset_conditions();
@@ -853,7 +878,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $conn,$new_container, $opt ) = @_;
         
-       
+      
       
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
@@ -877,28 +902,39 @@ package Database::Accessor;
 
         $self->check_options($action, $opt )
           if ($opt);
-          
+           
         $self->_elements_check($action);
+        
+
         my $gather = undef;
         if ($action eq Database::Accessor::Constants::RETRIEVE and ($self->gather() || $self->dynamic_gather()) ){
+           
            my @elements;
            my @conditions;
+           my @view_elements;
            if ($self->gather()) {               
               push(@elements,@{$self->gather()->elements()});
               push(@conditions,@{$self->gather()->conditions});
+              push(@view_elements,@{$self->gather()->view_elements})
+                if ($self->gather()->view_elements());
            }
            if ($self->dynamic_gather()){
               push(@elements, @{$self->dynamic_gather()->elements()});
               push(@conditions,@{$self->dynamic_gather()->conditions});
+              push(@view_elements,@{$self->dynamic_gather()->view_elements})
+                if ($self->dynamic_gather()->view_elements());
            }
+           
            $gather = Database::Accessor::Gather->new({elements=>\@elements,
                                                       conditions=>\@conditions});
+            $gather->view_elements(\@view_elements)
+              if (@view_elements);
         }
-        
+       
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => $self->get_dad_elements($action,$opt),
+                elements           => $self->get_dad_elements($action,$gather),
                 conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gather             => $gather,
@@ -1278,6 +1314,13 @@ package Database::Accessor;
             handles => { element_count => 'count',
                        },
             required=>1,
+        );
+        has view_elements => (
+            isa => 'ArrayRefofGroupElements',
+            is  => 'rw',
+            traits  => ['Array'],
+            handles => { view_count => 'count',
+                       },
         );
         has conditions => (
             isa => 'ArrayRefofConditions',

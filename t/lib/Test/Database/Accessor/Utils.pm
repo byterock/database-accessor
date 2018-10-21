@@ -11,8 +11,14 @@ use warnings;
 sub deep_element {
     my ( $in, $da, $dad, $type ) = @_;
 
+
     foreach my $index ( 0 .. scalar( @{$in} - 1 ) ) {
-        bless( $in->[$index], "Database::Accessor::Element" );
+        if (exists($in->[$index]->{function})){
+            bless( $in->[$index], "Database::Accessor::Function" );
+        }
+        else {
+            bless( $in->[$index], "Database::Accessor::Element" );
+        }
         cmp_deeply(
             $da->[$index],
             methods( %{ $in->[$index] } ),

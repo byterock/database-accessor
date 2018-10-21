@@ -4,7 +4,7 @@ use Test::Fatal;
 use Data::Dumper;
 use Test::More tests => 17;
 use Moose::Util qw(does_role);
-
+use lib ('..\lib');
 BEGIN {
     use_ok('Database::Accessor');
     use_ok('Database::Accessor::Predicate');

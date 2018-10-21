@@ -79,6 +79,22 @@ my $in_hash = {
                 view => 'People6'
             }
         ],
+        view_elements => [
+             {
+                name => 'first_name',
+                view => 'People4'
+            },
+            {
+                name => 'last_name',
+                view => 'People5'
+            },
+            {
+                function => 'count',
+                left     => { name => 'user_id',
+                              view => 'People6'
+                            }
+            }      
+        ],
         conditions => [
             {
                 left => {
@@ -112,8 +128,23 @@ $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
 
 
-Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
+# warn("here".Dumper($dad));
+
+Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
     $da->gather->elements, $dad->gather->elements, 'Gather' );
+  $da->retrieve( Data::Test->new(), $return );
+ 
+ $dad = $da->result->error();
+ Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{view_elements},
+     $da->gather->view_elements, $dad->gather->view_elements, 'Gather View' );
+
+ $da->retrieve( Data::Test->new(), $return );
+ $dad = $da->result->error();
+
+ Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{view_elements},
+     $da->gather->view_elements, $dad->elements, 'Elements' );
+
+
 foreach my $type (qw(create update delete)){
    $da->$type( Data::Test->new(), {test=>1} );
    $dad = $da->result->error(); #note to others this is a kludge for testing

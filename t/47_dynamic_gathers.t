@@ -71,8 +71,8 @@ my $gather2 = {
                     name => 'last_name',
                     view => 'People7'
                 },
-                right             => { value => 'test' },
-                operator          => '=',
+                right    => { value => 'test' },
+                operator => '=',
                
             },
         ]};
@@ -132,5 +132,48 @@ $gather2 = {
  $da->retrieve( Data::Test->new(), $return );
  ok( ref( $da->dynamic_gather()->elements->[0] ) eq "Database::Accessor::If",
     'dynamic_gather()->elements->[0] is a If' );
+
+
+
+$da->reset_gather();
+$gather2 = {        
+       elements => [
+            {
+              name => 'first_name',
+              view => 'People4'
+            },
+            { name => 'user_id',
+              view => 'People6'
+            }
+        ],
+        view_elements => [
+             {
+               name => 'first_name',
+               view => 'People4'
+            },
+            {
+              function => 'count',
+              left     => { name => 'user_id',
+                            view => 'People6'}
+            }      
+        ],
+        conditions => [
+            {
+                left => {
+                    name => 'last_name',
+                    view => 'People7'
+                },
+                right    => { value => 'test' },
+                operator => '=',
+               
+            },
+        ]};
+ $da->add_gather($gather2);
+ $da->retrieve( Data::Test->new(), $return );
+ $dad = $da->result->error();
  
+
+ ok( ref($dad->elements->[1] ) eq "Database::Accessor::Function",
+    'elements 1 is a function' );
+  
 1;
