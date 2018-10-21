@@ -13,11 +13,11 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 12;
+use Test::More tests => 24;
 
 
-
-BEGIN {
+
+BEGIN {
     use_ok('Database::Accessor::Gather');
 }
 
@@ -44,8 +44,8 @@ my $gather = Database::Accessor::Gather->new( { elements => [
 ok( ref($gather) eq 'Database::Accessor::Gather', "gather is a Gather" );
 isa_ok($gather,"Database::Accessor::Base", "Gather is a Database::Accessor::Base");
 
-
-
+
+
 my $in_hash = {
     delete_requires_condition => 0,
     update_requires_condition => 0,
@@ -127,10 +127,10 @@ my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
 
-
+
 # warn("here".Dumper($dad));
-
-Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
+
+Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{elements},
     $da->gather->elements, $dad->gather->elements, 'Gather' );
   $da->retrieve( Data::Test->new(), $return );
  
@@ -144,7 +144,7 @@ my $dad = $da->result->error(); #note to others this is a kludge for testing
  Test::Database::Accessor::Utils::deep_element( $in_hash->{gather}->{view_elements},
      $da->gather->view_elements, $dad->elements, 'Elements' );
 
-
+
 foreach my $type (qw(create update delete)){
    $da->$type( Data::Test->new(), {test=>1} );
    $dad = $da->result->error(); #note to others this is a kludge for testing
