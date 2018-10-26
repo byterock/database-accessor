@@ -164,6 +164,24 @@ package Database::Accessor;
             }
         }
 
+        my @items;
+        push( @items,
+            @{ $self->conditions },
+            @{ $self->sorts },
+             @{ $self->elements } );
+
+        foreach my $link (@{ $self->links }){
+            my $view = $link->to;
+            $self->_check_element($link->conditions,0,$view->name);
+            push(@items,$link->conditions);
+        } 
+       
+        push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
+          if ( $self->gather());
+        push(@items,@{ $self->gather->view_elements })
+            if ($self->gather() and $self->gather->view_elements);
+
+        $self->_elements_check(\@items,"new","static");        
         my %saved = %$self;
         tie(
             %$self,
@@ -438,12 +456,31 @@ package Database::Accessor;
         traits   => ['MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
+        trigger   => \&_check_elements_present
     );
 
+    sub _check_elements_present {
+        my ( $self, $child ) = @_;
+        my @check_elements;
+                if (ref($child) eq 'Database::Accessor::Gather'){
+           push( @check_elements, @{$child->view_elements})
+             if($child->view_elements);
+        }
+        foreach my $element (@check_elements){
+            next 
+              unless(ref($element) eq 'Database::Accessor::Element');
+ 
+            die( "Gather view_element "
+                 .$element->name()
+                 ." in not in the elements array! Only elements from that array can be added" )
+              unless ($self->get_element_by_name($element->name()));
+        }
+    }    
     sub add_gather {
       my $self = shift;
       my ($gather) = @_;
       $self->dynamic_gather($gather);
+      
     }
     sub reset_gather {
       my $self = shift;
@@ -693,6 +730,7 @@ package Database::Accessor;
              if ( $element->open_parentheses() );
            $self->_dec_parens()
              if ( $element->close_parentheses() );    };
+    
     private_method _check_element => sub {
         my $self = shift;
         my ($element,$right) = @_;
@@ -826,34 +864,38 @@ package Database::Accessor;
         return \@allowed;
     };
     
-    private_method _elements_check => sub {
-        my $self = shift;
-        my ($action) = @_;
-        $self->_reset_parens();
-        $self->_reset_conditions(); 
-        my @items;
-        push( @items,
-            @{ $self->conditions },
-            @{ $self->dynamic_conditions },
-            @{ $self->sorts },
-            @{ $self->dynamic_sorts },
-            @{ $self->elements } );
+    # private_method _elements_check => sub {
+        # my $self = shift;
+        # my ($action) = @_;
+        # $self->_reset_parens();
+        # $self->_reset_conditions(); 
+        # my @items;
+        # push( @items,
+            # @{ $self->conditions },
+            # @{ $self->dynamic_conditions },
+            # @{ $self->sorts },
+            # @{ $self->dynamic_sorts },
+            # @{ $self->elements } );
 
-         foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
-            # my $view = $link->to;
-            # $self->_check_element($link->conditions,0,$view->name);
-           push(@items,$link->conditions);        } 
+         # foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
+            # # my $view = $link->to;
+            # # $self->_check_element($link->conditions,0,$view->name);
+           # push(@items,$link->conditions);        # } 
        
-        push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
-          if ( $self->gather());
-        push(@items,@{ $self->gather->view_elements })
-           if ($self->gather() and $self->gather->view_elements);
-        push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
-          if ( $self->dynamic_gather());
-        push(@items,@{ $self->dynamic_gather->view_elements })
-           if ($self->dynamic_gather() and $self->dynamic_gather->view_elements);
+        # push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
+          # if ( $self->gather());
+        # push(@items,@{ $self->gather->view_elements })
+           # if ($self->gather() and $self->gather->view_elements);
+        # push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
+          # if ( $self->dynamic_gather());
+        # push(@items,@{ $self->dynamic_gather->view_elements })
+           # if ($self->dynamic_gather() and $self->dynamic_gather->view_elements);
         
-        foreach my $item (@items) {            $self->_inc_conditions()
+            private_method _elements_check => sub {
+        my $self = shift;
+        my ($items,$action,$type) = @_;
+        
+        foreach my $item (@{$items}) {            $self->_inc_conditions()
               if (ref($item) eq 'Database::Accessor::Condition');
             if (ref($item) eq 'ARRAY'){                $self->_reset_conditions();
                 foreach my $condition (@{$item}){
@@ -868,7 +910,7 @@ package Database::Accessor;
 
         die " Database::Accessor->"
           . lc($action)
-          . " Unbalanced parentheses in your static or dynamic attributes. Please check them!"
+          . " Unbalanced parentheses in your ".$type." attributes. Please check them!"
           if ( $self->_parens_are_open() );
 
     };
@@ -903,7 +945,25 @@ package Database::Accessor;
         $self->check_options($action, $opt )
           if ($opt);
            
-        $self->_elements_check($action);
+        $self->_reset_parens();
+        $self->_reset_conditions(); 
+        my @items;
+        push( @items,
+             @{ $self->dynamic_conditions },
+             @{ $self->dynamic_sorts },
+           );
+        foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
+            push(@items,$link->conditions);
+        } 
+       
+        push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
+          if ( $self->dynamic_gather());
+        push(@items,@{ $self->dynamic_gather->view_elements })
+           if ($self->dynamic_gather() and $self->dynamic_gather->view_elements);
+        push(@items,@{ $self->dynamic_gather->conditions })
+           if ($self->dynamic_gather() and $self->dynamic_gather->conditions);
+           
+        $self->_elements_check(\@items,$action,"dynamic");
         
 
         my $gather = undef;

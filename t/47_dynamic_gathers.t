@@ -11,7 +11,8 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
-
+use Test::Deep;
+use Test::Fatal;
 use Test::More tests => 20;
 
 
@@ -176,4 +177,36 @@ $gather2 = {
  ok( ref($dad->elements->[1] ) eq "Database::Accessor::Function",
     'elements 1 is a function' );
   
+  $da->reset_gather();
+
+  $gather2 = {        
+       elements => [
+            {
+              name => 'first_name',
+              view => 'People4'
+            },
+            { name => 'salary',
+              view => 'People'
+            }
+        ],
+        view_elements => [
+             {
+               name => 'first_name',
+               view => 'People4'
+            },
+            {
+               name => 'salary',
+               view => 'People4'
+            }
+        ],
+        };
+        
+ 
+ 
+like(
+    exception { $da->add_gather($gather2) },
+    qr /in not in the elements array! Only elements from that array can be added/,
+    "Elements not in the elements attribute are not allowed"
+);
+
 1;

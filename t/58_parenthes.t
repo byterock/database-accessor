@@ -227,12 +227,14 @@ my $return = {};
 
 ok( $da->retrieve( Data::Test->new(), $return ), "Balanced parentheses" );
 
-$da = Database::Accessor->new($in_hash2);
+
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception {$da = Database::Accessor->new($in_hash2) },
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught unbalanced parentheses"
 );
+
+$da = Database::Accessor->new($in_hash);
 
 $da->add_condition(
     {
@@ -242,11 +244,12 @@ $da->add_condition(
         },
         right             => { value => 'test->5' },
         operator          => '=',
-        open_parentheses  => 0,
-        close_parentheses => 1,
+        # open_parentheses  => 0,
+        # close_parentheses => 1,
         condition         => 'AND',
     }
 );
+
 ok( $da->retrieve( Data::Test->new(), $return ), "Balanced parentheses" );
 
 $da->add_condition(
@@ -264,7 +267,7 @@ $da->add_condition(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Caught parentheses"
 );
 
@@ -329,11 +332,9 @@ ok( $da->result->error->gather->conditions->[1]->predicates->operator() eq '=',
     'Second gather condition predicate is =' );
 
 
-$da = Database::Accessor->new($in_hash4);
-
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception { $da = Database::Accessor->new($in_hash4) },
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught unbalanced parentheses"
 );
 
@@ -415,11 +416,11 @@ ok(
     "Balanced nested elements parentheses"
 );
 delete( $in_hash->{elements}->[0]->{left}->{open_parentheses} );
-$da = Database::Accessor->new($in_hash);
+
 
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception {$da = Database::Accessor->new($in_hash)},
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught left open parentheses missing"
 );
 
@@ -427,32 +428,30 @@ $in_hash->{elements}->[0]->{left}->{open_parentheses} = 1;
 
 delete( $in_hash->{elements}->[0]->{left}->{close_parentheses} );
 
-$da = Database::Accessor->new($in_hash);
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception { $da = Database::Accessor->new($in_hash) },
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught left close parentheses missing"
 );
 
 $in_hash->{elements}->[0]->{left}->{close_parentheses} = 1;
 delete( $in_hash->{elements}->[0]->{right}->{left}->{close_parentheses} );
 
-$da = Database::Accessor->new($in_hash);
+
 
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception { $da = Database::Accessor->new($in_hash) },
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught right left close parentheses missing"
 );
 
 $in_hash->{elements}->[0]->{right}->{left}->{close_parentheses} = 1;
 delete( $in_hash->{elements}->[0]->{right}->{left}->{open_parentheses} );
 
-$da = Database::Accessor->new($in_hash);
 
 like(
-    exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    exception { $da = Database::Accessor->new($in_hash) },
+    qr /Unbalanced parentheses in your static attributes/,
     "Caught right left open parentheses missing"
 );
 
@@ -545,7 +544,7 @@ $da->add_condition(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Conditions caught left open parentheses missing"
 );
 $da->reset_conditions();
@@ -561,7 +560,7 @@ $da->add_condition(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Conditions caught left close parentheses missing"
 );
 $expression->{left}->{close_parentheses} = 1;
@@ -580,7 +579,7 @@ $da->add_condition(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Conditions caught right left close parentheses missing"
 );
 
@@ -597,7 +596,7 @@ $da->add_condition(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Conditions caught right left open parentheses missing"
 );
 
@@ -690,7 +689,7 @@ $da->add_link(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Link caught left open parentheses missing"
 );
 
@@ -717,7 +716,7 @@ $da->add_link(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Link caught  left close parentheses missing"
 );
 $expression->{left}->{close_parentheses} = 1;
@@ -746,7 +745,7 @@ $da->add_link(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Link caught  right left close parentheses missing"
 );
 
@@ -773,7 +772,7 @@ $da->add_link(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Link caught  right left open parentheses missing"
 );
 
@@ -828,7 +827,7 @@ $da->add_gather(
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Gather caught left open parentheses missing"
 );
 
@@ -855,7 +854,7 @@ $da->add_gather(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Gather caught  left close parentheses missing"
 );
 $expression->{left}->{close_parentheses} = 1;
@@ -883,7 +882,7 @@ $da->add_gather(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Gather caught  right left close parentheses missing"
 );
 
@@ -910,7 +909,7 @@ $da->add_gather(
 );
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Gather caught  right left open parentheses missing"
 );
 
@@ -937,7 +936,7 @@ $da->add_sort($expression);
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Sort caught left open parentheses missing"
 );
 
@@ -948,7 +947,7 @@ delete( $expression->{left}->{close_parentheses} );
 $da->add_sort($expression);
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Sort caught  left close parentheses missing"
 );
 $expression->{left}->{close_parentheses} = 1;
@@ -960,7 +959,7 @@ $da->add_sort($expression);
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Sort caught  right left close parentheses missing"
 );
 
@@ -972,7 +971,7 @@ $da->add_sort($expression);
 
 like(
     exception { $da->retrieve( Data::Test->new() ) },
-    qr /Unbalanced parentheses in your static or dynamic attributes/,
+    qr /Unbalanced parentheses in your dynamic attributes/,
     "Sort caught  right left open parentheses missing"
 );
 
