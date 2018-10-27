@@ -148,7 +148,7 @@ my $params = {
                 conditions => [
                     {
                         left  => { name => 'id',
-                                   view => 'p2' },
+                                   },
                         right => {
                             name => 'id',
                             view => 'People'
@@ -169,14 +169,22 @@ my $params = {
 };
 
 foreach my $in_action (sort(keys(%{$params}))) {
-    
+    #
+    #'link'){ #
         my $action    =  $params->{$in_action}->{action};
     my $da        = Database::Accessor->new($in_hash);
     my $command   = "add_" . $action;
     my $exception = $params->{$in_action}->{exception};
+   
     like(
         exception { $da->$command( $params->{$in_action}->{query} ) },
          qr /$exception/,
-"methos add_$action attribute->".$params->{$in_action}->{caption}." is only allowed to have elements that are in the elements attribute"
+"method add_$action attribute->".$params->{$in_action}->{caption}." is only allowed to have elements that are in the elements attribute"
     );
+ # warn(Dumper($da));
 }
+# my $da        = Database::Accessor->new($in_hash);
+
+# my $da        = Database::Accessor->new($in_hash);
+# warn(Dumper($da->elements->[0]->_lookup_name));# warn("the end =".$da->get_element_by_lookup("Peoplefirst_name"));
+# warn("the end2 =".$da->get_element_by_name("first_name"));

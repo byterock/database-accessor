@@ -12,12 +12,16 @@ BEGIN {
 }
 
 my $street =
-  Database::Accessor::Element->new( { name => 'street', view => 'person', } );
+  Database::Accessor::Element->new( { name => 'street', view => 'person', _lookup_name=>'dddd' } );
 ok( ref($street) eq 'Database::Accessor::Element', "Street is an Element" );
 ok(
     does_role( $street, "Database::Accessor::Roles::Alias" ) eq 1,
     "View does role Database::Accessor::Roles::Alias"
 );
+
+warn($street->_lookup_name());
+
+
 # ok( $street->aggregate('AvG'), 'can do an Average' );
 # like(
    # exception {$street->aggregate('Avgx');},
