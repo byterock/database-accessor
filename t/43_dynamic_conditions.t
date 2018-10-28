@@ -17,7 +17,7 @@ my $in_hash = {
     conditions => [
         {
             left => {
-                name => 'last_name2',
+                name => 'last_name',
                 view => 'People'
             },
             right           => { value => 'test' },
@@ -29,7 +29,7 @@ my $in_hash = {
         {
             condition => 'AND',
             left      => {
-                name => 'first_name3',
+                name => 'first_name',
                 view => 'People'
             },
             right           => { value => 'test' },

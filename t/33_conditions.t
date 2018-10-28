@@ -27,14 +27,14 @@ my $in_hash = {
             view => 'People'
         },
         {
-            name => 'user_id',
-            view => 'People'
+            name => 'Price',
+            view => 'People' 
         }
     ],
     conditions => [
         {
             left => {
-                name => 'First_1',
+                name => 'first_name',
                 view => 'People'
             },
             right           => { value => 'test' },
@@ -46,7 +46,7 @@ my $in_hash = {
         {
             condition => 'AND',
             left      => {
-                name => 'First_2',
+                name => 'last_name',
                 view => 'People'
             },
             right           => { value => 'test' },
@@ -63,13 +63,12 @@ my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
 
-#warn(Dumper($da));
+# warn(Dumper($da));
+
 Test::Database::Accessor::Utils::deep_predicate(
     $in_hash->{conditions}, $da->conditions(),
     $dad->conditions(),     'conditions'
 );
-
-
 
 my $in_hash3 = {
     view     => { name => 'People' },
@@ -83,19 +82,19 @@ my $in_hash3 = {
             view => 'People'
         },
         {
-            name => 'user_id',
+            name => 'Price',
             view => 'People'
         }
     ],
     conditions => {
         left => {
-            name => 'second_1',
+            name => 'last_name',
             view => 'People'
         },
         right           => { value => 'test' },
         operator        => '=',
-        open_parentheses  => 1,
-        close_parentheses => 0,
+        # open_parentheses  => 1,
+        # close_parentheses => 1,
         condition       => 'AND',
     },
 };
@@ -114,7 +113,7 @@ ok(
 $in_hash3->{conditions} = 
     {
         left => {
-            name => 'second_1',
+            name => 'last_name',
             view => 'People'
         },
         right =>{
@@ -123,12 +122,13 @@ $in_hash3->{conditions} =
                 left      => { name  => 'Price', },
                 right     => { value => '10' },
                 operator  => '<',
-                then => { name  => 'price' }
+                then => { name  => 'Price' }
             },
-            { then => { name => 'prices' } }
+            { then => { name => 'Price' } }
         ]},
         operator        => '=',
     };
+    
 $da2 = Database::Accessor->new($in_hash3); 
 
 

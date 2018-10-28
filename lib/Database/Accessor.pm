@@ -179,7 +179,7 @@ package Database::Accessor;
 
         foreach my $link (@{ $self->links }){
             my $view = $link->to;
-            $self->_check_element($link->conditions,0,$view->name);
+            $self->_elements_check($link->conditions,"new","static");
             push(@items,$link->conditions);
         } 
        
@@ -188,7 +188,10 @@ package Database::Accessor;
         push(@items,@{ $self->gather->view_elements })
             if ($self->gather() and $self->gather->view_elements);
 
-        $self->_elements_check(\@items,"new","static");        
+        # $self->_elements_check(\@items,"new","static");          # die " Database::Accessor->"
+          # . lc("static")
+          # . " Unbalanced parentheses in your static attributes. Please check them!"
+          # if ( $self->_parens_are_open() );        
         my %saved = %$self;
         tie(
             %$self,
@@ -471,7 +474,7 @@ package Database::Accessor;
     sub _check_dynamic {
         my ( $self, $child ) = @_;
         my @check_elements;
-        #warn('_check_dynamic child='.Dumper($child));
+        warn('_check_dynamic child='.Dumper($child));
         if (ref($child) eq 'Database::Accessor::Gather'){
            push( @check_elements, @{$child->view_elements})
              if($child->view_elements);
@@ -486,7 +489,12 @@ package Database::Accessor;
         
         $self->_reset_parens();
         $self->_reset_conditions(); 
-        $self->_elements_check(\@check_elements,"","dynamic");
+        $self->_elements_check(\@check_elements,"","dynamic");       
+        die " Database::Accessor->"
+          . lc("dynamic")
+          . " Unbalanced parentheses in your dynamic attributes. Please check them!"
+          if ( $self->_parens_are_open() );
+
         # foreach my $element (@check_elements){
             # next 
               # unless(ref($element) eq 'Database::Accessor::Element');
@@ -757,13 +765,14 @@ package Database::Accessor;
         my ($element) = @_;
         $self->_inc_parens()
              if ( $element->open_parentheses() );
-           $self->_dec_parens()
-             if ( $element->close_parentheses() );    };
+        $self->_dec_parens()
+             if ( $element->close_parentheses() );
+    };
     
     private_method _check_element => sub {
         my $self = shift;
-        my ($element,$right) = @_;
- # warn("DA _check_element ".Dumper($element));
+        my ($element,$right,$type) = @_;
+   # warn("DA _check_element $type ".Dumper($element));
         if (ref($element) eq 'Database::Accessor::Element'){
             unless ( $element->view() ) {
               $element->view( $self->view->name() );
@@ -771,21 +780,21 @@ package Database::Accessor;
                       # $element->view($alias )
               # if ($alias and $right);
             }
-            
+            $element->_lookup_name();
             die( "Gather view_element "
                   .$element->name()
                   ." in not in the elements array! Only elements from that array can be added" )
-              unless ($self->get_element_by_lookup($element->_lookup_name()));
+              if ($type eq "dynamic" and !$self->get_element_by_lookup($element->_lookup_name()));
         }
         elsif (ref($element) eq 'Database::Accessor::If'){
             foreach my $sub_element (@{$element->ifs()}){
-                $self->_check_element($sub_element,0);
+                $self->_check_element($sub_element,0,$type);
             }
         }
         elsif (ref($element) eq 'Database::Accessor::If::Then'){
-            $self->_check_element($element->right,1);
-            $self->_check_element($element->left,0);
-            $self->_check_element($element->then,0);
+            $self->_check_element($element->right,1,$type);
+            $self->_check_element($element->left,0,$type);
+            $self->_check_element($element->then,0,$type);
             $element->condition(uc($element->condition))
               if ($element->condition() );
             $element->operator(uc($element->operator))
@@ -802,27 +811,28 @@ package Database::Accessor;
              if ( $self->_add_condition<=1  );
            $element->predicates->condition(uc( $element->predicates->condition))
              if ($element->predicates->condition() );
+            
            $self->_check_parentheses($element->predicates);
-           $self->_check_element($element->predicates->right,1);
-           $self->_check_element($element->predicates->left,0);
+           $self->_check_element($element->predicates->right,1,$type);
+           $self->_check_element($element->predicates->left,0,$type);
        }
        elsif (ref($element) eq 'ARRAY'){
            
            foreach my $sub_element (@{$element}){
-               $self->_check_element($sub_element,0);
+               $self->_check_element($sub_element,0,$type);
             }       }
        elsif (ref($element) eq 'Database::Accessor::Link'){
            
            foreach my $sub_element (@{$element->conditions}){
-               $self->_check_element($sub_element,0);
+               $self->_check_element($sub_element,0,$type);
             }
        }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
-            $self->_check_parentheses($element);            $self->_check_element($element->right,1);
-            $self->_check_element($element->left,0);
+            $self->_check_parentheses($element);            $self->_check_element($element->right,1,$type);
+            $self->_check_element($element->left,0,$type);
        }
 
     };
@@ -941,17 +951,12 @@ package Database::Accessor;
                 foreach my $condition (@{$item}){
                   $self->_inc_conditions()
                      if (ref($condition) eq 'Database::Accessor::Condition');
-                  $self->_check_element($condition,0);
+                  $self->_check_element($condition,0,$type);
                 }            }
             else {
-               $self->_check_element($item,0);
+               $self->_check_element($item,0,$type);
            }
         }
-
-        die " Database::Accessor->"
-          . lc($action)
-          . " Unbalanced parentheses in your ".$type." attributes. Please check them!"
-          if ( $self->_parens_are_open() );
 
     };
 
@@ -984,7 +989,11 @@ package Database::Accessor;
 
         $self->check_options($action, $opt )
           if ($opt);
-           
+        
+                die " Database::Accessor->"
+          . lc("static")
+          . " Unbalanced parentheses in your static attributes. Please check them!"
+          if ( $self->_parens_are_open() );
         # $self->_reset_parens();
         # $self->_reset_conditions(); 
         # my @items;
