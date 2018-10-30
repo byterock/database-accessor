@@ -118,6 +118,9 @@ $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
 $dad = $da->result->error(); #note to others this is a kludge for testing
+use Data::Dumper;
+# warn("da=".Dumper($da->links));
+# warn("da=".Dumper($dad->links));
 
 Test::Database::Accessor::Utils::deep_links( $in_hash2, $da, $dad, 1 );
 

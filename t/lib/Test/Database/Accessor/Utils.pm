@@ -39,7 +39,18 @@ sub deep_predicate {
     $start = 1
       if ($skip_one);
     foreach my $index ( $start .. ( scalar( @{$in} - 1 ) ) ) {
+        
         my $predicate = $in->[$index];
+        if ($type eq "Link") {
+            if (exists($predicate->{left}->{only_on_link}) ){
+                $predicate->{left}->{_lookup_name} = $predicate->{left}->{only_on_link};
+                delete( $predicate->{left}->{only_on_link});
+            }
+            if (exists($predicate->{right}->{only_on_link})) {
+                $predicate->{right}->{_lookup_name} = $predicate->{right}->{only_on_link};
+                delete( $predicate->{right}->{only_on_link});
+            }
+        }
         bless( $predicate, "Database::Accessor::Predicate" );
         bless_element( $predicate->{left} );
         bless_element( $predicate->{right} );
@@ -57,11 +68,16 @@ sub deep_predicate {
         foreach
           my $index2 ( 0 .. ( scalar(@{$in}) - 1 ) )
         {
+         
+         # warn("1=".Dumper($preticates[$index]->predicates));
+         # warn("2=".Dumper($predicate));
+         # exit;
             cmp_deeply(
                 $preticates[$index]->predicates,
-                methods( %{$predicate} ),
+                methods(  %{$predicate}  ),
                 "DA $type $index2->predicates $index correct"
             );
+         
             cmp_deeply(
                 $dad_preticates[$index]->predicates,
                 methods( %{$predicate} ),
@@ -125,9 +141,10 @@ sub deep_links {
             
 
             
-              Test::Database::Accessor::Utils::deep_predicate( $in->{conditions},
-                $da->links()->[$index]->conditions,
-                , $dad->links()->[$index]->conditions, 'Link' );
+              Test::Database::Accessor::Utils::deep_predicate( $in->{conditions}
+                , $da->links()->[$index]->conditions
+                , $dad->links()->[$index]->conditions
+                , 'Link' );
             
         }
         else {

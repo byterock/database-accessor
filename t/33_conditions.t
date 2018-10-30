@@ -94,7 +94,7 @@ my $in_hash3 = {
         },
         right           => { value => 'test' },
         operator        => '=',
-        open_parentheses  => 1,
+        open_parentheses  => 0,
         close_parentheses => 0,
         condition       => 'AND',
     },

@@ -4,6 +4,7 @@ use Test::Fatal;
 use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
 use Test::More tests => 4;
 use Moose::Util qw(does_role);
+use Test::Fatal;
 
 BEGIN {
     use_ok('Database::Accessor');
@@ -18,6 +19,13 @@ ok(
     does_role( $street, "Database::Accessor::Roles::Alias" ) eq 1,
     "View does role Database::Accessor::Roles::Alias"
 );
+
+like(
+    exception {$da->retrieve($data,[1,1,1]) },
+    qr /The Option param for RETRIEVE must be a Hash-Ref/,
+    "Caught non hash-ref for param"
+);
+
 # ok( $street->aggregate('AvG'), 'can do an Average' );
 # like(
    # exception {$street->aggregate('Avgx');},

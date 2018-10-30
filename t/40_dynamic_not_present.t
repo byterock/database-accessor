@@ -169,14 +169,14 @@ my $params = {
 };
 
 foreach my $in_action (sort(keys(%{$params}))) {
-    
-        my $action    =  $params->{$in_action}->{action};
+    my $action    =  $params->{$in_action}->{action};
     my $da        = Database::Accessor->new($in_hash);
     my $command   = "add_" . $action;
     my $exception = $params->{$in_action}->{exception};
+    $da->$command( $params->{$in_action}->{query} );
     like(
-        exception { $da->$command( $params->{$in_action}->{query} ) },
+        exception { $da->retrieve( Data::Test->new(), {} ) },
          qr /$exception/,
-"methos add_$action attribute->".$params->{$in_action}->{caption}." is only allowed to have elements that are in the elements attribute"
+"method add_$action attribute->".$params->{$in_action}->{caption}." is only allowed to have elements that are in the elements attribute"
     );
 }
