@@ -21,7 +21,7 @@ my $in_hash = {
             name => 'last_name',
             view => 'other'
         },
-        {
+         {
             function => 'left',
             left     => { name => 'salary' },
             right    => {
@@ -59,7 +59,21 @@ my $in_hash = {
                     }
                 }
             }
-        }
+        },
+          { name => 'user_id', },
+        { name => 'salary', },
+        { name => 'bonus', },
+        { name => 'country_id', },
+         { name => 'bonus',
+         view=>'Other' },
+        { name => 'id',
+         view=>'a_country' },
+        { name => 'first_name',
+         view=>'a_country' },
+        { name => 'bonus',
+         view=>'a_country' },
+       
+       
     ],
     conditions => [
         {
@@ -73,9 +87,9 @@ my $in_hash = {
         },
         {
             condition => 'AND',
-            left      => { name => 'First_2', },
+            left      => { name => 'first_name', },
             right     => {
-                name => 'First_2',
+                name => 'first_name',
                 view => 'other'
             },
             operator => '=',
@@ -93,7 +107,7 @@ my $in_hash = {
                     right => { param => -.05 }
                 }
             },
-            right    => { name => 'First_2', },
+            right    => { name => 'first_name', },
             operator => '=',
         },
     ],
@@ -131,7 +145,7 @@ my $in_hash = {
                         }
                     }
                 },
-                right    => { name => 'First_2', },
+                right    => { name => 'first_name', },
                 operator => '=',
             }
         ],
@@ -232,7 +246,7 @@ $da->add_gather(
                     }
                 }
             },
-            right    => { name => 'First_2', },
+            right    => { name => 'first_name', },
             operator => '=',
         }
     }
@@ -257,7 +271,7 @@ $da->add_condition(
                 }
             }
         },
-        right    => { name => 'First_2', },
+        right    => { name => 'first_name', },
         operator => '=',
     }
 );
@@ -297,7 +311,7 @@ $da->add_link(
                         }
                     }
                 },
-                right    => { name => 'First_2', },
+                right    => { name => 'first_name', },
                 operator => '=',
             }
         ],

@@ -63,7 +63,7 @@ delete( $in_hash->{delete_requires_condition} );
 my $conditions = [
     {
         left => {
-            name => 'First_1',
+            name => 'first_name',
             view => 'People'
         },
         right           => { value => 'test' },

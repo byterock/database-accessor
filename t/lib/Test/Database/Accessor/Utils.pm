@@ -41,7 +41,7 @@ sub deep_predicate {
     foreach my $index ( $start .. ( scalar( @{$in} - 1 ) ) ) {
         
         my $predicate = $in->[$index];
-        if ($type eq "Link") {
+        if ($type eq "Link" or $type eq "Dynamic Link") {
             if (exists($predicate->{left}->{only_on_link}) ){
                 $predicate->{left}->{_lookup_name} = $predicate->{left}->{only_on_link};
                 delete( $predicate->{left}->{only_on_link});
@@ -53,7 +53,11 @@ sub deep_predicate {
         }
         bless( $predicate, "Database::Accessor::Predicate" );
         bless_element( $predicate->{left} );
+        $predicate->{left}->_lookup_name()
+          if (($type ne "Link" and ref($predicate->{left}) eq "Database::Accessor::Element"));
         bless_element( $predicate->{right} );
+        $predicate->{right}->_lookup_name()
+          if (($type ne "Link" and ref($predicate->{right}) eq "Database::Accessor::Element"));
         my @preticates;
         my @dad_preticates;
         if ( ref($da) eq "ARRAY" ) {

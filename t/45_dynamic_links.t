@@ -18,7 +18,15 @@ use Test::More tests => 41;
 my $da = Database::Accessor->new(
     {
         view => { name => 'People' },
-        elements => [ { name => 'first_name', }, { name => 'last_name', }, ],
+        elements => [ { name => 'first_name', },
+                      { name => 'last_name', }, 
+                       { name => 'Price', }, 
+                      { name => 'country_id',
+                        view => 'People' },
+                      { name => 'id',
+                        view => 'a_country' },
+                        
+                    ],
     }
 );
 
@@ -76,6 +84,7 @@ foreach my $link ( @{ $in_hash->{links} } ) {
     ok( $da->add_link($link), "can add an single Dynamic link" );
 }
 
+# warn("da=".Dumper($da->dynamic_links));
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 
@@ -98,7 +107,11 @@ Test::Database::Accessor::Utils::deep_links( $in_hash, $da, $dad, 0 );
 $da = Database::Accessor->new(
     {
         view => { name => 'People' },
-        elements => [ { name => 'first_name', }, { name => 'last_name', }, ],
+        elements => [ { name => 'first_name', }, { name => 'last_name', }, { name => 'Price',view => 'People' }, 
+                      { name => 'country_id',
+                        view => 'People' },
+                      { name => 'id',
+                        view => 'a_country' },],
     }
 );
 
@@ -127,12 +140,14 @@ $in_hash = {
                 {
                     left => {ifs => [
                         {
-                            left      => { name  => 'Price', },
+                            left      => { name  => 'Price',
+                                           view  => 'People' },
                             right     => { value => '10' },
                             operator  => '<',
-                            then => { name  => 'price' }
+                            then => { name  => 'Price',
+                                       view  => 'People' }
                         },
-                        { then => { name => 'prices' } }
+                        { then => { param => 'prices' } }
                     ]}
                 }
               ]

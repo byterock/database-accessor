@@ -111,7 +111,7 @@
        sub get_element_by_lookup {
            my $self = shift;
            my ($lookup) = @_;
-           my $found = $self->_get_element_by_lookup(sub { if (!defined($_->_lookup_name)) {return 0} $_->_lookup_name eq $lookup});
+           my $found = $self->_get_element_by_lookup(sub { if (ref($_) ne 'Database::Accessor::Element' or !defined($_->_lookup_name)) {return 0} $_->_lookup_name eq $lookup});
            return $found;
         }
        1;
@@ -177,11 +177,11 @@ package Database::Accessor;
             @{ $self->sorts },
              @{ $self->elements } );
 
-        foreach my $link (@{ $self->links }){
-            my $view = $link->to;
-            $self->_check_element($link->conditions,0,$view->name);
-            push(@items,$link->conditions);
-        } 
+        # foreach my $link (@{ $self->links }){
+            # my $view = $link->to;
+            # $self->_check_element($link->conditions,0,$view->name);
+            # push(@items,$link->conditions);
+        # } 
        
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
           if ( $self->gather());
@@ -466,23 +466,23 @@ package Database::Accessor;
        # trigger   => \&_check_elements_present
     );
 
-    sub _check_elements_present {
-        my ( $self, $child ) = @_;
-        my @check_elements;
-                if (ref($child) eq 'Database::Accessor::Gather'){
-           push( @check_elements, @{$child->view_elements})
-             if($child->view_elements);
-        }
-        foreach my $element (@check_elements){
-            next 
-              unless(ref($element) eq 'Database::Accessor::Element');
+    # sub _check_elements_present {
+        # my ( $self, $child ) = @_;
+        # my @check_elements;
+                # if (ref($child) eq 'Database::Accessor::Gather'){
+           # push( @check_elements, @{$child->view_elements})
+             # if($child->view_elements);
+        # }
+        # foreach my $element (@check_elements){
+            # next 
+              # unless(ref($element) eq 'Database::Accessor::Element');
  
-            die( "Gather view_element "
-                 .$element->name()
-                 ." in not in the elements array! Only elements from that array can be added" )
-              unless ($self->get_element_by_name($element->name()));
-        }
-    }    
+            # die( "Gather view_element "
+                 # .$element->name()
+                 # ." in not in the elements array! Only elements from that array can be added" )
+              # unless ($self->get_element_by_name($element->name()));
+        # }
+    # }    
     sub add_gather {
       my $self = shift;
       my ($gather) = @_;
@@ -740,28 +740,32 @@ package Database::Accessor;
     
     private_method _check_element => sub {
         my $self = shift;
-        my ($element,$right) = @_;
- # warn("DA _check_element ".Dumper($element));
+        my ($element,$action,$type) = @_;
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
           }
-          # $element->_lookup_name();
-          die( "Gather view_element "
+          $element->_lookup_name();
+          # warn("DA _check_element 2 ".Dumper($element));
+          # warn("DA _check_element 3 name=".$element->name()); 
+          # warn("$type DA _check_element 4 name=".$element->_lookup_name()); 
+          die( " $type Error on Database::Accessor::->$action: Element {name=>"
                 .$element->name()
-                ." in not in the elements array! Only elements from that array can be added" )
-            unless ($self->get_element_by_lookup($element->_lookup_name()));
-             
+                .", view=>"
+                .$element->view()
+                ."} not in the elements array! Only elements from that array can be added" )
+            if (($type eq 'dynamic' and !$self->get_element_by_lookup($element->_lookup_name())));
+
         }
         elsif (ref($element) eq 'Database::Accessor::If'){
             foreach my $sub_element (@{$element->ifs()}){
-                $self->_check_element($sub_element,0);
+                $self->_check_element($sub_element,$action,$type);
             }
         }
         elsif (ref($element) eq 'Database::Accessor::If::Then'){
-            $self->_check_element($element->right,1);
-            $self->_check_element($element->left,0);
-            $self->_check_element($element->then,0);
+            $self->_check_element($element->right,$action,$type);
+            $self->_check_element($element->left,$action,$type);
+            $self->_check_element($element->then,$action,$type);
             $element->condition(uc($element->condition))
               if ($element->condition() );
             $element->operator(uc($element->operator))
@@ -779,20 +783,20 @@ package Database::Accessor;
            $element->predicates->condition(uc( $element->predicates->condition))
              if ($element->predicates->condition() );
            $self->_check_parentheses($element->predicates);
-           $self->_check_element($element->predicates->right,1);
-           $self->_check_element($element->predicates->left,0);
+           $self->_check_element($element->predicates->right,$action,$type);
+           $self->_check_element($element->predicates->left,$action,$type);
        }
        elsif (ref($element) eq 'ARRAY'){
            
            foreach my $sub_element (@{$element}){
-               $self->_check_element($sub_element,0);
+               $self->_check_element($sub_element,$action,$type);
             }       }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
          
-            $self->_check_parentheses($element);            $self->_check_element($element->right,1);
-            $self->_check_element($element->left,0);
+            $self->_check_parentheses($element);            $self->_check_element($element->right,$action,$type);
+            $self->_check_element($element->left,$action,$type);
        }
 
     };
@@ -907,14 +911,20 @@ package Database::Accessor;
         
         foreach my $item (@{$items}) {            $self->_inc_conditions()
               if (ref($item) eq 'Database::Accessor::Condition');
-            if (ref($item) eq 'ARRAY'){                $self->_reset_conditions();
+              
+              # warn("item=".Dumper($item));
+            if (ref($item) eq 'ARRAY'){
+                
+                                 $self->_reset_conditions();
                 foreach my $condition (@{$item}){
+                    
+                    # warn("condition=".Dumper($condition));
                   $self->_inc_conditions()
                      if (ref($condition) eq 'Database::Accessor::Condition');
-                  $self->_check_element($condition,0);
+                  $self->_check_element($condition,$action,$type);
                 }            }
             else {
-               $self->_check_element($item,0);
+               $self->_check_element($item,$action,$type);
            }
         }
 
@@ -962,10 +972,11 @@ package Database::Accessor;
              @{ $self->dynamic_conditions },
              @{ $self->dynamic_sorts },
            );
-        foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
+        foreach my $link (@{ $self->dynamic_links }){
             push(@items,$link->conditions);
         } 
        
+               
         push(@items,( @{ $self->dynamic_gather->elements }))
           if ( $self->dynamic_gather());
         push(@items,@{ $self->dynamic_gather->view_elements })
@@ -973,7 +984,7 @@ package Database::Accessor;
         push(@items,@{ $self->dynamic_gather->conditions })
            if ($self->dynamic_gather() and $self->dynamic_gather->conditions);
            
-           warn("items=".Dumper(\@items));
+           #warn("items=".Dumper(\@items));
         $self->_elements_check(\@items,$action,"dynamic");
         
 
@@ -1159,6 +1170,19 @@ package Database::Accessor;
             is      => 'rw',
             isa     => 'Bool',
           );
+          
+        has '_lookup_name' => (
+            is  => 'ro',
+            isa => 'Str',
+            lazy=>1,
+            builder=>"_builder_lookup_name",
+            init_arg => 'only_on_link',
+        );
+
+       sub _builder_lookup_name {
+            my $self = shift;
+            return $self->view.$self->name;
+        }
 
  }
  
@@ -1245,18 +1269,7 @@ package Database::Accessor;
             isa => 'Predicate',
         );
 
-        has '_lookup_name' => (
-            is  => 'ro',
-            isa => 'Str',
-            lazy=>1,
-            builder=>"_builder_lookup_name",
-            init_arg => 'only_on_link',
-        );
 
-       sub _builder_lookup_name {
-            my $self = shift;
-            return $self->view.$self->name;
-        }
         1;
     }
 
@@ -1425,16 +1438,17 @@ package Database::Accessor;
 
     sub _check_elements {
         my $self = shift;
-        my ( $ops, $view_name, $lookup_view ) = @_;
+        my ( $ops, $view_name ) = @_;
         if ( exists( $ops->{name} ) ) {
+           # warn("ops=".Dumper($ops));
             $ops->{view} = $view_name
                unless($ops->{view});
-            $ops->{only_on_link} = $lookup_view.$ops->{name};
+            $ops->{only_on_link} = $ops->{view}.$ops->{name};
         }
         else {
-            $self->_check_elements( $ops->{right}, $view_name, $lookup_view )
+            $self->_check_elements( $ops->{right}, $view_name)
               if exists( $ops->{right} );
-            $self->_check_elements( $ops->{left}, $view_name, $lookup_view )
+            $self->_check_elements( $ops->{left}, $view_name )
               if exists( $ops->{left} );
         }
     }
@@ -1442,15 +1456,15 @@ package Database::Accessor;
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
-        use Data::Dumper;
+        # use Data::Dumper;
         # warn( "JSP  Link BUILDARGS " . Dumper($ops) );
-        my $lookup_view = $ops->{to}->{name};
+       # my $lookup_view = $ops->{to}->{name};
         my $view_name = $ops->{to}->{name};
         $view_name = $ops->{to}->{alias}
           if ( exists( $ops->{to}->{alias} ) );
         foreach my $condition ( @{ $ops->{conditions} } ) {
-            $class->_check_elements( $condition->{left},  $view_name, $lookup_view );
-            $class->_check_elements( $condition->{right}, $view_name, $lookup_view );
+            $class->_check_elements( $condition->{left},  $view_name );
+            $class->_check_elements( $condition->{right}, $view_name);
         }
         return $class->$orig($ops);
     };

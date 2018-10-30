@@ -35,7 +35,7 @@ my $in_hash = {
     conditions => [
         {
             left => {
-                name => 'First_1',
+                name => 'first_name',
                 view => 'People'
             },
             right             => { value => 'test->1' },
@@ -46,7 +46,7 @@ my $in_hash = {
         {
             condition => 'AND',
             left      => {
-                name => 'First_2',
+                name => 'last_name',
                 view => 'People'
             },
             right             => { value => 'test->2' },
@@ -78,7 +78,7 @@ my $in_hash2 = {
     conditions => [
         {
             left => {
-                name => 'First_1',
+                name => 'first_name',
                 view => 'People'
             },
             right             => { value => 'test->3' },
@@ -90,7 +90,7 @@ my $in_hash2 = {
         {
             condition => 'AND',
             left      => {
-                name => 'First_2',
+                name => 'first_name',
                 view => 'People'
             },
             right    => { value => 'test->4' },
@@ -239,7 +239,7 @@ $da = Database::Accessor->new($in_hash);
 $da->add_condition(
     {
         left => {
-            name => 'last_name2',
+            name => 'last_name',
             view => 'People'
         },
         right             => { value => 'test->5' },
@@ -255,7 +255,7 @@ ok( $da->retrieve( Data::Test->new(), $return ), "Balanced parentheses" );
 $da->add_condition(
     {
         left => {
-            name => 'last_name2',
+            name => 'last_name',
             view => 'People'
         },
         right             => { value => 'test->6' },
@@ -274,7 +274,7 @@ like(
 $da->add_condition(
     {
         left => {
-            name => 'last_name2',
+            name => 'last_name',
             view => 'People'
         },
         right             => { value => 'test->7' },
@@ -308,12 +308,14 @@ $da = Database::Accessor->new($in_hash3);
 
 ok($da->default_condition('OR'),'Change Defalut condition to OR');
  $da->retrieve( Data::Test->new());
- 
+ warn(Dumper($da->result->error->gather->conditions->[1]->predicates->condition()));
+
 ok(
     $da->result->error->gather->conditions->[1]->predicates->condition() eq
       'OR',
     'OR added to last gather condition predicate'
 );
+exit;
 ok( !$da->result->error->gather->conditions->[0]->predicates->condition(),
     'OR not added to first gather condition predicate' );
 

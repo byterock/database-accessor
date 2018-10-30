@@ -32,7 +32,10 @@ my $in_hash = {
     ],
 };
 
-my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ] } );
+my $da = Database::Accessor->new( { view => { name => 'People' },
+                                 elements => [ { name => 'first_name', }, 
+                                               { name => 'last_name', },
+                                               { name => 'user_id', }, ] } );
 
 foreach my $sort ( @{ $in_hash->{sorts} } ) {
     ok( $da->add_sort($sort), "can add an single Dynamic sort" );

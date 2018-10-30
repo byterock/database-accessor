@@ -13,32 +13,36 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Test::Deep;
 use Test::Fatal;
-use Test::More tests => 20;
+use Test::More tests => 21;
 
 
-my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ] } );
+my $da = Database::Accessor->new( { view => { name => 'People' },
+                                elements => [ { name => 'first_name', }, 
+                                               { name => 'last_name', },
+                                                { name => 'user_id', },
+                                                { name => 'Price'}, ] } );
 
 
 my $gather = {        
        elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
             {
                 name => 'last_name',
-                view => 'People5'
+                view => 'People'
             },
             {
                 name => 'user_id',
-                view => 'People6'
+                view => 'People'
             }
         ],
         conditions => [
             {
                 left => {
                     name => 'last_name',
-                    view => 'People7'
+                    view => 'People'
                 },
                 right             => { value => 'test' },
                 operator          => '=',
@@ -49,7 +53,7 @@ my $gather = {
                 condition => 'AND',
                 left      => {
                     name => 'first_name',
-                    view => 'People8'
+                    view => 'People'
                 },
                 right             => { value => 'test' },
                 operator          => '=',
@@ -63,14 +67,14 @@ my $gather2 = {
        elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },           
         ],
         conditions => [
             {
                 left => {
                     name => 'last_name',
-                    view => 'People7'
+                    view => 'People'
                 },
                 right    => { value => 'test' },
                 operator => '=',
@@ -122,9 +126,9 @@ $gather2 = {
             left      => { name  => 'Price', },
             right     => { value => '10' },
             operator  => '<',
-            then => { name  => 'price' }
+            then => { name  => 'Price' }
         },
-        { then => { name => 'prices' } }
+        { then => { param => 'prices' } }
       ]
   }           
         ],
@@ -141,28 +145,28 @@ $gather2 = {
        elements => [
             {
               name => 'first_name',
-              view => 'People4'
+              view => 'People'
             },
             { name => 'user_id',
-              view => 'People6'
+              view => 'People'
             }
         ],
         view_elements => [
              {
                name => 'first_name',
-               view => 'People4'
+               view => 'People'
             },
             {
               function => 'count',
               left     => { name => 'user_id',
-                            view => 'People6'}
+                            view => 'People'}
             }      
         ],
         conditions => [
             {
                 left => {
                     name => 'last_name',
-                    view => 'People7'
+                    view => 'People'
                 },
                 right    => { value => 'test' },
                 operator => '=',
@@ -177,36 +181,36 @@ $gather2 = {
  ok( ref($dad->elements->[1] ) eq "Database::Accessor::Function",
     'elements 1 is a function' );
   
-  $da->reset_gather();
+  # $da->reset_gather();
 
-  $gather2 = {        
-       elements => [
-            {
-              name => 'first_name',
-              view => 'People4'
-            },
-            { name => 'salary',
-              view => 'People'
-            }
-        ],
-        view_elements => [
-             {
-               name => 'first_name',
-               view => 'People4'
-            },
-            {
-               name => 'salary',
-               view => 'People4'
-            }
-        ],
-        };
+  # # $gather2 = {        
+       # # elements => [
+            # # {
+              # # name => 'first_name',
+              # # view => 'People'
+            # # },
+            # # { name => 'salary',
+              # # view => 'People'
+            # # }
+        # # ],
+        # # view_elements => [
+             # # {
+               # # name => 'first_name',
+               # # view => 'People'
+            # # },
+            # # {
+               # # name => 'salary',
+               # # view => 'People'
+            # # }
+        # # ],
+        # # };
         
  
  
-like(
-    exception { $da->add_gather($gather2) },
-    qr /in not in the elements array! Only elements from that array can be added/,
-    "Elements not in the elements attribute are not allowed"
-);
+# # like(
+    # # exception { $da->add_gather($gather2) },
+    # # qr /in not in the elements array! Only elements from that array can be added/,
+    # # "Elements not in the elements attribute are not allowed"
+# );
 
 1;

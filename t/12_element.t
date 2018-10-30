@@ -20,12 +20,6 @@ ok(
     "View does role Database::Accessor::Roles::Alias"
 );
 
-like(
-    exception {$da->retrieve($data,[1,1,1]) },
-    qr /The Option param for RETRIEVE must be a Hash-Ref/,
-    "Caught non hash-ref for param"
-);
-
 # ok( $street->aggregate('AvG'), 'can do an Average' );
 # like(
    # exception {$street->aggregate('Avgx');},

@@ -13,7 +13,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Test::Deep;
 use Test::Fatal;
-use Test::More tests => 4;
+use Test::More tests => 6;
 
 
 my $in_hash = {
@@ -174,9 +174,10 @@ foreach my $in_action (sort(keys(%{$params}))) {
     my $command   = "add_" . $action;
     my $exception = $params->{$in_action}->{exception};
     $da->$command( $params->{$in_action}->{query} );
+    # $da->retrieve( Data::Test->new(), {} );
     like(
         exception { $da->retrieve( Data::Test->new(), {} ) },
-         qr /$exception/,
+         qr /not in the elements array! Only elements from that array can be added/,
 "method add_$action attribute->".$params->{$in_action}->{caption}." is only allowed to have elements that are in the elements attribute"
     );
 }
