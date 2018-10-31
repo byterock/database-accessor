@@ -740,6 +740,8 @@ package Database::Accessor;
     
     private_method _check_element => sub {
         my $self = shift;
+        
+        # warn("JSP _parens_are_open=".$self->_parens_are_open());
         my ($element,$action,$type) = @_;
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
@@ -909,13 +911,15 @@ package Database::Accessor;
         my $self = shift;
         my ($items,$action,$type) = @_;
         
-        foreach my $item (@{$items}) {            $self->_inc_conditions()
+        foreach my $item (@{$items}) {
+            # warn("$type item=".Dumper($item));
+            $self->_inc_conditions()
               if (ref($item) eq 'Database::Accessor::Condition');
               
-              # warn("item=".Dumper($item));
-            if (ref($item) eq 'ARRAY'){
+                          if (ref($item) eq 'ARRAY'){
                 
-                                 $self->_reset_conditions();
+                                 $self->_reset_conditions()
+                   if ($type ne 'static');
                 foreach my $condition (@{$item}){
                     
                     # warn("condition=".Dumper($condition));
@@ -932,6 +936,7 @@ package Database::Accessor;
           . lc($action)
           . " Unbalanced parentheses in your ".$type." attributes. Please check them!"
           if ( $self->_parens_are_open() );
+        $self->_reset_conditions();
 
     };
 

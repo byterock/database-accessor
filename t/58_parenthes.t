@@ -270,9 +270,7 @@ like(
     qr /Unbalanced parentheses in your dynamic attributes/,
     "Caught parentheses"
 );
-
-$da->add_condition(
-    {
+my $condition=  {
         left => {
             name => 'last_name',
             view => 'People'
@@ -281,8 +279,8 @@ $da->add_condition(
         operator          => '=',
         open_parentheses  => 0,
         close_parentheses => 1,
-    }
-);
+    };
+$da->add_condition($condition);
 
 $da->retrieve( Data::Test->new(), $return );
 
@@ -305,33 +303,47 @@ ok(
 );
 
 $da = Database::Accessor->new($in_hash3);
+$condition->{close_parentheses} =0;
 
-ok($da->default_condition('OR'),'Change Defalut condition to OR');
- $da->retrieve( Data::Test->new());
- warn(Dumper($da->result->error->gather->conditions->[1]->predicates->condition()));
+ok($da->default_condition('OR'),'Change Default condition to OR');
+
+$da->add_condition($condition);
+$da->add_condition($condition);
+$da->retrieve( Data::Test->new());
 
 ok(
     $da->result->error->gather->conditions->[1]->predicates->condition() eq
-      'OR',
-    'OR added to last gather condition predicate'
+      'AND',
+    'AND still last gather condition predicate'
 );
-exit;
-ok( !$da->result->error->gather->conditions->[0]->predicates->condition(),
-    'OR not added to first gather condition predicate' );
+ok(
+    $da->result->error->conditions->[1]->predicates->condition() eq
+      'OR',
+    'OR added to last condition predicate'
+);
+
+
 
 
 $da = Database::Accessor->new($in_hash3);
 
 ok($da->default_operator('!='),'Change Default operator to !=');
- $da->retrieve( Data::Test->new());
  
+delete($condition->{operator});
+
+$da->add_condition($condition);
+$da->add_condition($condition);
+ 
+$da->retrieve( Data::Test->new()); 
+
+
 ok(
     $da->result->error->gather->conditions->[0]->predicates->operator() eq
-      '!=',
-    'First gather condition predicate operator is !='
+      '=',
+    'First gather condition predicate stasy as ='
 );
-ok( $da->result->error->gather->conditions->[1]->predicates->operator() eq '=',
-    'Second gather condition predicate is =' );
+ok( $da->result->error->conditions->[1]->predicates->operator() eq '!=',
+    'Second condition predicate is !=' );
 
 
 like(
@@ -406,8 +418,9 @@ my $expression = {
     },
 };
 $in_hash = {
-    view     => { name => 'People' },
-    elements => [$expression]
+    view     => {  name => 'People' },
+    elements => [ $expression,
+    { name => 'doubletime' },]
 };
 
 #warn( "JSP " . Dumper($in_hash) );
@@ -417,7 +430,9 @@ ok(
     $da->retrieve( Data::Test->new(), $return ),
     "Balanced nested elements parentheses"
 );
+
 delete( $in_hash->{elements}->[0]->{left}->{open_parentheses} );
+
 
 
 like(
@@ -473,7 +488,35 @@ $in_hash = {
         {
             name => 'user_id',
             view => 'People'
-        }
+        },
+         {
+            name => 'doubletime',
+            view => 'People'
+        },
+        {
+            name => 'salary',
+            view => 'People'
+        },
+        {
+            name => 'overtime',
+            view => 'People'
+        },
+        {
+            name => 'doubletime',
+            view => 'People'
+        },
+        {
+            name => 'doubletime',
+            view => 'a_country'
+        },
+         {
+            name => 'salary',
+            view => 'a_country'
+        },
+          {
+            name => 'overtime',
+            view => 'a_country'
+        },
     ]
 };
 $da = Database::Accessor->new($in_hash);
@@ -786,7 +829,7 @@ $da->add_gather(
         elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
         ],
         conditions => [
@@ -813,7 +856,7 @@ $da->add_gather(
         elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
         ],
         conditions => [
@@ -841,7 +884,7 @@ $da->add_gather(
         elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
         ],
         conditions => [
@@ -869,7 +912,7 @@ $da->add_gather(
         elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
         ],
         conditions => [
@@ -896,7 +939,7 @@ $da->add_gather(
         elements => [
             {
                 name => 'first_name',
-                view => 'People4'
+                view => 'People'
             },
         ],
         conditions => [
