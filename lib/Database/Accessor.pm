@@ -177,11 +177,11 @@ package Database::Accessor;
             @{ $self->sorts },
              @{ $self->elements } );
 
-        # foreach my $link (@{ $self->links }){
-            # my $view = $link->to;
-            # $self->_check_element($link->conditions,0,$view->name);
-            # push(@items,$link->conditions);
-        # } 
+        foreach my $link (@{ $self->links }){
+            my $view = $link->to;
+            $self->_check_element($link->conditions,0,$view->name);
+            push(@items,$link->conditions);
+        } 
        
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
           if ( $self->gather());
@@ -918,8 +918,8 @@ package Database::Accessor;
               
                           if (ref($item) eq 'ARRAY'){
                 
-                                 $self->_reset_conditions()
-                   if ($type ne 'static');
+                                 $self->_reset_conditions();
+                   # if ($type ne 'static');
                 foreach my $condition (@{$item}){
                     
                     # warn("condition=".Dumper($condition));
