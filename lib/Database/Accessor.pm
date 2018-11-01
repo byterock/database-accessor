@@ -178,9 +178,7 @@ package Database::Accessor;
              @{ $self->elements } );
 
         foreach my $link (@{ $self->links }){
-            my $view = $link->to;
-            $self->_check_element($link->conditions,0,$view->name);
-            push(@items,$link->conditions);
+              push(@items,$link->conditions);
         } 
        
         push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))

@@ -13,14 +13,14 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Test::Deep;
 use Test::Fatal;
-use Test::More tests => 21;
+use Test::More tests => 24;
 
-
-my $da = Database::Accessor->new( { view => { name => 'People' },
+my $in_hash ={ view => { name => 'People' },
                                 elements => [ { name => 'first_name', }, 
                                                { name => 'last_name', },
                                                 { name => 'user_id', },
-                                                { name => 'Price'}, ] } );
+                                                { name => 'Price'}, ] };
+my $da = Database::Accessor->new( $in_hash );
 
 
 my $gather = {        
@@ -181,7 +181,22 @@ $gather2 = {
  ok( ref($dad->elements->[1] ) eq "Database::Accessor::Function",
     'elements 1 is a function' );
   
-  # $da->reset_gather();
+  $in_hash->{gather} = $gather;
+  
+  $da = Database::Accessor->new( $in_hash );
+  ok( ref($da->gather) eq "Database::Accessor::Gather",
+    'have a static Gather' );
+    
+  $da->add_gather($gather2);
+    
+  $da->retrieve( Data::Test->new(), $return );
+     ok( ref($da->dynamic_gather) eq "Database::Accessor::Gather",
+    'have a dynamic Gather' );
+  
+   $da->reset_gather();
+   
+    ok( ref($da->gather) eq "Database::Accessor::Gather",
+    'sill have a static Gather' );
 
   # # $gather2 = {        
        # # elements => [
