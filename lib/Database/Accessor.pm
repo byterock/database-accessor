@@ -581,14 +581,16 @@ package Database::Accessor;
             my @bad =
               grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
             confess( $message
-              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes")
-              if ( !scalar(@bad) );
+              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes. \$container="
+              . Dumper($container) )
+              if (scalar(@bad) );
             $new_container = $self->_clean_up_container($message,$container);
         }
         else {
 
             confess( $message .=
-"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes")
+"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes . \$container="
+. Dumper($container) )
               if ( !( ref($container) eq 'HASH' or blessed($container) ) );
 
             confess( $message .= "The \$container Hash-Ref cannot be empty")
