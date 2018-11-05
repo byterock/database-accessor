@@ -555,9 +555,9 @@ package Database::Accessor;
                 $new_row->{$key} = $row->{$key};
             }
             push(@new_container,$new_row);        }
-        confess $message .= "The \$container must have at least 1 element with the view="
+        confess($message .= "The \$container must have at least 1 element with the view="
                      .$self->view()->name()
-                     ."!"
+                     ."!")
               if ( !scalar( @new_container ) );
         return \@new_container;
     }
@@ -575,23 +575,23 @@ package Database::Accessor;
 
         if ( ref($container) eq "ARRAY" ) {
 
-            confess $message .= "The \$container Arry-Ref cannot be empty"
+            confess($message .= "The \$container Arry-Ref cannot be empty")
               if ( !scalar( @{$container} ) );
 
             my @bad =
               grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-            confess $message
-              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
+            confess( $message
+              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes")
               if ( !scalar(@bad) );
             $new_container = $self->_clean_up_container($message,$container);
         }
         else {
 
-            confess $message .=
-"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes"
+            confess( $message .=
+"The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes")
               if ( !( ref($container) eq 'HASH' or blessed($container) ) );
 
-            confess $message .= "The \$container Hash-Ref cannot be empty"
+            confess( $message .= "The \$container Hash-Ref cannot be empty")
               if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
               
             $new_container = shift(@{$self->_clean_up_container($message,[$container])});
@@ -668,7 +668,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $required ) = @_;
         my $is_required = $required || 0;
-        confess("Database::Accessor $action Error: Attempt to $action without a condition!"
+        confess("Database::Accessor $action Error: Attempt to $action without a condition!")
           if (
             $is_required
             and
@@ -695,17 +695,17 @@ package Database::Accessor;
                   ;    #ignore elements on other view (joins etc)
 
                 if ( ref($container) eq 'HASH' ) {
-                    confess $message
+                    confess($message
                       . "The Hash-Ref \$container must have a "
                       . $element->name
-                      . " key present!"
+                      . " key present!")
                       if ( !exists( $container->{ $element->name } ) );
                 }
                 else {
-                    confess $message
+                    confess($message
                       . "The Class \$container must have a "
                       . $element->name
-                      . " attribute!"
+                      . " attribute!")
                       if ( !( $container->can( $element->name ) ) );
                 }
             }
@@ -714,14 +714,14 @@ package Database::Accessor;
     private_method check_options => sub {
         my $self = shift;
         my ($action,$opt) = @_;
-        confess( "Database::Accessor $action Error: The Option param for $action must be a Hash-Ref"
+        confess( "Database::Accessor $action Error: The Option param for $action must be a Hash-Ref")
            if (ref($opt) ne 'HASH');
            
         foreach my $key (keys(%{$opt})){
-             confess "Database::Accessor $action Error: The $key option param for $action must be a "
+             confess( "Database::Accessor $action Error: The $key option param for $action must be a "
                  .Database::Accessor::Constants::OPTIONS->{$key}
                  ."-Ref not a "
-                 . ref($opt->{$key})
+                 . ref($opt->{$key}))
              if(exists(Database::Accessor::Constants::OPTIONS->{$key})
                 and ref($opt->{$key}) ne Database::Accessor::Constants::OPTIONS->{$key});
         }
@@ -865,9 +865,9 @@ package Database::Accessor;
             
             if ( ref($element) eq 'Database::Accessor::Element' and $element->identity() ){
                 if ($self->_identity_index() >=0 ){
-                    confess "Database::Accessor "
+                    confess("Database::Accessor "
                         . lc($action)
-                        . " More than one element has the 'identity' attribute set. Please check your elements!";
+                        . " More than one element has the 'identity' attribute set. Please check your elements!");
                 }
                 else {                    
                     $self->_identity_index($index);                }
@@ -929,11 +929,11 @@ package Database::Accessor;
            }
         }
 
-        confess "Database::Accessor "
+        confess("Database::Accessor "
           . lc($action)
           . " Effor: Unbalanced parentheses in your "
           . $type
-          ." attributes. Please check them!"
+          ." attributes. Please check them!")
           if ( $self->_parens_are_open() );
         $self->_reset_conditions();
 
@@ -951,19 +951,19 @@ package Database::Accessor;
           if ( $action eq Database::Accessor::Constants::CREATE 
             or $action eq Database::Accessor::Constants::UPDATE);
             
-        confess "Database::Accessor "
+        confess("Database::Accessor "
           . lc($action)
           . $usage 
-          . "You must supply a \$connection class"
+          . "You must supply a \$connection class")
              if ( !blessed($conn) );
         my $drivers = $self->_ldad();
         my $driver  = $drivers->{ ref($conn) };
 
-        confess "Database::Accessor "
+        confess("Database::Accessor "
           . lc($action)
           ." No Database::Accessor::Driver loaded for "
           . ref($conn)
-          . " Maybe you have to install a Database::Accessor::Driver::?? for it?"
+          . " Maybe you have to install a Database::Accessor::Driver::?? for it?")
           unless ($driver);
 
         $self->check_options($action, $opt )
