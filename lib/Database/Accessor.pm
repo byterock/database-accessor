@@ -131,7 +131,7 @@ package Database::Accessor;
     use MooseX::Privacy;
     use MooseX::Attribute::ENV;
     use Scalar::Util qw(blessed);
-    use Carp 'croak';
+    use Carp 'confess';
     use Data::Dumper;
     use File::Spec;
     use namespace::autoclean;
