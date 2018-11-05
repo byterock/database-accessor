@@ -131,8 +131,7 @@ package Database::Accessor;
     use MooseX::Privacy;
     use MooseX::Attribute::ENV;
     use Scalar::Util qw(blessed);
-
-    # use Carp;
+    use Carp 'croak';
     use Data::Dumper;
     use File::Spec;
     use namespace::autoclean;
@@ -158,10 +157,11 @@ package Database::Accessor;
     sub BUILD {
         my $self = shift;
         my $dad  = {};
-        map { $self->_loadDADClassesFromDir( $_, $dad ) }
+        map( { $self->_loadDADClassesFromDir( $_, $dad ) }
           grep { -d $_ }
           map { File::Spec->catdir( $_, 'Database', 'Accessor', 'Driver' ) }
-          @INC;
+          @INC
+        );
 
         if ( $self->retrieve_only ) {
             foreach my $flag (qw(no_create no_update no_delete)) {
@@ -193,8 +193,8 @@ package Database::Accessor;
             "MooseX::AccessorsOnly",
             sub {
                 my ( $who, $how, $what ) = @_;
-                die
-"Attempt to access Database::Accessor::$what directly at $who!";
+                confess
+"Database::Accessor Error: Attempt to access '$what' directly at $who!";
             }
         );
         %$self = %saved;
@@ -203,10 +203,9 @@ package Database::Accessor;
     sub _loadDADClassesFromDir {
         my $self = shift;
         my ( $path, $dad ) = @_;
-
         # $dad = {}
         # if ( ref($dad) ne 'HASH' );
-        opendir( DIR, $path ) or die "Unable to open $path: $!";
+        opendir( DIR, $path ) or die "Database::Accessor BUILD Error: Unable to open $path: $! during load of DADs";
 
         my @files = grep { !/^\.{1,2}$/ } readdir(DIR);
 
@@ -257,9 +256,9 @@ package Database::Accessor;
                 if ($@) {
                     my $err = substr( $@, 0, index( $@, ' at ' ) );
                     my $advice =
-"Database/Accessor/Driver/$file ($classname) may not be an Database Accessor Driver (DAD)!\n\n";
+"Database/Accessor/Driver/$file ($classname) may not be an Database::Accessor::Driver (DAD)!\n\n";
                     warn(
-"\n\n Warning Load of Database/Accessor/Driver/$file.pm failed: \n   Error=$err \n $advice\n"
+"\n\n Database::Accessor BUILD Warning: Load of Database/Accessor/Driver/$file.pm failed: \n   Error=$err \n $advice\n"
                     );
                     next;
                 }
@@ -313,7 +312,7 @@ package Database::Accessor;
         default     => 0,
         traits      => ['MooseX::MetaDescription::Meta::Trait'],
         description => {
-            message    => "Attempt to use create with no_create flag on!",
+            message    => "Database::Accessor create  Error: Attempt to use create with no_create flag on!",
             not_in_DAD => 1
         }
     );
@@ -324,7 +323,7 @@ package Database::Accessor;
         default     => 0,
         traits      => ['MooseX::MetaDescription::Meta::Trait'],
         description => {
-            message    => "Attempt to use retrieve with no_retrieve flag on!",
+            message    => "Database::Accessor retrieve Error: Attempt to use retrieve with no_retrieve flag on!",
             not_in_DAD => 1
         }
     );
@@ -334,7 +333,7 @@ package Database::Accessor;
         default     => 0,
         traits      => ['MooseX::MetaDescription::Meta::Trait'],
         description => {
-            message    => "Attempt to use update with no_update flag on!",
+            message    => "Database::Accessor update Error: Attempt to use update with no_update flag on!",
             not_in_DAD => 1
         }
     );
@@ -344,7 +343,7 @@ package Database::Accessor;
         default     => 0,
         traits      => ['MooseX::MetaDescription::Meta::Trait'],
         description => {
-            message    => "Attempt to use delete with no_delete flag on!",
+            message    => "Database::Accessor delete Error: Attempt to use delete with no_delete flag on!",
             not_in_DAD => 1
         }
     );
@@ -556,7 +555,7 @@ package Database::Accessor;
                 $new_row->{$key} = $row->{$key};
             }
             push(@new_container,$new_row);        }
-        die $message .= "The \$container must have at least 1 element with the view="
+        confess $message .= "The \$container must have at least 1 element with the view="
                      .$self->view()->name()
                      ."!"
               if ( !scalar( @new_container ) );
@@ -569,29 +568,30 @@ package Database::Accessor;
         my $new_container;
         
         my $message =
-            "Usage: Database::Accessor->"
+            "Database::Accessor "
           . lc($action)
-          . "( Class , Hash-Ref||Class||Array-Ref of [Hash-ref||Class], Hash-Ref); ";
+          ."( \$db 'Class', \$container 'Hash-Ref||Class||Array-Ref of [Hash-ref||Class]', \$options 'Hash-Ref');"
+          . " Error: Incorrect Usage: ";
 
         if ( ref($container) eq "ARRAY" ) {
 
-            die $message .= "The \$container Arry-Ref cannot be empty"
+            confess $message .= "The \$container Arry-Ref cannot be empty"
               if ( !scalar( @{$container} ) );
 
             my @bad =
               grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-            die $message
+            confess $message
               . " The \$container 'Array-Ref' must contain only Hash-refs or Classes"
-              if ( scalar(@bad) );
+              if ( !scalar(@bad) );
             $new_container = $self->_clean_up_container($message,$container);
         }
         else {
 
-            die $message .=
+            confess $message .=
 "The \$container parameter must be either a Hash-Ref, a Class or an Array-ref of Hash-refs and or Classes"
               if ( !( ref($container) eq 'HASH' or blessed($container) ) );
 
-            die $message .= "The \$container Hash-Ref cannot be empty"
+            confess $message .= "The \$container Hash-Ref cannot be empty"
               if ( ref($container) eq 'HASH' and !keys( %{$container} ) );
               
             $new_container = shift(@{$self->_clean_up_container($message,[$container])});
@@ -606,7 +606,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
 
-        die( $self->meta->get_attribute('no_create')->description->{message} )
+        confess( $self->meta->get_attribute('no_create')->description->{message} )
           if ( $self->no_create() );
         return $self->_create_or_update( Database::Accessor::Constants::CREATE,
             $conn, $container, $opt );
@@ -617,7 +617,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
 
-        die( $self->meta->get_attribute('no_update')->description->{message} )
+        confess( $self->meta->get_attribute('no_update')->description->{message} )
           if ( $self->no_update() );
 
         $self->_need_condition( Database::Accessor::Constants::UPDATE,
@@ -631,19 +631,18 @@ package Database::Accessor;
         my $self = shift;
         my ( $conn, $opt ) = @_;
 
-        die( $self->meta->get_attribute('no_retrieve')->description->{message} )
+        confess( $self->meta->get_attribute('no_retrieve')->description->{message} )
           if ( $self->no_retrieve() );
           
-        die( "You must supply a da_result_class when da_result_set is Class!" )
+        confess( "Database::Accessor retrieve Error: You must supply a da_result_class when da_result_set is Class!" )
           if ( $self->da_result_set() eq 'Class' and !$self->da_result_class() );
           
         if ($self->da_result_class()){
             eval "require ".$self->da_result_class();
             if ($@) {
                 $@ =~ s /locate/locate the da_result_class file /;
-                die( $@ );
-                            }        }
-
+                confess( $@ );
+                            }        }
         my $container = {};
         return $self->_execute( Database::Accessor::Constants::RETRIEVE,
             $conn, $container, $opt );
@@ -653,7 +652,7 @@ package Database::Accessor;
     sub delete {
         my $self = shift;
         my ( $conn, $opt ) = @_;
-        die( $self->meta->get_attribute('no_delete')->description->{message} )
+        confess( $self->meta->get_attribute('no_delete')->description->{message} )
           if ( $self->no_delete() );
           
         $self->_need_condition( Database::Accessor::Constants::DELETE,
@@ -669,7 +668,7 @@ package Database::Accessor;
         my $self = shift;
         my ( $action, $required ) = @_;
         my $is_required = $required || 0;
-        die "Attempt to $action without condition"
+        confess("Database::Accessor $action Error: Attempt to $action without a condition!"
           if (
             $is_required
             and
@@ -696,14 +695,14 @@ package Database::Accessor;
                   ;    #ignore elements on other view (joins etc)
 
                 if ( ref($container) eq 'HASH' ) {
-                    die $message
+                    confess $message
                       . "The Hash-Ref \$container must have a "
                       . $element->name
                       . " key present!"
                       if ( !exists( $container->{ $element->name } ) );
                 }
                 else {
-                    die $message
+                    confess $message
                       . "The Class \$container must have a "
                       . $element->name
                       . " attribute!"
@@ -715,11 +714,11 @@ package Database::Accessor;
     private_method check_options => sub {
         my $self = shift;
         my ($action,$opt) = @_;
-        die "The Option param for $action must be a Hash-Ref"
+        confess( "Database::Accessor $action Error: The Option param for $action must be a Hash-Ref"
            if (ref($opt) ne 'HASH');
            
         foreach my $key (keys(%{$opt})){
-             die "The $key option param for $action must be a "
+             confess "Database::Accessor $action Error: The $key option param for $action must be a "
                  .Database::Accessor::Constants::OPTIONS->{$key}
                  ."-Ref not a "
                  . ref($opt->{$key})
@@ -749,7 +748,7 @@ package Database::Accessor;
           # warn("DA _check_element 2 ".Dumper($element));
           # warn("DA _check_element 3 name=".$element->name()); 
           # warn("$type DA _check_element 4 name=".$element->_lookup_name()); 
-          die( " $type Error on Database::Accessor::->$action: Element {name=>"
+          confess( "Database::Accessor $type Error: element {name=>"
                 .$element->name()
                 .", view=>"
                 .$element->view()
@@ -866,7 +865,7 @@ package Database::Accessor;
             
             if ( ref($element) eq 'Database::Accessor::Element' and $element->identity() ){
                 if ($self->_identity_index() >=0 ){
-                    die " Database::Accessor->"
+                    confess "Database::Accessor "
                         . lc($action)
                         . " More than one element has the 'identity' attribute set. Please check your elements!";
                 }
@@ -930,9 +929,11 @@ package Database::Accessor;
            }
         }
 
-        die " Database::Accessor->"
+        confess "Database::Accessor "
           . lc($action)
-          . " Unbalanced parentheses in your ".$type." attributes. Please check them!"
+          . " Effor: Unbalanced parentheses in your "
+          . $type
+          ." attributes. Please check them!"
           if ( $self->_parens_are_open() );
         $self->_reset_conditions();
 
@@ -950,7 +951,7 @@ package Database::Accessor;
           if ( $action eq Database::Accessor::Constants::CREATE 
             or $action eq Database::Accessor::Constants::UPDATE);
             
-        die "Usage: Database::Accessor->"
+        confess "Database::Accessor "
           . lc($action)
           . $usage 
           . "You must supply a \$connection class"
@@ -958,7 +959,7 @@ package Database::Accessor;
         my $drivers = $self->_ldad();
         my $driver  = $drivers->{ ref($conn) };
 
-        die " Database::Accessor->"
+        confess "Database::Accessor "
           . lc($action)
           ." No Database::Accessor::Driver loaded for "
           . ref($conn)
