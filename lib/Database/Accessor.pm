@@ -99,6 +99,7 @@
             traits  => ['Array'],
             handles => { sort_count => 'count', },
             default => sub { [] },
+            documentation => "sort"
         );
        
        sub get_element_by_name {
@@ -133,9 +134,10 @@ package Database::Accessor;
     use Scalar::Util qw(blessed);
     use Carp 'confess';
     use Data::Dumper;
+    $Data::Dumper::Terse = 1;
     use File::Spec;
     use namespace::autoclean;
-
+    
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
 
@@ -143,17 +145,97 @@ package Database::Accessor;
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
-        
+        my ($package, $filename, $line, $subroutine) = caller(3);
         if ( $ops->{retrieve_only} ) {
             $ops->{no_create}   = 1;
             $ops->{no_retrieve} = 0;
             $ops->{no_update}   = 1;
             $ops->{no_delete}   = 1;
         }
-        
-        return $class->$orig($ops);
+       # return $class->$orig($ops);
+        my $instance;        eval{ $instance = $class->$orig($ops)};
+        if ($@) {                        if (exists($ENV{'DA_ALL_ERRORS'}) and $ENV{'DA_ALL_ERRORS'} ){
+                die $@;
+            }
+            else {
+                my @errors;
+                my $error_msg;
+                my $error;
+                if ($@->missing()) {
+                    foreach my $error ($@->missing()){
+                        # warn(Dumper($error->attribute->documentation));
+                        push(@errors,sprintf('%s%s'
+                                              ,($error->attribute->documentation) ?  $error->attribute->documentation."->" : ""
+                                             ,$error->attribute->name())); 
+                    }
+                    
+                    $error = "The following Attribute"
+                             .$class->_is_are_msg(scalar(@errors))
+                             ."required: ("
+                             .join(",",@errors)
+                             .")\n";
+                }
+                if ($@->invalid()) {
+                    @errors= ();
+                    foreach my $error ($@->invalid()){
+                      push(@errors, sprintf("'%s%s' Constraint: %s"
+                                           ,($error->attribute->documentation) ?  $error->attribute->documentation."->" : ""
+                                           ,$error->attribute->name
+                                           ,$error->attribute->type_constraint->get_message($error->data) 
+                                           ));
+                    }
+                    $error .= "The followling Attribute"
+                             .$class->_did_do_msg(scalar(@errors))
+                             ." not pass validation: \n"
+                             .join("\n",@errors)
+                             ;
+                    
+                    
+                }
+               
+                my $misc = "Database::Accessor new Error:\n"
+                    . $error
+                    . "\nWith constructor hash:\n"
+                    . Dumper($ops);
+                my $die = MooseX::Constructor::AllErrors::Error::Constructor->new(
+                     caller => [$package, $filename, $line, $subroutine ],
+                 );
+                $die->add_error(MooseX::Constructor::AllErrors::Error::Misc->new({message =>$misc}));
+                die $die;
+            }
+         }
+         else {
+             return $instance;
+         }
     };
 
+sub _is_are_msg {
+    my $self = shift;
+    my ($count) = @_;
+    return "s are "
+      if ($count >1);
+    return " is "
+}    
+    
+sub _did_do_msg {
+    my $self = shift;
+    my ($count) = @_;
+    return "s do "
+      if ($count >1);
+    return " did "
+}   
+    # sub _new_misc_error {
+        # my $self = shift;
+        # my ($error,$line,$filename) = @_;
+            # my $misc = MooseX::Constructor::AllErrors::Error::Misc->new({message =>"Database::Accessor New Error: "
+                    # . $error->message
+                    # . " at Line "
+                    # . $line
+                    # . " file: "
+                    # . $filename});
+
+        # return $misc;    # }
+    
     sub BUILD {
         my $self = shift;
         my $dad  = {};
@@ -186,7 +268,7 @@ package Database::Accessor;
         push(@items,@{ $self->gather->view_elements })
             if ($self->gather() and $self->gather->view_elements);
 
-        $self->_elements_check(\@items,"new","static");        
+        $self->_elements_check(\@items,"new","static");       
         my %saved = %$self;
         tie(
             %$self,
@@ -198,6 +280,7 @@ package Database::Accessor;
             }
         );
         %$self = %saved;
+        
     }
 
     sub _loadDADClassesFromDir {
@@ -384,7 +467,7 @@ package Database::Accessor;
       # );
       has [
         qw(all_elements_present
-          )
+           )
       ] => (
         is          => 'rw',
         isa         => 'Bool',
@@ -431,7 +514,7 @@ package Database::Accessor;
         traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
-        default  => sub { [] },
+        # default  => sub { [] },
         init_arg => undef,
         handles  => {
             reset_conditions        => 'clear',
@@ -578,12 +661,18 @@ package Database::Accessor;
             confess($message .= "The \$container Arry-Ref cannot be empty")
               if ( !scalar( @{$container} ) );
 
-            my @bad =
-              grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
-            confess( $message
-              . " The \$container 'Array-Ref' must contain only Hash-refs or Classes. \$container="
-              . Dumper($container) )
-              if (scalar(@bad) );
+            my @bad = grep( !( ref($_) eq 'HASH' or blessed($_) ), @{$container} );
+             
+            if (scalar(@bad)){
+                my $count = scalar(@bad);
+                $message .= " The \$container 'Array-Ref' must contain only Hash-refs or Classes. Scalar value";
+                $message .= ($count <=1 ) ? " " : "s ";
+                $message .=  join(',',@bad);
+                $message .= ($count <= 1) ? " is" : " are";
+                $message .= " not allowed in ="
+                            . Dumper($container);
+                confess( $message);
+            }
             $new_container = $self->_clean_up_container($message,$container);
         }
         else {
@@ -1035,7 +1124,7 @@ package Database::Accessor;
                 da_result_set        => $self->da_result_set,
                 da_key_case          => $self->da_key_case,
                 da_result_class      => $self->da_result_class,
-                identity_index       => $self->_identity_index
+                identity_index       => $self->_identity_index,
             }
         );
         my $result = Database::Accessor::Result->new(
@@ -1240,7 +1329,10 @@ package Database::Accessor;
         extends 'Database::Accessor::Base';
         with qw(Database::Accessor::Roles::Alias);
 
-        has '+name' => ( required => 1 );
+        has '+name' => ( required => 1,
+                         documentation => "view" );
+                         
+        has '+alias' => (documentation => 'view');
     }
     {
 
@@ -1250,7 +1342,7 @@ package Database::Accessor;
         extends 'Database::Accessor::Base';
         with qw(
                 Database::Accessor::Roles::Element );
-        has '+name' => ( required => 1 );
+        has '+name' => ( required => 1);
 
         has 'view' => (
 
@@ -1291,12 +1383,17 @@ package Database::Accessor;
         has operator => (
             is      => 'rw',
             isa     => 'Operator',
+            documentation => "conditions"
         );
         has condition => (
             is      => 'rw',
             isa     => 'Operator|Undef',
-            default => undef
+            default => undef,
+            documentation => "conditions"
         );
+        has '+left' => (documentation => 'conditions');
+        has '+right' => (documentation => 'conditions');
+        # has '+'
         1;
     }
 
@@ -1400,6 +1497,7 @@ package Database::Accessor;
             isa     => 'Predicate',
             coerce  => 1,
             alias   => 'conditions',
+            documentation => "condition"
         );
 
         1;
@@ -1417,6 +1515,7 @@ package Database::Accessor;
             handles => { element_count => 'count',
                        },
             required=>1,
+            documentation => "gather"
         );
         has view_elements => (
             isa => 'ArrayRefofGroupElements',
@@ -1424,6 +1523,7 @@ package Database::Accessor;
             traits  => ['Array'],
             handles => { view_count => 'count',
                        },
+            documentation => "gather"
         );
         has conditions => (
             isa => 'ArrayRefofConditions',
@@ -1431,6 +1531,7 @@ package Database::Accessor;
             traits  => ['Array'],
             handles => { condition_count => 'count', },
             default => sub { [] },
+            documentation => "gather"
         );
         1;
     }
@@ -1462,24 +1563,28 @@ package Database::Accessor;
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
-        # use Data::Dumper;
-        # warn( "JSP  Link BUILDARGS " . Dumper($ops) );
-       # my $lookup_view = $ops->{to}->{name};
+        use Data::Dumper;
+      my $lookup_view = $ops->{to}->{name};
         my $view_name = $ops->{to}->{name};
         $view_name = $ops->{to}->{alias}
           if ( exists( $ops->{to}->{alias} ) );
-        foreach my $condition ( @{ $ops->{conditions} } ) {
-            $class->_check_elements( $condition->{left},  $view_name );
-            $class->_check_elements( $condition->{right}, $view_name);
+        if (exists( $ops->{conditions} )){
+            foreach my $condition ( @{ $ops->{conditions} } ) {
+               $class->_check_elements( $condition->{left},  $view_name );
+               $class->_check_elements( $condition->{right}, $view_name);
+            }
         }
+    
         return $class->$orig($ops);
     };
     has conditions => (
         isa     => 'ArrayRefofConditions',
+        required=> 1,
         is      => 'ro',
         traits  => ['Array'],
         handles => { condition_count => 'count', },
-        default => sub { [] },
+        # default => sub { [] },
+        documentation => "links"
     );
 
     1;
@@ -1488,12 +1593,14 @@ package Database::Accessor;
         isa      => 'View',
         required => 1,
         alias    => [qw( view to_view )],
+        documentation => "links"
     );
 
     has type => (
         is       => 'rw',
         isa      => 'Link',
         required => 1,
+        documentation => "links"
     );
     1;
 }

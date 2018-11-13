@@ -25,6 +25,12 @@ class_type 'If',       { class => 'Database::Accessor::If' };
 class_type 'Then',       { class => 'Database::Accessor::If::Then' };
 class_type 'View',       { class => 'Database::Accessor::View' };
 class_type 'Element',    { class => 'Database::Accessor::Element' };
+
+# subtype 'Element'=> as 'Object',
+    # => where { $_->isa('Database::Accessor::Element') },
+        # message{"something died there"};
+
+
 class_type 'Predicate',  { class => 'Database::Accessor::Predicate' };
 class_type 'Condition',  { class => 'Database::Accessor::Condition' };
 class_type 'Param',      { class => 'Database::Accessor::Param' };
@@ -36,7 +42,11 @@ class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 subtype 'ArrayRefofThens'           => as 'ArrayRef[Then|ArrayRef]'; 
 # subtype 'ArrayRefofArrayRefofThens' => as 'ArrayRef[If]'; 
 
-subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
+subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]',
+   where { scalar(@{$_})<=0 ? 0 : 1; },
+  message {
+    "ArrayRefofConditions can not be an empty array ref";
+  };
 # subtype 'ArrayRefofElements'   => as
 # subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'ArrayRefofElements'   => as
@@ -64,8 +74,10 @@ subtype 'ArrayRefofParams' => as 'ArrayRef[If|Element|Param|Function|Expression]
 subtype 'NumericOperator', as 'Str', where {
     exists( Database::Accessor::Constants::NUMERIC_OPERATORS->{ uc($_) } );
 }, message {
-    "The Numeric Operator '$_', is not a valid Accessor Numeric Operato!"
-      . _try_one_of( Database::Accessor::Constants::NUMERIC_OPERATORS() );
+    "The Numeric Operator '"
+    ._undef_check($_)
+    ."', is not a valid Accessor Numeric Operator!"
+    . _try_one_of( Database::Accessor::Constants::NUMERIC_OPERATORS() );
 };
 
 
@@ -74,16 +86,20 @@ subtype 'Operator',
   as 'Str',
   where { exists( Database::Accessor::Constants::OPERATORS->{ uc($_) } ) },
   message {
-    "The Operator '$_', is not a valid Accessor Operator!"
-      . _try_one_of( Database::Accessor::Constants::OPERATORS() );
+    "The Operator '"
+    ._undef_check($_)
+    ."', is not a valid Accessor Operator!"
+    . _try_one_of( Database::Accessor::Constants::OPERATORS() );
   };
 
 subtype 'Link',
   as 'Str',
   where { exists( Database::Accessor::Constants::LINKS->{ uc($_) } ) },
   message {
-    "The Link '$_', is not a valid Accessor Link!"
-      . _try_one_of( Database::Accessor::Constants::LINKS() );
+    "The Link '"
+    ._undef_check($_)
+    ."', is not a valid Accessor Link!"
+    ._try_one_of( Database::Accessor::Constants::LINKS() );
   };
 
 
@@ -123,7 +139,15 @@ coerce 'ArrayRefofThens', from 'ArrayRef', via {
 };
 
 coerce 'ArrayRefofParams', from 'ArrayRef', via {
-   _right_left_coerce($_);
+    my ($package, $filename, $line) = caller;
+       # eval {
+           _right_left_coerce($_);
+       # };
+        #warn("JSP $package, $filename, $line");
+       # if ($@) {
+       #  confess($@);
+       #}
+   
 };
 
 coerce 'ArrayRefofElements', from 'ArrayRef', via {
@@ -185,6 +209,13 @@ coerce 'ArrayRefofGroupElements', from 'ArrayRef', via {
       # . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
   # };
 
+sub _undef_check {
+   my ($in) = shift;
+    return $in
+      if ($in);
+    return 'undef';
+}
+
 sub _right_left_coerce {
     my ($in) = @_;
     
@@ -224,8 +255,14 @@ sub _element_coerce {
         $object = Database::Accessor::If->new( %{$hash} );
     }
     else {
-        $object = Database::Accessor::Element->new( %{$hash} );
-
+        # my ($package, $filename, $line) = caller;
+        # eval {
+            $object = Database::Accessor::Element->new( %{$hash} );
+        # };
+        # if ($@) {
+          # confess($@);
+        # }
+        # die ($@);
     }
     return $object;
 }
