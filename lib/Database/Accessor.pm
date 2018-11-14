@@ -1063,16 +1063,12 @@ sub _did_do_msg {
         $self->_reset_parens();
         $self->_reset_conditions(); 
         my @items;
-        warn("jere 4");
         push( @items,
              @{ $self->dynamic_conditions },
              @{ $self->dynamic_sorts },
            );
-            warn("jere 4");
         foreach my $link (@{ $self->dynamic_links }){
-            
             push(@items,$link->conditions);
-            warn("jere 5");
         } 
        
                
@@ -1551,7 +1547,7 @@ sub _did_do_msg {
         my $self = shift;
         my ( $ops, $view_name ) = @_;
         if ( exists( $ops->{name} ) ) {
-           # warn("ops=".Dumper($ops));
+            
             $ops->{view} = $view_name
                unless($ops->{view});
             $ops->{only_on_link} = $ops->{view}.$ops->{name};
@@ -1568,7 +1564,8 @@ sub _did_do_msg {
         my $class = shift;
         my $ops   = shift(@_);
         use Data::Dumper;
-      my $lookup_view = $ops->{to}->{name};
+      
+        my $lookup_view = $ops->{to}->{name};
         my $view_name = $ops->{to}->{name};
         $view_name = $ops->{to}->{alias}
           if ( exists( $ops->{to}->{alias} ) );
@@ -1578,7 +1575,7 @@ sub _did_do_msg {
                $class->_check_elements( $condition->{right}, $view_name);
             }
         }
-    
+      # warn("ops $class=".Dumper($ops));
         return $class->$orig($ops);
     };
     has conditions => (

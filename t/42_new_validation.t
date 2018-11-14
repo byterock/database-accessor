@@ -296,7 +296,7 @@ my $tests = {
         },
         {
             caption   => 'conditions cannot be empty',
-            exception => "\(links->conditionss\)",
+            exception => "\(links->conditions\)",
             links     => {
                 to => {
                     name  => 'country',

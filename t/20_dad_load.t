@@ -102,7 +102,6 @@ foreach my $type (qw(create retrieve update )){
                         };
      my $processed_container = {street     =>'131 Madison Ave.',
                                 dad_fiddle =>1};
-                                  warn("here $type");
      ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
      if ($type eq 'create' or $type eq 'update') {
        ok($da_new->result()->is_error == 0,"$type->No Error");
@@ -146,7 +145,7 @@ like(
 
 like(
     exception { Database::Accessor->new( {elements=>[{ name => 'street', view => 'person', }]} ) },
-    qr /The following Attribute is required: \(view\) /,
+    qr /The following Attribute is required: \(view\)/,
     "View is a required Field"
 );
 like(

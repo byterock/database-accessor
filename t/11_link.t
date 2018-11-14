@@ -11,6 +11,7 @@ BEGIN {
     use_ok('Database::Accessor::Link');
 }
 
+
 my $link = Database::Accessor::Link->new(
     {
         type       => 'left',
