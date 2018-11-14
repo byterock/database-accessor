@@ -1587,7 +1587,6 @@ sub _did_do_msg {
         documentation => "links"
     );
 
-    1;
     has to => (
         is       => 'rw',
         isa      => 'View',
