@@ -102,6 +102,7 @@ foreach my $type (qw(create retrieve update )){
                         };
      my $processed_container = {street     =>'131 Madison Ave.',
                                 dad_fiddle =>1};
+                                  warn("here $type");
      ok($da_new->$type(Data::Test->new(),$container) == 1,"$type Query ran");
      if ($type eq 'create' or $type eq 'update') {
        ok($da_new->result()->is_error == 0,"$type->No Error");
@@ -126,6 +127,7 @@ foreach my $type (qw(create retrieve update )){
         );
      }
      else {
+       
         my $dad = $da_new->result()->error;
         ok($dad->is_HashRef ==1,"DAD is_HashRef is true");
         ok($dad->is_Upper ==1,"DAD is_is_Upper is true");
@@ -138,13 +140,13 @@ foreach my $type (qw(create retrieve update )){
 
 like(
     exception {my $da = Database::Accessor->new( {view => { name => 'person' }} ) },
-    qr /Attribute \(elements\) is required at/,
+    qr /The following Attribute is required: \(elements\)/,
     "Elements is a required Field "
 );
 
 like(
     exception { Database::Accessor->new( {elements=>[{ name => 'street', view => 'person', }]} ) },
-    qr /Attribute \(view\) is required at /,
+    qr /The following Attribute is required: \(view\) /,
     "View is a required Field"
 );
 like(

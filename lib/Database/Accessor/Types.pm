@@ -42,10 +42,12 @@ class_type 'Gather',     { class => 'Database::Accessor::Gather' };
 subtype 'ArrayRefofThens'           => as 'ArrayRef[Then|ArrayRef]'; 
 # subtype 'ArrayRefofArrayRefofThens' => as 'ArrayRef[If]'; 
 
-subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]',
+subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
+  
+subtype 'LinkArrayRefofConditions' => as 'ArrayRef[Condition]',
    where { scalar(@{$_})<=0 ? 0 : 1; },
   message {
-    "ArrayRefofConditions can not be an empty array ref";
+    "conditions can not be an empty array ref!";
   };
 # subtype 'ArrayRefofElements'   => as
 # subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';

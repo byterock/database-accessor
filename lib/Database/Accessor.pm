@@ -514,7 +514,7 @@ sub _did_do_msg {
         traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
-        # default  => sub { [] },
+        default  => sub { [] },
         init_arg => undef,
         handles  => {
             reset_conditions        => 'clear',
@@ -1036,7 +1036,7 @@ sub _did_do_msg {
         my ( $action, $conn,$new_container, $opt ) = @_;
         
       
-      
+     
         my $usage = "(\$connection,\$options); ";
         $usage = "(\$connection,\$container,\$options); "
           if ( $action eq Database::Accessor::Constants::CREATE 
@@ -1063,12 +1063,16 @@ sub _did_do_msg {
         $self->_reset_parens();
         $self->_reset_conditions(); 
         my @items;
+        warn("jere 4");
         push( @items,
              @{ $self->dynamic_conditions },
              @{ $self->dynamic_sorts },
            );
+            warn("jere 4");
         foreach my $link (@{ $self->dynamic_links }){
+            
             push(@items,$link->conditions);
+            warn("jere 5");
         } 
        
                
@@ -1578,7 +1582,7 @@ sub _did_do_msg {
         return $class->$orig($ops);
     };
     has conditions => (
-        isa     => 'ArrayRefofConditions',
+        isa     => 'LinkArrayRefofConditions',
         required=> 1,
         is      => 'ro',
         traits  => ['Array'],
