@@ -1,16 +1,23 @@
 use strict;
 
 package Database::Accessor::Types;
+our $NEW;
 
 # ABSTRACT: A Types Role for Database::Accessor:
 use Moose::Role;
+
+# with qw(Database::Accessor::Roles::AllErrors);
+our $ALL_ERRORS;
 use Data::Dumper;
+use Taint::Util;
 
 # Dist::Zilla: +PkgVersion
 use lib 'D:\GitHub\database-accessor\lib';
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
 use Database::Accessor::Constants;
+use Clone;
+use Try::Tiny;
 
 # # use Database::Accessor::View;
 # use Database::Accessor::Element;
@@ -49,7 +56,7 @@ subtype 'ArrayRefofConditions' => as 'ArrayRef[Condition]';
 subtype 'LinkArrayRefofConditions' => as 'ArrayRef[Condition]',
 
   where { scalar( @{$_} ) <= 0 ? 0 : 1; }, message {
-    "conditions can not be an empty array ref!";
+    "conditions can not be an empty array ref or undef!";
   };
 
 # subtype 'ArrayRefofElements'   => as
@@ -111,15 +118,72 @@ coerce 'Gather', from 'HashRef', via {
       if (  exists( $_->{elements} )
         and ref( $_->{elements} ) eq 'ARRAY'
         and scalar( @{ $_->{elements} } == 0 ) );
-    Database::Accessor::Gather->new( %{$_} );
+    my $object = _create_instance( 'Database::Accessor::Gather', $_, 13, $_ );
+    return $object;
 };
 
-coerce 'Predicate', from 'HashRef',
-  via { Database::Accessor::Predicate->new( %{$_} ) };
+coerce 'Predicate', from 'HashRef', via {
+
+    my $object =
+      _create_instance( 'Database::Accessor::Predicate', $_, 13, $_ );
+    return $object;
+};
+
+sub _create_instance {
+    my ( $class, $ops, $caller, $raw ) = @_;
+    my $object;
+
+    if ($NEW) {
+        $object = $class->new( %{$ops} );
+    }
+    else {
+        try {
+
+            if ( $class eq 'Database::Accessor::Gather' ) {
+                $object = $class->new( %{$ops} );
+            }
+            else {
+                $object = $class->new($ops);
+            }
+        }
+        catch {
+            my ( $package1, $filename1, $line1 ) = caller($caller);
+            foreach my $error ( $_->errors() ) {
+                $ALL_ERRORS->add_error($error);
+            }
+
+        };
+
+        if ( ref($ALL_ERRORS) and $ALL_ERRORS->has_errors )
+        {   
+            my ( $package, $filename, $line, $subroutine ) = caller($caller);
+            die _one_error(
+                $ALL_ERRORS, $ops,        $subroutine, $package, $filename,
+                $line,       $subroutine, $NEW,        $raw
+            );
+        }
+    }
+    return $object;
+
+}
+
+sub _is_new {
+    my ($new) = @_;
+    if ( defined($new) ) {
+        $NEW = $new;
+    }
+    $ALL_ERRORS =
+      MooseX::Constructor::AllErrors::Error::Constructor->new( caller => [], );
+    return $NEW;
+
+}
 coerce 'Element', from 'HashRef', via {
     return _element_coerce($_);
 };
-coerce 'View', from 'HashRef', via { Database::Accessor::View->new( %{$_} ) };
+coerce 'View', from 'HashRef', via {
+    my $object = _create_instance( 'Database::Accessor::View', $_, 13, $_ );
+    return $object;
+};
 coerce 'Param', from 'HashRef', via {
     return _element_coerce($_);
 };
@@ -130,8 +194,8 @@ coerce 'ArrayRefofLinks', from 'ArrayRef', via {
     return [ Database::Accessor::Link->new($_) ];
 };
 
-
 foreach my $subtypes (qw(LinkArrayRefofConditions ArrayRefofConditions )) {
+
     coerce $subtypes, from 'ArrayRef', via {
 
         return _predicate_array_or_object( "Database::Accessor::Condition",
@@ -143,47 +207,19 @@ foreach my $subtypes (qw(LinkArrayRefofConditions ArrayRefofConditions )) {
     };
 }
 
-foreach my $subtypes (qw(ArrayRefofExpressions ArrayRefofParams ArrayRefofElements)){
-    
-coerce $subtypes, from 'ArrayRef', via {
+foreach
+  my $subtypes (qw(ArrayRefofExpressions ArrayRefofParams ArrayRefofElements))
+{
 
-    # warn("$subtypes=".Dumper($_));
-    return _right_left_coerce($_);
-};
-}    
+    coerce $subtypes, from 'ArrayRef', via {
+        return _right_left_coerce($_);
+    };
+}
 coerce 'ArrayRefofThens', from 'ArrayRef', via {
-
-    # warn("ArrayRefofThens=".Dumper($_));
     return _then_array_or_object($_);
 };
 
-# coerce 'ArrayRefofParams', from 'ArrayRef', via {
-    # my ( $package, $filename, $line ) = caller;
-
-    # # eval {
-    # _right_left_coerce($_);
-
-    # # };
-    # #warn("JSP $package, $filename, $line");
-    # # if ($@) {
-    # #  confess($@);
-    # #}
-
-# };
-
-# coerce 'ArrayRefofElements', from 'ArrayRef', via {
-
-    # _right_left_coerce($_);
-# };
-
-# coerce 'ArrayRefofExpressions', from 'ArrayRef', via {
-
-    # _right_left_coerce($_);
-# };
-
-
 coerce 'ArrayRefofPredicates', from 'ArrayRef', via {
-
     [ map { Database::Accessor::Predicate->new($_) } @$_ ];
 };
 
@@ -224,14 +260,6 @@ coerce 'ArrayRefofGroupElements', from 'ArrayRef', via {
 
 };
 
-# subtype 'Aggregate',
-# as 'Str',
-# where { exists( Database::Accessor::Constants::AGGREGATES->{ uc($_) } ) },
-# message {
-# "The Aggrerate '$_', is not a valid Accessor Aggregate!"
-# . _try_one_of( Database::Accessor::Constants::AGGREGATES() );
-# };
-
 sub _undef_check {
     my ($in) = shift;
     return $in
@@ -257,17 +285,40 @@ sub _right_left_coerce {
 
 sub _element_coerce {
     my ($hash) = @_;
-    my $object;
-    if ( exists( $hash->{expression} ) ) {
+
+    my $class = "Database::Accessor::Element";
+    my %copy = ($hash) ? %{ Clone::clone($hash) } : ();
+    unless ($hash) {
+
+        my ( $package, $filename, $line, $subroutine ) = caller(4);
+        my $add = substr( $subroutine, 4, length($subroutine) );
+
+        $ALL_ERRORS->add_error(
+            MooseX::Constructor::AllErrors::Error::Misc->new(
+                {
+                        message => "Database::Accessor "
+                      . $subroutine
+                      . " Error:\n"
+                      . "You cannot add undef to dynamic_"
+                      . $add . "! "
+                }
+            )
+        );
+        die _one_error(
+            $ALL_ERRORS, $hash,       $subroutine, $package, $filename,
+            $line,       $subroutine, $NEW,        $hash
+        );
+    }
+    elsif ( exists( $hash->{expression} ) ) {
         $hash->{expression} = uc( $hash->{expression} );
-        $object = Database::Accessor::Expression->new( %{$hash} );
+        $class = "Database::Accessor::Expression";
     }
     elsif ( exists( $hash->{function} ) ) {
         $hash->{function} = uc( $hash->{function} );
-        $object = Database::Accessor::Function->new( %{$hash} );
+        $class = "Database::Accessor::Function";
     }
     elsif ( exists( $hash->{value} ) || exists( $hash->{param} ) ) {
-        $object = Database::Accessor::Param->new( %{$hash} );
+        $class = "Database::Accessor::Param";
     }
     elsif ( exists( $hash->{ifs} ) ) {
         die "Attribute (ifs) does not pass the type constraint because: 
@@ -275,21 +326,18 @@ sub _element_coerce {
           if (  exists( $hash->{ifs} )
             and ref( $hash->{ifs} ) eq 'ARRAY'
             and scalar( @{ $hash->{ifs} } < 2 ) );
-
-        $object = Database::Accessor::If->new( %{$hash} );
+        $class = "Database::Accessor::If";
     }
     else {
 
-        # my ($package, $filename, $line) = caller;
-        # eval {
-        $object = Database::Accessor::Element->new( %{$hash} );
+        if ( exists( $hash->{left} ) or exists( $hash->{right} ) ) {
 
-        # };
-        # if ($@) {
-        # confess($@);
-        # }
-        # die ($@);
+            delete( $copy{left} );
+            delete( $copy{right} );
+        }
     }
+
+    my $object = _create_instance( $class, $hash, 4, \%copy );
     return $object;
 }
 
@@ -299,11 +347,9 @@ sub _try_one_of {
 }
 
 sub _predicate_array_or_object {
-
     my ( $class, $in ) = @_;
     my $objects = [];
     foreach my $object ( @{$in} ) {
-
         if ( ref($object) eq $class ) {
             push( @{$objects}, $object );
         }
@@ -314,11 +360,12 @@ sub _predicate_array_or_object {
             );
         }
         else {
-            push( @{$objects}, $class->new( { predicates => $object } ) );
+            my $predicate =
+              _create_instance( $class, { predicates => $object }, 4, $object );
+            push( @{$objects}, $predicate );
         }
     }
     return $objects;
-
 }
 
 sub _then_array_or_object {
@@ -357,14 +404,131 @@ sub _link_array_or_object {
             push( @{$objects}, $object );
         }
         elsif ( ref($object) eq "ARRAY" ) {
-
             push( @{$objects}, @{ _link_array_or_object($object) } );
         }
         else {
-            push( @{$objects}, Database::Accessor::Link->new($object) );
+
+            my $instance =
+              _create_instance( 'Database::Accessor::Link', $object, 4,
+                $object );
+            push( @{$objects}, $instance );
+
         }
     }
     return $objects;
+}
+
+sub _one_error {
+    my (
+        $error_in, $ops,        $call, $package, $filename,
+        $line,     $subroutine, $new,  $raw_in
+    ) = @_;
+
+    $call =~ s/Database\:\:Accessor\:\://;
+    my @errors;
+    my $error_msg;
+    my $error;
+    my $error_package;
+    if ( exists( $ENV{'DA_ALL_ERRORS'} ) and $ENV{'DA_ALL_ERRORS'} ) {
+        die $error_in;
+    }
+    else {
+
+        if ( $error_in->missing() ) {
+            foreach my $missing ( $error_in->missing() ) {
+
+                $error_package =
+                  $missing->attribute->definition_context->{package};
+                push( @errors, _get_hint( $missing->attribute ) );
+            }
+
+            $error =
+                "The following Attribute"
+              . _is_are_msg( scalar(@errors) )
+              . "required: ("
+              . join( ",", @errors ) . ")\n";
+
+        }
+        if ( $error_in->invalid() ) {
+            @errors = ();
+            foreach my $invalid ( $error_in->invalid() ) {
+                push(
+                    @errors,
+                    sprintf(
+                        "'%s' Constraint: %s",
+                        _get_hint( $invalid->attribute ),
+                        $invalid->attribute->type_constraint->get_message(
+                            $invalid->data
+                        )
+                    )
+                );
+            }
+
+            $error .=
+                "The following Attribute"
+              . _did_do_msg( scalar(@errors) )
+              . " not pass validation: \n"
+              . join( "\n", @errors ) . "\n";
+
+        }
+        my $on = "";
+        if (    ($error_package)
+            and ( $error_package eq "Database::Accessor::Element" ) )
+        {
+            $on = " Possible missing/invalid key in or near:\n"
+              . Dumper($Database::Accessor::Types::LAST);
+        }
+
+        my $misc = "Database::Accessor " . $call . " Error:\n";
+        if ( $new != 1 and !defined($raw_in) ) {
+            $misc .= "You cannot add 'undef' with " . $call;
+        }
+        else {
+
+            $misc .=
+              $error . $on . "With constructor hash:\n" . Dumper($raw_in);
+        }
+        my $die =
+          MooseX::Constructor::AllErrors::Error::Constructor->new(
+            caller => [ $package, $filename, $line, $subroutine ], );
+        $die->add_error(
+            MooseX::Constructor::AllErrors::Error::Misc->new(
+                { message => $misc }
+            )
+        );
+        return $die;
+    }
+}
+
+sub _is_are_msg {
+    my ($count) = @_;
+    return "s are "
+      if ( $count > 1 );
+    return " is ";
+}
+
+sub _did_do_msg {
+    my ($count) = @_;
+    return "s do "
+      if ( $count > 1 );
+    return " did ";
+}
+
+sub _get_hint {
+    my ($attribute) = @_;
+    my $hint = "";
+    if ( $attribute->documentation ) {
+        $hint = $attribute->documentation . "->"
+          if ( $attribute->documentation ne "None" );
+
+    }
+    elsif ( $attribute->definition_context->{package} ) {
+        $hint = $attribute->definition_context->{package};
+        $hint =~ s/Database\:\:Accessor\:\://;
+        $hint =~ s/Roles\:\:Common/new/;
+        $hint .= "->";
+    }
+    return $hint . $attribute->name();
 }
 
 1;

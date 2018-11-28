@@ -53,7 +53,8 @@
         has view => (
             is  => 'ro',
             isa => 'View',
-            required => 1
+            required => 1,
+            documentation => "None"
         );
 
         has elements => (
@@ -65,6 +66,7 @@
                          _get_element_by_lookup => 'first'
                        },
             required=>1,
+            documentation => "None"
         );
         has conditions => (
             isa => 'ArrayRefofConditions',
@@ -122,7 +124,8 @@ package Database::Accessor;
 
     use Moose;
     with qw(Database::Accessor::Types
-            Database::Accessor::Roles::Common);
+            Database::Accessor::Roles::Common
+            );
     use Moose::Util qw(does_role);
     use Database::Accessor::Constants;
     use MooseX::MetaDescription;
@@ -137,14 +140,17 @@ package Database::Accessor;
     $Data::Dumper::Terse = 1;
     use File::Spec;
     use namespace::autoclean;
-    
+   
     # ABSTRACT: CRUD Interface for any DB
     # Dist::Zilla: +PkgVersion
-
+   
     around BUILDARGS => sub {
+        _is_new(1);
         my $orig  = shift;
         my $class = shift;
         my $ops   = shift(@_);
+
+        
         my ($package, $filename, $line, $subroutine) = caller(3);
         if ( $ops->{retrieve_only} ) {
             $ops->{no_create}   = 1;
@@ -153,89 +159,22 @@ package Database::Accessor;
             $ops->{no_delete}   = 1;
         }
        # return $class->$orig($ops);
+       # warn("JPS around");
         my $instance;        eval{ $instance = $class->$orig($ops)};
-        if ($@) {                        if (exists($ENV{'DA_ALL_ERRORS'}) and $ENV{'DA_ALL_ERRORS'} ){
-                die $@;
-            }
-            else {
-                my @errors;
-                my $error_msg;
-                my $error;
-                if ($@->missing()) {
-                    foreach my $error ($@->missing()){
-                        # warn(Dumper($error->attribute->documentation));
-                        push(@errors,sprintf('%s%s'
-                                              ,($error->attribute->documentation) ?  $error->attribute->documentation."->" : ""
-                                             ,$error->attribute->name())); 
-                    }
-                    
-                    $error = "The following Attribute"
-                             .$class->_is_are_msg(scalar(@errors))
-                             ."required: ("
-                             .join(",",@errors)
-                             .")\n";
-                }
-                if ($@->invalid()) {
-                    @errors= ();
-                    foreach my $error ($@->invalid()){
-                      push(@errors, sprintf("'%s%s' Constraint: %s"
-                                           ,($error->attribute->documentation) ?  $error->attribute->documentation."->" : ""
-                                           ,$error->attribute->name
-                                           ,$error->attribute->type_constraint->get_message($error->data) 
-                                           ));
-                    }
-                    $error .= "The followling Attribute"
-                             .$class->_did_do_msg(scalar(@errors))
-                             ." not pass validation: \n"
-                             .join("\n",@errors)
-                             ;
-                    
-                    
-                }
-               
-                my $misc = "Database::Accessor new Error:\n"
-                    . $error
-                    . "\nWith constructor hash:\n"
-                    . Dumper($ops);
-                my $die = MooseX::Constructor::AllErrors::Error::Constructor->new(
-                     caller => [$package, $filename, $line, $subroutine ],
-                 );
-                $die->add_error(MooseX::Constructor::AllErrors::Error::Misc->new({message =>$misc}));
-                die $die;
-            }
+        if ($@) {                        # if (exists($ENV{'DA_ALL_ERRORS'}) and $ENV{'DA_ALL_ERRORS'} ){
+                # die $@;
+            # }
+            # else {
+                die  _one_error($@, $ops,'new',$package, $filename, $line, $subroutine,1);
+            # }
          }
          else {
+             _is_new(0);
              return $instance;
          }
     };
 
-sub _is_are_msg {
-    my $self = shift;
-    my ($count) = @_;
-    return "s are "
-      if ($count >1);
-    return " is "
-}    
-    
-sub _did_do_msg {
-    my $self = shift;
-    my ($count) = @_;
-    return "s do "
-      if ($count >1);
-    return " did "
-}   
-    # sub _new_misc_error {
-        # my $self = shift;
-        # my ($error,$line,$filename) = @_;
-            # my $misc = MooseX::Constructor::AllErrors::Error::Misc->new({message =>"Database::Accessor New Error: "
-                    # . $error->message
-                    # . " at Line "
-                    # . $line
-                    # . " file: "
-                    # . $filename});
 
-        # return $misc;    # }
-    
     sub BUILD {
         my $self = shift;
         my $dad  = {};
@@ -283,7 +222,7 @@ sub _did_do_msg {
         
     }
 
-    sub _loadDADClassesFromDir {
+    private_method _loadDADClassesFromDir => sub {
         my $self = shift;
         my ( $path, $dad ) = @_;
         # $dad = {}
@@ -362,11 +301,12 @@ sub _did_do_msg {
         $self->_ldad($dad)
           if ( keys($dad) );
 
-    }
+    };
 
     has _ldad => (
         isa => 'HashRef',
         is  => 'rw',
+        traits      => ['Private']
     );
 
     has available_drivers => (
@@ -443,7 +383,7 @@ sub _did_do_msg {
         is          => 'rw',
         isa         => 'Int|Undef',
         default     => undef,
-        traits      => ['MooseX::MetaDescription::Meta::Trait'],
+        traits      => ['MooseX::MetaDescription::Meta::Trait','Private'],
         description => { not_in_DAD => 1 }
     );
     has result => (
@@ -454,18 +394,7 @@ sub _did_do_msg {
 
     );
     
-    # has [
-        # qw(da_compose_only
-           # da_no_effect
-           # da_warning           
-          # )
-      # ] => (
-        # is          => 'rw',
-        # isa         => 'Bool',
-        # default     => 0,
-        # traits => ['ENV'],
-      # );
-      has [
+    has [
         qw(all_elements_present
            )
       ] => (
@@ -485,15 +414,12 @@ sub _did_do_msg {
 
     );
 
-
-
     has default_operator => (
         is          => 'rw',
         isa         => 'Operator',
         traits      => ['MooseX::MetaDescription::Meta::Trait'],
         default     => '=',
         description => { not_in_DAD => 1 }
-
     );
 
 
@@ -515,21 +441,25 @@ sub _did_do_msg {
         description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
-        init_arg => undef,
         handles  => {
             reset_conditions        => 'clear',
             add_condition           => 'push',
             dynamic_condition_count => 'count',
         },
     );
-
+    
+    sub get_element_by_name {
+           my $self = shift;
+           my ($name) = @_;
+           my $found = $self->_get_element_by_name(sub { if (!defined($_->name)) {return 0} $_->name eq $name});
+           return $found;
+       }
     has dynamic_links => (
         isa      => 'ArrayRefofLinks',
         traits   => ['Array','MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
         default  => sub { [] },
-        init_arg => undef,
         handles  => {
             reset_links        => 'clear',
             add_link           => 'push',
@@ -543,35 +473,19 @@ sub _did_do_msg {
         traits   => ['MooseX::MetaDescription::Meta::Trait'],
         description => { not_in_DAD => 1 },
         is       => 'rw',
-       # trigger   => \&_check_elements_present
     );
-
-    # sub _check_elements_present {
-        # my ( $self, $child ) = @_;
-        # my @check_elements;
-                # if (ref($child) eq 'Database::Accessor::Gather'){
-           # push( @check_elements, @{$child->view_elements})
-             # if($child->view_elements);
-        # }
-        # foreach my $element (@check_elements){
-            # next 
-              # unless(ref($element) eq 'Database::Accessor::Element');
- 
-            # die( "Gather view_element "
-                 # .$element->name()
-                 # ." in not in the elements array! Only elements from that array can be added" )
-              # unless ($self->get_element_by_name($element->name()));
-        # }
-    # }    
+    
     sub add_gather {
       my $self = shift;
       my ($gather) = @_;
-      $self->dynamic_gather($gather);
+      confess  "Database::Accessor add_gather  Error:\n You cannot add undef with add_gather!"
+        unless(defined($gather));
+      $self->dynamic_gather($gather);
       
     }
     sub reset_gather {
       my $self = shift;
-      $self->dynamic_gather(undef);
+      $self->dynamic_gather();
       
     }
     
@@ -596,7 +510,7 @@ sub _did_do_msg {
     );
     
     has _parens_are_open => (
-        traits  => ['Counter'],
+        traits  => ['Counter','Private'],
         is      => 'rw',
         default => 0,
         isa     => 'Int',
@@ -619,7 +533,7 @@ sub _did_do_msg {
             _reset_conditions => 'reset'
         }
     );
-    sub _clean_up_container {
+    private_method _clean_up_container => sub {
         my $self = shift;
         my ($message,$container) = @_;
         my @new_container = ();
@@ -643,9 +557,9 @@ sub _did_do_msg {
                      ."!")
               if ( !scalar( @new_container ) );
         return \@new_container;
-    }
+    };
     
-    sub _create_or_update {
+    private_method _create_or_update => sub {
         my $self = shift;
         my ( $action, $conn, $container, $opt ) = @_;
         my $new_container;
@@ -692,7 +606,8 @@ sub _did_do_msg {
         $self->_all_elements_present( $message, $new_container )
           if ( $self->all_elements_present );
         return $self->_execute( $action, $conn, $new_container, $opt );
-    }
+    };
+    
     sub create {
         my $self = shift;
         my ( $conn, $container, $opt ) = @_;
@@ -755,7 +670,7 @@ sub _did_do_msg {
             $conn, $container, $opt );
     }
 
-    sub _need_condition {
+    private_method _need_condition => sub {
         my $self = shift;
         my ( $action, $required ) = @_;
         my $is_required = $required || 0;
@@ -765,10 +680,10 @@ sub _did_do_msg {
             and
             ( $self->condition_count() + $self->dynamic_condition_count() <= 0 )
           );
-    }
+    };
     
     
-    sub _all_elements_present {
+    private_method _all_elements_present => sub {
         my $self = shift;
         my ( $message, $container ) = @_;
 
@@ -801,8 +716,9 @@ sub _did_do_msg {
                 }
             }
         }
-    }
-    private_method check_options => sub {
+    };
+    
+    private_method _check_options => sub {
         my $self = shift;
         my ($action,$opt) = @_;
         confess( "Database::Accessor $action Error: The Option param for $action must be a Hash-Ref")
@@ -828,17 +744,12 @@ sub _did_do_msg {
     
     private_method _check_element => sub {
         my $self = shift;
-        
-        # warn("JSP _parens_are_open=".$self->_parens_are_open());
         my ($element,$action,$type) = @_;
         if (ref($element) eq 'Database::Accessor::Element'){
           unless ( $element->view() ) {
             $element->view( $self->view->name() );
           }
           $element->_lookup_name();
-          # warn("DA _check_element 2 ".Dumper($element));
-          # warn("DA _check_element 3 name=".$element->name()); 
-          # warn("$type DA _check_element 4 name=".$element->_lookup_name()); 
           confess( "Database::Accessor $type Error: element {name=>"
                 .$element->name()
                 .", view=>"
@@ -877,21 +788,19 @@ sub _did_do_msg {
            $self->_check_element($element->predicates->left,$action,$type);
        }
        elsif (ref($element) eq 'ARRAY'){
-           
            foreach my $sub_element (@{$element}){
                $self->_check_element($sub_element,$action,$type);
             }       }
        else {
            return 
               unless(does_role($element,"Database::Accessor::Roles::Comparators"));
-         
             $self->_check_parentheses($element);            $self->_check_element($element->right,$action,$type);
             $self->_check_element($element->left,$action,$type);
        }
 
     };
 
-    private_method get_dad_elements => sub {
+    private_method _get_dad_elements => sub {
         my $self = shift;
         my ($action,$gather) = @_;
         $self->_identity_index(-1);
@@ -968,33 +877,6 @@ sub _did_do_msg {
         return \@allowed;
     };
     
-    # private_method _elements_check => sub {
-        # my $self = shift;
-        # my ($action) = @_;
-        # $self->_reset_parens();
-        # $self->_reset_conditions(); 
-        # my @items;
-        # push( @items,
-            # @{ $self->conditions },
-            # @{ $self->dynamic_conditions },
-            # @{ $self->sorts },
-            # @{ $self->dynamic_sorts },
-            # @{ $self->elements } );
-
-         # foreach my $link ((@{ $self->links },@{ $self->dynamic_links })){
-            # # my $view = $link->to;
-            # # $self->_check_element($link->conditions,0,$view->name);
-           # push(@items,$link->conditions);        # } 
-       
-        # push(@items,(@{ $self->gather->conditions }, @{ $self->gather->elements }))
-          # if ( $self->gather());
-        # push(@items,@{ $self->gather->view_elements })
-           # if ($self->gather() and $self->gather->view_elements);
-        # push(@items,(@{ $self->dynamic_gather->conditions }, @{ $self->dynamic_gather->elements }))
-          # if ( $self->dynamic_gather());
-        # push(@items,@{ $self->dynamic_gather->view_elements })
-           # if ($self->dynamic_gather() and $self->dynamic_gather->view_elements);
-        
             private_method _elements_check => sub {
         my $self = shift;
         my ($items,$action,$type) = @_;
@@ -1057,7 +939,7 @@ sub _did_do_msg {
           . " Maybe you have to install a Database::Accessor::Driver::?? for it?")
           unless ($driver);
 
-        $self->check_options($action, $opt )
+        $self->_check_options($action, $opt )
           if ($opt);
            
         $self->_reset_parens();
@@ -1111,7 +993,7 @@ sub _did_do_msg {
         my $dad = $driver->new(
             {
                 view               => $self->view,
-                elements           => $self->get_dad_elements($action,$gather),
+                elements           => $self->_get_dad_elements($action,$gather),
                 conditions         => [@{$self->conditions},@{$self->dynamic_conditions}],
                 links              => [@{$self->links},@{$self->dynamic_links}],
                 gather             => $gather,
@@ -1250,7 +1132,9 @@ sub _did_do_msg {
         package 
            Database::Accessor::Roles::Element;
         use Moose::Role;
-        with (qw(Database::Accessor::Roles::Alias));
+        with (qw(Database::Accessor::Roles::Alias
+                 ));
+        
         use namespace::autoclean;
 
 
@@ -1293,12 +1177,15 @@ sub _did_do_msg {
             isa      => 'If|Expression|Param|Element|Function|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             required => 1,
             coerce   => 1,
+            documentation => "conditions"
         );
         has right => (
             is => 'rw',
             isa =>
 'If|Element|Param|Function|Expression|ArrayRefofParams|ArrayRefofElements|ArrayRefofExpressions',
             coerce   => 1,
+            documentation => "conditions"
+            
         );
 
         has open_parentheses => (
@@ -1383,16 +1270,16 @@ sub _did_do_msg {
         has operator => (
             is      => 'rw',
             isa     => 'Operator',
-            documentation => "conditions"
+         documentation => "conditions"
         );
         has condition => (
             is      => 'rw',
             isa     => 'Operator|Undef',
             default => undef,
-            documentation => "conditions"
+        documentation => "conditions"
         );
-        has '+left' => (documentation => 'conditions');
-        has '+right' => (documentation => 'conditions');
+       has '+left' => (documentation => 'conditions');
+       has '+right' => (documentation => 'conditions');
         # has '+'
         1;
     }
@@ -1564,7 +1451,7 @@ sub _did_do_msg {
         my $class = shift;
         my $ops   = shift(@_);
         use Data::Dumper;
-      
+        # warn(" around BUILDARGS Link $orig $class=".Dumper($ops)  );
         my $lookup_view = $ops->{to}->{name};
         my $view_name = $ops->{to}->{name};
         $view_name = $ops->{to}->{alias}
@@ -1575,7 +1462,7 @@ sub _did_do_msg {
                $class->_check_elements( $condition->{right}, $view_name);
             }
         }
-      # warn("ops $class=".Dumper($ops));
+     
         return $class->$orig($ops);
     };
     has conditions => (

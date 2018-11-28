@@ -9,7 +9,7 @@ use lib (
 );
 
 use Data::Dumper;
-use Test::More tests => 10;
+use Test::More tests => 38;
 use Data::Test;
 use Test::Deep;
 use Test::Fatal;
@@ -32,6 +32,7 @@ $in_hash = {
 };
 
 eval { $da = Database::Accessor->new($in_hash); };
+
 ok( $@->has_errors(),          "Error on new invalid" );
 ok( scalar( $@->errors ) == 1, "Single error on new invalid" );
 my @errors = $@->errors;
@@ -43,6 +44,7 @@ ok(
       ) > -1,
     'view->name validation present'
 );
+
 ok(
     index( $errors[0]->message,
         "'view->alias' Constraint: Validation failed for 'Str' with value undef"
@@ -53,6 +55,7 @@ ok(
 $ENV{DA_ALL_ERRORS} = 1;
 
 eval { $da = Database::Accessor->new($in_hash); };
+
 ok( scalar( $@->errors ) == 2, "Two errors on new when DA_ALL_ERRORS is one" );
 my @errors = $@->errors;
 ok( $errors[0]->attribute->name() == 'name',  "View: param name fails" );
@@ -61,8 +64,15 @@ ok( $errors[1]->attribute->name() == 'alias', "View: param alias fails" );
 $in_hash = {
     view => { name => 'People' },
     elements => [ { name => 'first_name', }, { name => 'last_name', }, ],
+
 };
 
+$ENV{DA_ALL_ERRORS} = 0;
+
+$da = Database::Accessor->new($in_hash);
+
+
+ 
 my $tests = {
     conditions => [
         {
@@ -118,6 +128,26 @@ my $tests = {
     gather => [
         {
             caption   => 'Elements is required',
+            exception => "gather->elements",
+            gather    => {
+                elements   => undef,
+                conditions => [
+                    {
+                        left => {
+                            name => 'last_name',
+                            view => 'People7'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 1,
+                        close_parentheses => 0,
+                        condition         => 'AND',
+                    },
+                ]
+            }
+        },
+        {
+            caption   => 'Elements is required',
             exception => "\(gather->elements\)",
             gather    => {
                 elementsq => [
@@ -153,7 +183,7 @@ my $tests = {
                 ],
                 conditions => [
                     {
-                        leftx => {
+                        left_failx => {
                             name => 'last_name',
                             view => 'People7'
                         },
@@ -198,8 +228,7 @@ my $tests = {
             caption   => 'to not empty',
             exception => "\(view->name\)",
             links     => {
-                to => {
-                },
+                to         => {},
                 type       => 'Left',
                 conditions => [
                     {
@@ -244,7 +273,7 @@ my $tests = {
                 ]
             }
         },
-          {
+        {
             caption   => 'type is proper link ',
             exception => "The Link 'bla'",
             links     => {
@@ -252,7 +281,7 @@ my $tests = {
                     name  => 'country',
                     alias => 'a_country'
                 },
-                type      => 'bla',
+                type       => 'bla',
                 conditions => [
                     {
                         left => {
@@ -302,8 +331,8 @@ my $tests = {
                     name  => 'country',
                     alias => 'a_country'
                 },
-                type        => 'Left',
-                conditions  => []
+                type       => 'Left',
+                conditions => []
             }
         },
     ],
@@ -314,7 +343,7 @@ my $tests = {
             sorts     => [
                 {
                     namex => 'first_name',
-                    view => 'People'
+                    view  => 'People'
                 },
             ]
         },
@@ -327,12 +356,11 @@ my $tests = {
 # warn(Dumper($in_hash)); # $da = Database::Accessor->new($in_hash);
 
 # warn(Dumper($da->links)); # exit;
+# $tests ={};
 $ENV{DA_ALL_ERRORS} = 0;
 foreach my $in_key ( sort( keys( %{$tests} ) ) ) {
     foreach my $test ( @{ $tests->{$in_key} } ) {
         $in_hash->{$in_key} = $test->{$in_key};
-
-        # warn(Dumper($in_hash));
 
         like(
             exception { $da = Database::Accessor->new($in_hash) },
@@ -345,4 +373,310 @@ foreach my $in_key ( sort( keys( %{$tests} ) ) ) {
     }
 }
 
+# exit;
+$tests = {
+    condition => [
+        {
+            caption   => 'Left is required',
+            exception => "\(conditions->left\)",
+            condition => {
+                leftx => {
+                    name => 'last_name',
+                    view => 'People'
+                },
+                right    => { value => 'test' },
+                operator => '=',
+            }
+        },
+        {
+            caption   => 'operator not correct',
+            exception => "\(conditions->operator\)",
+            condition => {
+                left => {
+                    name => 'last_name',
+                    view => 'People'
+                },
+                right    => { value => 'test' },
+                operator => 'zz',
+            }
+        },
+        {
+            caption   => 'no undef on ',
+            exception => "You cannot add 'undef' with add_condition",
+            condition => undef
+        },
+        {
+            caption   => 'operator not undef',
+            exception => "\(conditions->operator\)",
+            condition => {
+                left => {
+                    name => 'last_name',
+                    view => 'People'
+                },
+                right    => { value => 'test' },
+                operator => undef,
+            }
+        },
+        {
+            caption   => 'condtion must be an operator',
+            exception => "conditions->condition",
+            condition => {
+                left => {
+                    name => 'last_name',
+                    view => 'People'
+                },
+                right     => { value => 'test' },
+                operator  => '=',
+                condition => "xx"
+            }
+        }
+    ],
+
+    sort => [
+        {
+            caption   => 'undef not allowed ',
+            exception => "You cannot add 'undef' with add_sort",
+            sort      => undef
+        },
+        {
+            caption   => 'name required',
+            exception => " does not pass the type constraint becaus",
+            sort      => [
+                {
+                    namex => 'first_name',
+                    view  => 'People'
+                },
+            ]
+        },
+
+    ],
+    link => [
+        {
+            caption   => 'undef not allowed ',
+            exception => "You cannot add 'undef' with add_link",
+            link      => undef
+        },
+        {
+            caption    => 'condtions required',
+            exception => "The Link 'bla'",
+            link      => {
+                to => {
+                    name  => 'country',
+                    alias => 'a_country'
+                },
+                type       => 'bla',
+                conditions => undef
+            }
+        },
+        {
+            caption    => 'conditions icorrect',
+            exception => "The Link 'bla'",
+            link      => {
+                to => {
+                    name  => 'country',
+                    alias => 'a_country'
+                },
+                type       => 'bla',
+                conditions => [
+                    {
+                        left => {
+                            name => 'country_id',
+                            view => 'People'
+                        },
+                        right => {
+                            name => 'id',
+                            view => 'a_country'
+                        },
+                        operator          => '=',
+                        open_parentheses  => 0,
+                        close_parentheses => 1,
+                    }
+                ]
+            }
+        },
+        {
+            caption    => 'To required',
+            exception => "view->name",
+            link      => {
+                tox => {
+                    name  => 'country',
+                    alias => 'a_country'
+                },
+                type       => 'bla',
+                conditions => [
+                    {
+                        left => {
+                            name => 'country_id',
+                            view => 'People'
+                        },
+                        right => {
+                            name => 'id',
+                            view => 'a_country'
+                        },
+                        operator          => '=',
+                        open_parentheses  => 0,
+                        close_parentheses => 1,
+                    }
+                ]
+            }
+        }
+    ],
+    gather => [
+        {
+            caption   => 'undef not allowed ',
+            exception => "You cannot add undef with add_gather",
+            gather    => undef
+        } ,
+        {
+            caption   => 'element required',
+            exception => "does not pass the type constraint because",
+            gather    => {
+                elements      => undef,
+                view_elements => [
+                    {
+                        name => 'first_name',
+                        view => 'People4'
+                    },
+                    {
+                        name => 'last_name',
+                        view => 'People5'
+                    },
+                    {
+                        function => 'count',
+                        left     => {
+                            name => 'user_id',
+                            view => 'People6'
+                        }
+                    }
+                ],
+                conditions => [
+                    {
+                        left => {
+                            name => 'last_name',
+                            view => 'People7'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 1,
+                        close_parentheses => 0,
+                        condition         => 'AND',
+                    },
+                    {
+                        condition => 'AND',
+                        left      => {
+                            name => 'first_name',
+                            view => 'People8'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 0,
+                        close_parentheses => 1
+                    }
+                ]
+            }
+        },
+        {
+            caption   => 'bad element ',
+            exception => "does not pass the type constraint because: Validation failed for 'Gather|Undef",
+            gather    => {
+                elements => [
+                    {
+                        namex => 'first_name',
+                        view  => 'People4'
+                    },
+                ],
+                conditions => [
+                    {
+                        left => {
+                            name => 'last_name',
+                            view => 'People7'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 1,
+                        close_parentheses => 0,
+                        condition         => 'AND',
+                    },
+                    {
+                        condition => 'AND',
+                        left      => {
+                            name => 'first_name',
+                            view => 'People8'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 0,
+                        close_parentheses => 1
+                    }
+                ]
+            }
+        },
+        {
+            caption   => 'bad condtions ',
+            exception => "does not pass the type constraint because: Validation failed for",
+            gather    => {
+                elements => [
+                    {
+                        name => 'first_name',
+                        view => 'People4'
+                    },
+                ],
+                conditions => [
+                    {
+                        leftx => {
+                            name => 'last_name',
+                            view => 'People7'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 1,
+                        close_parentheses => 0,
+                        condition         => 'AND',
+                    },
+                    {
+                        condition => 'AND',
+                        left      => {
+                            name => 'first_name',
+                            view => 'People8'
+                        },
+                        right             => { value => 'test' },
+                        operator          => '=',
+                        open_parentheses  => 0,
+                        close_parentheses => 1
+                    }
+                ]
+            }
+        }
+    ],
+};
+
+# $da = Database::Accessor->new($in_hash);
+foreach my $in_key ( sort( keys( %{$tests} ) ) ) {
+   foreach my $test ( @{ $tests->{$in_key} } ) {
+
+        my $new_da = Database::Accessor->new(
+            {
+                view => { name => 'People' },
+                elements =>
+                  [ { name => 'first_name', }, { name => 'last_name', }, ]
+            }
+        );
+
+        # my $reset = "reset_$in_key" . "s";
+        my $add = "add_$in_key";
+
+        # $da->$reset()
+        # unless ($in_key eq 'gather');
+
+         # warn(" da->$add(".Dumper($test->{$in_key}).")");
+
+        like(
+            exception { $new_da->$add( $in_key eq 'gather' ? %{$test->{$in_key}} : $test->{$in_key}) },
+            qr /$test->{exception}/,
+            "$test->{caption} add_$in_key"
+        );
+
+        # delete( $in_hash->{$in_key} );
+    }
+}
 1;

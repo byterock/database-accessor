@@ -2,7 +2,11 @@
 use strict;
 use warnings;
 use lib ('t/lib');
-use lib ('t/lib','D:\GitHub\database-accessor\t\lib','D:\GitHub\database-accessor\lib');
+use lib (
+    't/lib',
+    'D:\GitHub\database-accessor\t\lib',
+    'D:\GitHub\database-accessor\lib'
+);
 
 use Data::Dumper;
 use Data::Test;
@@ -11,8 +15,14 @@ use Test::Database::Accessor::Utils;
 
 use Test::More tests => 16;
 
-my $da = Database::Accessor->new( { view => { name => 'People' },elements => [ { name => 'first_name', }, { name => 'last_name', }, ], } );
-
+my $da = Database::Accessor->new(
+    {
+        view => { name => 'People' },
+        elements => [ { name => 'first_name', }, { name => 'last_name', }, ],
+    }
+);
+ # $da->reset_conditions;
+ # $da->add_condition(undef);
 my $in_hash = {
     conditions => [
         {
@@ -20,11 +30,11 @@ my $in_hash = {
                 name => 'last_name',
                 view => 'People'
             },
-            right           => { value => 'test' },
-            operator        => '=',
+            right             => { value => 'test' },
+            operator          => '=',
             open_parentheses  => 1,
             close_parentheses => 0,
-            condition       => 'AND',
+            condition         => 'AND',
         },
         {
             condition => 'AND',
@@ -32,14 +42,12 @@ my $in_hash = {
                 name => 'first_name',
                 view => 'People'
             },
-            right           => { value => 'test' },
-            operator        => '=',
+            right             => { value => 'test' },
+            operator          => '=',
             open_parentheses  => 0,
             close_parentheses => 1
         }
-      ]
-
-    ,
+      ],
 };
 
 foreach my $condition ( @{ $in_hash->{conditions} } ) {
@@ -48,30 +56,29 @@ foreach my $condition ( @{ $in_hash->{conditions} } ) {
 }
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
-my $dad = $da->result->error(); #note to others this is a kludge for testing
+my $dad = $da->result->error();    #note to others this is a kludge for testing
 
 Test::Database::Accessor::Utils::deep_predicate(
-    $in_hash->{conditions},     $da->dynamic_conditions(),
-    $dad->conditions(), 'dynamic conditions',1
+    $in_hash->{conditions},
+    $da->dynamic_conditions(),
+    $dad->conditions(), 'dynamic conditions', 1
 );
 
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
-$dad = $da->result->error(); #note to others this is a kludge for testing
+$dad = $da->result->error();       #note to others this is a kludge for testing
 
 ok(
     $da->add_condition( @{ $in_hash->{conditions} } ),
     "can add an array of Dynamic conditions"
 );
 
-Test::Database::Accessor::Utils::deep_predicate(
-    $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->conditions, 'Array Dynamic condition',1
-);
+Test::Database::Accessor::Utils::deep_predicate( $in_hash->{conditions},
+    $da->dynamic_conditions, $dad->conditions, 'Array Dynamic condition', 1 );
 
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
-$dad = $da->result->error(); #note to others this is a kludge for testing
+$dad = $da->result->error();       #note to others this is a kludge for testing
 
 ok(
     $da->add_condition( $in_hash->{conditions} ),
@@ -80,10 +87,12 @@ ok(
 
 $return = {};
 $da->retrieve( Data::Test->new(), $return );
-$dad = $da->result->error(); #note to othe
+$dad = $da->result->error();       #note to othe
 
-Test::Database::Accessor::Utils::deep_predicate(
-    $in_hash->{conditions},   $da->dynamic_conditions,
-    $dad->conditions, 'Array Ref Dynamic condition',1
-);
+Test::Database::Accessor::Utils::deep_predicate( $in_hash->{conditions},
+    $da->dynamic_conditions, $dad->conditions, 'Array Ref Dynamic condition',
+    1 );
+    
+ # warn("here 1");   
+ # warn("here 2"); 
 1;

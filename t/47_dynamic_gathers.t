@@ -117,7 +117,10 @@ Test::Database::Accessor::Utils::deep_element(
     $dad->gather->elements(), 'Dynamic Gather 2 elements correct'
 );
 
+
+
 $da->reset_gather();
+
 $gather2 = {        
        elements => [
             {
