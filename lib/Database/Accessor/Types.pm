@@ -2,7 +2,6 @@ use strict;
 
 package Database::Accessor::Types;
 our $NEW;
-
 # ABSTRACT: A Types Role for Database::Accessor:
 use Moose::Role;
 
@@ -476,7 +475,7 @@ sub _one_error {
             and ( $error_package eq "Database::Accessor::Element" ) )
         {
             $on = " Possible missing/invalid key in or near:\n"
-              . Dumper($Database::Accessor::Types::LAST);
+              . Dumper($raw_in);
         }
 
         my $misc = "Database::Accessor " . $call . " Error:\n";
