@@ -59,7 +59,6 @@ my $in_hash = {
 };
 
 my $da = Database::Accessor->new($in_hash);
-
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 

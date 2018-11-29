@@ -485,7 +485,7 @@ package Database::Accessor;
     }
     sub reset_gather {
       my $self = shift;
-      $self->dynamic_gather();
+      $self->dynamic_gather(undef);
       
     }
     

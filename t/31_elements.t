@@ -76,6 +76,7 @@ ok( $dad->elements->[1]->name eq 'user_id',   "user_id is index 1" );
 
 delete( $in_hash->{elements}->[0]->{no_retrieve} );
 $in_hash->{elements}->[0]->{only_retrieve} = 1;
+$in_hash->{elements}->[0]->{no_retrieve} = 0;
 
 $da->create( Data::Test->new(), { test => 1 } );
 $dad = $da->result->error();

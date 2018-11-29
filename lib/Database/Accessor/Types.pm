@@ -8,7 +8,6 @@ use Moose::Role;
 # with qw(Database::Accessor::Roles::AllErrors);
 our $ALL_ERRORS;
 use Data::Dumper;
-use Taint::Util;
 
 # Dist::Zilla: +PkgVersion
 use lib 'D:\GitHub\database-accessor\lib';
@@ -131,13 +130,16 @@ coerce 'Predicate', from 'HashRef', via {
 sub _create_instance {
     my ( $class, $ops, $caller, $raw ) = @_;
     my $object;
+#warn("_create_instance class-$class ".ref( $ops));
+    return $ops
+      if (ref($ops) eq $class );
 
     if ($NEW) {
-        $object = $class->new( %{$ops} );
+        $object = $class->new( $ops );
     }
     else {
+        
         try {
-
             if ( $class eq 'Database::Accessor::Gather' ) {
                 $object = $class->new( %{$ops} );
             }
@@ -284,7 +286,8 @@ sub _right_left_coerce {
 
 sub _element_coerce {
     my ($hash) = @_;
-
+#my ($package, $filename, $line) = caller;
+#nwarn("_element_coerce $hash, $package, $filename, $line");
     my $class = "Database::Accessor::Element";
     my %copy = ($hash) ? %{ Clone::clone($hash) } : ();
     unless ($hash) {
@@ -335,6 +338,8 @@ sub _element_coerce {
             delete( $copy{right} );
         }
     }
+#    return $hash
+#$      if (ref($hash) eq $class );
 
     my $object = _create_instance( $class, $hash, 4, \%copy );
     return $object;
