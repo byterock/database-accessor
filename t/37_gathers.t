@@ -13,7 +13,7 @@ use Data::Test;
 use Database::Accessor;
 use Test::Database::Accessor::Utils;
 
-use Test::More tests => 24;
+use Test::More tests => 25;
 
 
 
@@ -126,7 +126,7 @@ my $da     = Database::Accessor->new($in_hash);
 my $return = {};
 $da->retrieve( Data::Test->new(), $return );
 my $dad = $da->result->error(); #note to others this is a kludge for testing
-
+ok($da->gather_count == 1,"Should be 1");
 
 # warn("here".Dumper($dad));
 

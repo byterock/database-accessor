@@ -9,7 +9,7 @@ use lib (
 );
 
 use Data::Dumper;
-use Test::More tests => 38;
+use Test::More tests => 39;
 use Data::Test;
 use Test::Deep;
 use Test::Fatal;
@@ -71,8 +71,6 @@ $ENV{DA_ALL_ERRORS} = 0;
 
 $da = Database::Accessor->new($in_hash);
 
-
- 
 my $tests = {
     conditions => [
         {
@@ -429,7 +427,28 @@ $tests = {
                 operator  => '=',
                 condition => "xx"
             }
-        }
+        },
+        {
+            caption   => 'too few ifs ',
+            exception => "with less than 2 ifs",
+            condition => {
+                left => {
+                    name => 'second_1',
+                    view => 'People'
+                },
+                right => {
+                    ifs => [
+                        {
+                            left     => { name  => 'Price', },
+                            right    => { value => '10' },
+                            operator => '<',
+                            then     => { name  => 'price' }
+                        },
+                    ]
+                },
+                operator => '=',
+            }
+        },
     ],
 
     sort => [
@@ -457,7 +476,7 @@ $tests = {
             link      => undef
         },
         {
-            caption    => 'condtions required',
+            caption   => 'condtions required',
             exception => "The Link 'bla'",
             link      => {
                 to => {
@@ -469,7 +488,7 @@ $tests = {
             }
         },
         {
-            caption    => 'conditions icorrect',
+            caption   => 'conditions icorrect',
             exception => "The Link 'bla'",
             link      => {
                 to => {
@@ -495,7 +514,7 @@ $tests = {
             }
         },
         {
-            caption    => 'To required',
+            caption   => 'To required',
             exception => "view->name",
             link      => {
                 tox => {
@@ -526,7 +545,7 @@ $tests = {
             caption   => 'undef not allowed ',
             exception => "You cannot add undef with add_gather",
             gather    => undef
-        } ,
+        },
         {
             caption   => 'element required',
             exception => "does not pass the type constraint because",
@@ -576,9 +595,10 @@ $tests = {
             }
         },
         {
-            caption   => 'bad element ',
-            exception => "does not pass the type constraint because: Validation failed for 'Gather|Undef",
-            gather    => {
+            caption => 'bad element ',
+            exception =>
+"does not pass the type constraint because: Validation failed for 'Gather|Undef",
+            gather => {
                 elements => [
                     {
                         namex => 'first_name',
@@ -612,9 +632,10 @@ $tests = {
             }
         },
         {
-            caption   => 'bad condtions ',
-            exception => "does not pass the type constraint because: Validation failed for",
-            gather    => {
+            caption => 'bad condtions ',
+            exception =>
+"does not pass the type constraint because: Validation failed for",
+            gather => {
                 elements => [
                     {
                         name => 'first_name',
@@ -652,7 +673,7 @@ $tests = {
 
 # $da = Database::Accessor->new($in_hash);
 foreach my $in_key ( sort( keys( %{$tests} ) ) ) {
-   foreach my $test ( @{ $tests->{$in_key} } ) {
+    foreach my $test ( @{ $tests->{$in_key} } ) {
 
         my $new_da = Database::Accessor->new(
             {
@@ -668,10 +689,14 @@ foreach my $in_key ( sort( keys( %{$tests} ) ) ) {
         # $da->$reset()
         # unless ($in_key eq 'gather');
 
-         # warn(" da->$add(".Dumper($test->{$in_key}).")");
+        # warn(" da->$add(".Dumper($test->{$in_key}).")");
 
         like(
-            exception { $new_da->$add( $in_key eq 'gather' ? %{$test->{$in_key}} : $test->{$in_key}) },
+            exception {
+                $new_da->$add( $in_key eq 'gather'
+                    ? %{ $test->{$in_key} }
+                    : $test->{$in_key} );
+            },
             qr /$test->{exception}/,
             "$test->{caption} add_$in_key"
         );

@@ -8,9 +8,10 @@ use Data::Dumper;
 use Data::Test;
 use Database::Accessor;
 use MooseX::Test::Role;
-use Test::More tests => 91;
+use Test::More tests => 100;
 use Test::Fatal;
 use Test::Deep;
+use Test::Warnings ':all';
 
 my $da =
   Database::Accessor->new( { retrieve_only => 1, view => { name => 'person' }, elements=>[{ name => 'street', view => 'person', }] } );
@@ -170,5 +171,52 @@ ok($da_new->retrieve(Data::Test->new()),"Works when da_result_class is set");
     "da_result_class has to be a valid Class in the path"
 );
 
-
+
+my $in_hash =    { view => { name => 'person' },
+                   elements=>[{ name => 'street', view => 'person', }],
+                   delete_requires_condition=>0,
+                   update_requires_condition=>0, };
+                   
+my $errors = {update   =>"Attempt to use update with no_update flag on",
+              create   =>"Attempt to use create with no_create flag on",
+              retrieve =>"Attempt to use retrieve with no_retrieve flag on"};
+        foreach my $key (sort(keys(%{$errors}))){
+        $in_hash->{"no_".$key} = 1;
+        $da_new = Database::Accessor->new($in_hash);
+        like( exception {$da_new->$key(Data::Test->new(),{})},
+    qr /$errors->{$key}/,
+    "no_$key flag error on $key"
+);
+delete( $in_hash->{"no_".$key});
+    }
 # $da = Database::Accessor->new();
+
+my $element = $da_new->get_element_by_name('street');
+ok(ref($element) eq 'Database::Accessor::Element','got an element by name');
+$element = $da_new->get_element_by_lookup("personstreet");ok(ref($element) eq 'Database::Accessor::Element','got an element by lookup');
+
+$da_new->da_warning(1);
+
+like(
+     warning { $da_new->retrieve(Data::Test->new()) },
+    qr/Tests DA warning sub/,
+    'got a warning from dad()',
+);
+
+push(@{$in_hash->{elements}},{param=>4},{
+        left => {
+            name => 'field-1',
+            view => 'table-1'
+        },
+        right => {
+            name => 'field-2',
+            view => 'table-1'
+        },
+        expression => '+'
+    });$da_new = Database::Accessor->new($in_hash);$da_new->da_warning(0);
+
+$da_new = Database::Accessor->new($in_hash);
+$da_new->retrieve(Data::Test->new());
+$element = $da_new->get_element_by_name('street');
+ok(ref($element) eq 'Database::Accessor::Element','got an element by name with expression param,');$element = $da_new->get_element_by_lookup("personstreet");
+ok(ref($element) eq 'Database::Accessor::Element','got an element by lookup with expression param,');

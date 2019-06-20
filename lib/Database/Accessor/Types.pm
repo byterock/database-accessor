@@ -325,18 +325,13 @@ sub _element_coerce {
     elsif ( exists( $hash->{ifs} ) ) {
         die "Attribute (ifs) does not pass the type constraint because: 
             Validation failed for 'ArrayRefofThens' with less than 2 ifs"
-          if (  exists( $hash->{ifs} )
-            and ref( $hash->{ifs} ) eq 'ARRAY'
+          if (  ref($hash->{ifs})  eq 'ARRAY'
             and scalar( @{ $hash->{ifs} } < 2 ) );
         $class = "Database::Accessor::If";
     }
     else {
-
-        if ( exists( $hash->{left} ) or exists( $hash->{right} ) ) {
-
-            delete( $copy{left} );
-            delete( $copy{right} );
-        }
+        delete( $copy{left} );
+        delete( $copy{right} );
     }
 #    return $hash
 #$      if (ref($hash) eq $class );

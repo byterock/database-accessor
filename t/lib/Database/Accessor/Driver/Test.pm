@@ -16,6 +16,9 @@ sub execute {
     $result->set([9,8,7,6,5,4,3,2,1,0]);
     $result->DB('Data::Test');
     $result->error($self);  #kludge for testing.  Sends the DAD back to ensure it is correct
+    
+    $self->da_warn( 'execute', "Tests DA warning sub" )
+      if ( $self->da_warning() >= 1);
     return $result;
 }
 
@@ -53,6 +56,10 @@ sub DB_Class {
     return 'Data::Test';
 }
 
+sub warning_test {
+  my $self = shift;
+  
+}
 
 
 1;

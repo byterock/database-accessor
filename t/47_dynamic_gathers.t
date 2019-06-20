@@ -13,7 +13,7 @@ use Database::Accessor;
 use Test::Database::Accessor::Utils;
 use Test::Deep;
 use Test::Fatal;
-use Test::More tests => 24;
+use Test::More tests => 26;
 
 my $in_hash ={ view => { name => 'People' },
                                 elements => [ { name => 'first_name', }, 
@@ -22,7 +22,7 @@ my $in_hash ={ view => { name => 'People' },
                                                 { name => 'Price'}, ] };
 my $da = Database::Accessor->new( $in_hash );
 
-
+ok(!$da->dynamic_gather_count ,"Should be undef");
 my $gather = {        
        elements => [
             {
@@ -85,7 +85,7 @@ my $gather2 = {
 
 ok( $da->add_gather($gather), "can add an single Dynamic gather" );
 my $return = {};
-
+ok($da->dynamic_gather_count == 1,"Should be 1");
 $da->retrieve( Data::Test->new(), $return );
 
 my $dad = $da->result->error(); #note to others this is a kludge for testing
@@ -199,7 +199,7 @@ $gather2 = {
    $da->reset_gather();
    
     ok( ref($da->gather) eq "Database::Accessor::Gather",
-    'sill have a static Gather' );
+    'still have a static Gather' );
 
   # # $gather2 = {        
        # # elements => [
