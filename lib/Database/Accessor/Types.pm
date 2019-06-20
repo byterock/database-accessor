@@ -1,21 +1,21 @@
 use strict;
 
 package Database::Accessor::Types;
-our $NEW;
+
 # ABSTRACT: A Types Role for Database::Accessor:
+
+
 use Moose::Role;
 
 # with qw(Database::Accessor::Roles::AllErrors);
-our $ALL_ERRORS;
-use Data::Dumper;
 
-# Dist::Zilla: +PkgVersion
-use lib 'D:\GitHub\database-accessor\lib';
+use Data::Dumper;
 use namespace::autoclean;
 use Moose::Util::TypeConstraints;
 use Database::Accessor::Constants;
 use Clone;
 use Try::Tiny;
+
 
 # # use Database::Accessor::View;
 # use Database::Accessor::Element;
@@ -27,6 +27,11 @@ use Try::Tiny;
 # use Database::Accessor::Expression;
 # use Database::Accessor::If;
 # use Database::Accessor::If::Then;
+
+# Dist::Zilla: +PkgVersion
+
+our $ALL_ERRORS;
+our $NEW;
 
 class_type 'If',      { class => 'Database::Accessor::If' };
 class_type 'Then',    { class => 'Database::Accessor::If::Then' };
